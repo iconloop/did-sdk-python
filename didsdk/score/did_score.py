@@ -7,9 +7,9 @@ from iconsdk.icon_service import IconService
 
 class DidScore:
     def __init__(self, iconservice: IconService, network_id: int, score_address: str):
-        self._iconservice = iconservice
-        self._network_id = network_id
-        self._score_address = score_address
+        self._iconservice: IconService = iconservice
+        self._network_id: int = network_id
+        self._score_address: str = score_address
 
     def _build_call(self, method: str, from_address: str = None, params=None) -> Call:
         builder = CallBuilder(from_=from_address, to=self._score_address, method=method, params=params)

@@ -5,7 +5,7 @@ from iconsdk.icon_service import IconService
 from iconsdk.signed_transaction import SignedTransaction, Transaction
 from iconsdk.wallet.wallet import KeyWallet, Wallet
 
-from didsdk.document.Converters import Converters
+from didsdk.document.converters import Converters
 from didsdk.document.document import Document
 from didsdk.exceptions import TransactionException, ResolveException
 from didsdk.jwt.jwt import Jwt
@@ -26,10 +26,10 @@ class DidService:
         :param score_address: the did score address deployed to the blockchain.
         :param timeout: the specified timeout, in milliseconds.
         """
-        self._iconservice = iconservice
-        self._network_id = network_id
-        self._did_score = DidScore(self._iconservice, self._network_id, score_address)
-        self._timeout = timeout
+        self._iconservice: IconService = iconservice
+        self._network_id: int = network_id
+        self._did_score: DidScore = DidScore(self._iconservice, self._network_id, score_address)
+        self._timeout: int = timeout
 
     def _get_did(self, event_log: list, event_name: str) -> str:
         """Get the id of document from the transaction event.
@@ -98,7 +98,7 @@ class DidService:
         signed_tx = SignedTransaction(transaction, wallet)
         return self._iconservice.send_transaction(signed_tx)
 
-    def add_public_key(self, wallet: KeyWallet, signed_jwt: str) -> 'Document':
+    def add_public_key(self, wallet: KeyWallet, signed_jwt: str) -> Document:
         """Add a publicKey to DID Document.
 
         :param wallet: the wallet for transaction.
@@ -109,7 +109,7 @@ class DidService:
         did = self._get_did(tx_result['eventLogs'], event_name='AddKey(Address,str,str)')
         return self.read_document(did)
 
-    def create(self, wallet: KeyWallet, public_key: str) -> 'Document':
+    def create(self, wallet: KeyWallet, public_key: str) -> Document:
         """Create a DID Document.
 
         :param wallet: the wallet for transaction
@@ -152,7 +152,7 @@ class DidService:
         """
         document = self.read_document(did)
         public_key_property = document.get_public_key_property(key_id)
-        return public_key_property.get_public_key()
+        return public_key_property.public_key
 
     def get_version(self) -> str:
         """Get the version of score.
@@ -172,7 +172,7 @@ class DidService:
 
         json_data = self._did_score.get_did_document(did)
         try:
-            return Converters.from_json(json_data, Document)
+            return Converters.deserialize(json_data, Document)
         except Exception:
             raise ResolveException(f"'{json_data}' parsing error.")
 
