@@ -25,7 +25,7 @@ class VerifyResult:
 
 
 class Jwt:
-    def __init__(self, header: Header, payload: Payload, encoded_token: List[str]):
+    def __init__(self, header: Header, payload: Payload, encoded_token: List[str] = None):
         self._header: Header = header
         self._payload: Payload = payload
         self._encoded_token: List[str] = encoded_token
