@@ -2,10 +2,6 @@ from dataclasses import dataclass
 from enum import Enum
 from os import environ
 
-from didsdk.core.algorithm import Algorithm
-from didsdk.core.es256k_algorithm import ES256KAlgorithm
-from didsdk.core.none_algorithm import NoneAlgorithm
-
 
 @dataclass
 class TypePlate:
@@ -44,11 +40,13 @@ class AlgorithmProvider:
     SECURE_RANDOM: 'SecureRandom' = None
 
     @staticmethod
-    def create(type_: AlgorithmType) -> Algorithm:
+    def create(type_: AlgorithmType) -> 'Algorithm':
         if type_:
             if type_ == AlgorithmType.ES256K:
+                from didsdk.core.es256k_algorithm import ES256KAlgorithm
                 return ES256KAlgorithm()
             elif type_ == AlgorithmType.NONE:
+                from didsdk.core.none_algorithm import NoneAlgorithm
                 return NoneAlgorithm()
             else:
                 raise ValueError(f'{type_.name} is not supported yet.')

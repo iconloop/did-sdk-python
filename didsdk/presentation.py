@@ -72,7 +72,7 @@ class Presentation(ConvertJwt):
 
     def as_jwt(self, issued: int, expiration: int):
         kid = self.did + '#' + self.key_id
-        header = Header(algorithm=self.algorithm, key_id=kid)
+        header = Header(alg=self.algorithm, kid=kid)
         contents = {
             Payload.ISSUER: self.did,
             Payload.ISSUED_AT: issued,

@@ -37,12 +37,12 @@ class IssuerDid(ConvertJwt):
     @staticmethod
     def deserialize_from_holder(holder: DidKeyHolder) -> 'IssuerDid':
         kid: List[str] = holder.header.key_id.split('#')
-        return IssuerDid(did=kid[0], algorithm=holder.header.algorithm, key_id=kid[1])
+        return IssuerDid(did=kid[0], algorithm=holder.header.alg, key_id=kid[1])
 
     @staticmethod
     def deserialize_from_jwt(jwt: Jwt) -> 'IssuerDid':
         kid: List[str] = jwt.header.key_id.split('#')
-        return IssuerDid(did=kid[0], algorithm=jwt.header.algorithm, key_id=kid[1])
+        return IssuerDid(did=kid[0], algorithm=jwt.header.alg, key_id=kid[1])
 
     def as_jwt(self, issued: int, expiration: int) -> Jwt:
         """Create a JWT object by this object.
@@ -57,7 +57,7 @@ class IssuerDid(ConvertJwt):
             Payload.ISSUED_AT: issued,
             Payload.EXPIRATION: expiration
         }
-        header = Header(algorithm=self._algorithm, key_id=kid)
+        header = Header(alg=self._algorithm, kid=kid)
         payload = Payload(contents=contents)
         return Jwt(header, payload)
 
@@ -79,4 +79,4 @@ class IssuerDid(ConvertJwt):
         """
         header = jwt.header
         kid = header.key_id.split('#')
-        return IssuerDid(did=kid[0], algorithm=header.algorithm, key_id=kid[1])
+        return IssuerDid(did=kid[0], algorithm=header.alg, key_id=kid[1])

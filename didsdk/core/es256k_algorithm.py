@@ -55,7 +55,7 @@ class ES256KAlgorithm(Algorithm):
         return private_key.to_pem()
 
     def sign(self, private_key: PrivateKey, data: bytes) -> bytes:
-        return private_key.sign_recoverable(data)
+        return private_key.sign(data)
 
     def verify(self, public_key: PublicKey, data: bytes, signature: bytes) -> bool:
         try:

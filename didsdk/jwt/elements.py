@@ -1,17 +1,13 @@
-import json
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List
 
 from didsdk.exceptions import JwtException
 
 
 @dataclass(frozen=True)
 class Header:
-    algorithm: str
-    key_id: str
-
-    def to_json_format(self, ) -> dict:
-        return {'alg': self.algorithm, 'kid': self.key_id}
+    alg: str
+    kid: str
 
     # TODO: check it is used or not
     def hashcode(self):
