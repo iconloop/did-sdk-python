@@ -104,7 +104,7 @@ class Presentation(ConvertJwt):
         """
         payload = jwt.payload
         issuer_did = IssuerDid.from_jwt(jwt)
-        presentation = Presentation(issuer_did, nonce=payload.nonce)
+        presentation = Presentation(issuer_did, nonce=payload.nonce, jti=payload.jti, version=payload.version)
         presentation.credentials = payload.credential
         return presentation
 

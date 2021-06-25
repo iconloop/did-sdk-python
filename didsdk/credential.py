@@ -100,7 +100,8 @@ class Credential(ConvertJwt):
         """
         payload = jwt.payload
         issuer_did = IssuerDid.from_jwt(jwt)
-        return Credential(issuer_did, target_did=payload.sub, claim=payload.claim, nonce=jwt.payload.nonce)
+        return Credential(issuer_did, target_did=payload.sub, claim=payload.claim,
+                          jti=payload.jti, nonce=payload.nonce, version=payload.version)
 
     def get_types(self):
         return [self.DEFAULT_TYPE] + list(self.claim.keys())

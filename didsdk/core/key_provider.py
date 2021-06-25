@@ -17,11 +17,6 @@ class KeyProvider:
                 algorithm.public_key_to_bytes(self._public_key) == algorithm.public_key_to_bytes(other.public_key) and
                 algorithm.private_key_to_bytes(self._private_key) == algorithm.private_key_to_bytes(other.private_key))
 
-    # TODO check to use or not
-    def hash_code(self):
-        algorithm = AlgorithmProvider.create(self._type)
-        return ''
-
     @property
     def key_id(self):
         return self._key_id

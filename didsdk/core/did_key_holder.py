@@ -39,12 +39,6 @@ class DidKeyHolder:
     def private_key(self) -> PrivateKey:
         return self._private_key
 
-    # TODO : check it's used or not
-    def hash_code(self) -> int:
-        # Objects.hash(did, keyId, type, privateKey)
-        _hash = -1
-        return _hash
-
     def sign(self, jwt: Jwt) -> str:
         """Create a signature and encoded jwt
 

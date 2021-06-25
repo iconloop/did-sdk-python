@@ -9,10 +9,6 @@ class Header:
     alg: str
     kid: str
 
-    # TODO: check it is used or not
-    def hashcode(self):
-        return ''
-
 
 class Payload:
     AUDIENCE = "aud"
@@ -63,6 +59,10 @@ class Payload:
         return self._contents[self.ISSUER]
 
     @property
+    def jti(self) -> str:
+        return self._contents[self.JTI]
+
+    @property
     def nonce(self) -> str:
         return self._contents[self.NONCE]
 
@@ -93,14 +93,10 @@ class Payload:
     def add_time_claim_key_set(self, keys: set):
         self._time_claim_keys.add(keys)
 
-    # TODO: check it is used or not
-    def hashcode(self):
-        return ''
-
     def is_time_claim(self, name: str):
         return name in self._time_claim_keys
 
-    def to_json_format(self) -> str:
+    def to_json_format(self) -> dict:
         return self._contents
 
     def put(self, name: str, value):

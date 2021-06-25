@@ -1,5 +1,3 @@
-from typing import List
-
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.jwt.convert_jwt import ConvertJwt
 from didsdk.jwt.elements import Header, Payload
@@ -35,13 +33,31 @@ class IssuerDid(ConvertJwt):
         return self._key_id
 
     @staticmethod
-    def deserialize_from_holder(holder: DidKeyHolder) -> 'IssuerDid':
-        kid: List[str] = holder.header.key_id.split('#')
-        return IssuerDid(did=kid[0], algorithm=holder.header.alg, key_id=kid[1])
+    def from_did_key_holder(did_key_holder: DidKeyHolder) -> 'IssuerDid':
+        """Returns the IssuerDid object representation of the String argument.
+
+        :param did_key_holder: encodedJwt the String returned by calling `didsdk.core.did_key_holder.sign(Jwt)`.
+        :return: the IssuerDid object from DidKeyHolder.
+        """
+        return IssuerDid(did=did_key_holder.did, algorithm=did_key_holder.type.name, key_id=did_key_holder.key_id)
 
     @staticmethod
-    def deserialize_from_jwt(jwt: Jwt) -> 'IssuerDid':
-        kid: List[str] = jwt.header.key_id.split('#')
+    def from_encoded_jwt(encoded_jwt: str) -> 'IssuerDid':
+        """Returns the IssuerDid object representation of the Jwt argument.
+
+        :param encoded_jwt: the encoded jwt.
+        :return: the IssuerDid object from encoded jwt.
+        """
+        return IssuerDid.from_jwt(Jwt.decode(encoded_jwt))
+
+    @staticmethod
+    def from_jwt(jwt: Jwt) -> 'IssuerDid':
+        """Returns the IssuerDid object representation of the Jwt argument.
+
+        :param jwt: the JWT with properties of the Presentation object.
+        :return: the IssuerDid object from Jwt.
+        """
+        kid = jwt.header.kid.split('#')
         return IssuerDid(did=kid[0], algorithm=jwt.header.alg, key_id=kid[1])
 
     def as_jwt(self, issued: int, expiration: int) -> Jwt:
@@ -60,23 +76,3 @@ class IssuerDid(ConvertJwt):
         header = Header(alg=self._algorithm, kid=kid)
         payload = Payload(contents=contents)
         return Jwt(header, payload)
-
-    @staticmethod
-    def from_did_key_holder(did_key_holder: DidKeyHolder) -> 'IssuerDid':
-        """Returns the IssuerDid object representation of the String argument.
-
-        :param did_key_holder: encodedJwt the String returned by calling `didsdk.core.did_key_holder.sign(Jwt)`.
-        :return: the IssuerDid object from DidKeyHolder.
-        """
-        return IssuerDid(did=did_key_holder.did, algorithm=did_key_holder.type.name, key_id=did_key_holder.key_id)
-
-    @staticmethod
-    def from_jwt(jwt: Jwt) -> 'IssuerDid':
-        """Returns the IssuerDid object representation of the Jwt argument.
-
-        :param jwt: the JWT with properties of the Presentation object.
-        :return: the IssuerDid object from Jwt.
-        """
-        header = jwt.header
-        kid = header.key_id.split('#')
-        return IssuerDid(did=kid[0], algorithm=header.alg, key_id=kid[1])
