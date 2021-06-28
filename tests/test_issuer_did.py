@@ -9,12 +9,12 @@ from didsdk.jwt.issuer_did import IssuerDid
 
 class TestIssuerDid:
     @pytest.fixture
-    def did_key_holder(self, dids, kid, private_key) -> DidKeyHolder:
-        return DidKeyHolder(dids['did'], kid, AlgorithmType.ES256K, private_key)
+    def did_key_holder(self, dids, key_id, private_key) -> DidKeyHolder:
+        return DidKeyHolder(dids['did'], key_id, AlgorithmType.ES256K, private_key)
 
-    def test_as_jwt(self, dids, kid):
+    def test_as_jwt(self, dids, key_id):
         # GIVEN a issuer_did, an issued time and an expiration
-        issuer_did = IssuerDid(dids['did'], AlgorithmType.ES256K.name, kid)
+        issuer_did = IssuerDid(dids['did'], AlgorithmType.ES256K.name, key_id)
         issued = int(time.time()*1_000_000)
         expiration = issued * 2
 

@@ -24,7 +24,7 @@ def dids() -> dict:
 
 
 @pytest.fixture
-def kid() -> str:
+def key_id() -> str:
     return 'key1'
 
 
@@ -87,8 +87,8 @@ def credentials(issuer_did, dids, private_key):
             credential_c.as_jwt(issued, expiration).sign(private_key)]
 
 @pytest.fixture
-def header(dids, kid) -> Header:
-    return Header(alg=AlgorithmType.ES256K.name, kid=f"{dids['did']}#{kid}")
+def header(dids, key_id) -> Header:
+    return Header(alg=AlgorithmType.ES256K.name, kid=f"{dids['did']}#{key_id}")
 
 
 @pytest.fixture
@@ -119,5 +119,5 @@ def encoded_jwt(jwt_object, private_key) -> str:
 
 
 @pytest.fixture
-def issuer_did(dids, kid) -> IssuerDid:
-    return IssuerDid(did=dids['did'], algorithm=AlgorithmType.ES256K.name, key_id=kid)
+def issuer_did(dids, key_id) -> IssuerDid:
+    return IssuerDid(did=dids['did'], algorithm=AlgorithmType.ES256K.name, key_id=key_id)
