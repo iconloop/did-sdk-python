@@ -13,6 +13,7 @@ class DidKeyHolder:
     To find a privateKey that matches a publicKey registered in a block chain,
     It is responsible for signing Jwt with the privateKey you have.
     """
+
     did: str
     key_id: str
     type: AlgorithmType
@@ -24,6 +25,10 @@ class DidKeyHolder:
                 and self.key_id == other.key_id
                 and self.type == other.type
                 and self.private_key.to_int() == other.private_key.to_int())
+
+    @property
+    def kid(self):
+        return self.did + '#' + self.key_id
 
     def sign(self, jwt: Jwt) -> str:
         """Create a signature and encoded jwt

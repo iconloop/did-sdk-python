@@ -59,10 +59,3 @@ class AlgorithmProvider:
             AlgorithmProvider.IS_ANDROID = 1 if 'ANDROID_BOOTLOGO' in environ else 0
 
         return AlgorithmProvider.IS_ANDROID == 1
-
-    # TODO: check this part
-    @staticmethod
-    def ummmmmmm():
-        if AlgorithmProvider.is_android_runtime():
-            # LinuxSecureRandom()
-            pass

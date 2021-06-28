@@ -22,7 +22,7 @@ class TestCredential:
 
     def test_as_jwt(self, credential):
         # GIVEN a credential object, an issued time and an expiration
-        issued = int(time.time()*1_000_000)
+        issued = int(time.time() * 1_000_000)
         expiration = issued * 2
 
         # WHEN convert the credential to jwt

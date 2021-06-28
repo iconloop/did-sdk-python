@@ -15,12 +15,12 @@ class DidScore:
         builder = CallBuilder(from_=from_address, to=self._score_address, method=method, params=params)
         return builder.build()
 
-    def _build_transaction(self, from_address, method, params) -> CallTransaction:
+    def _build_transaction(self, from_address: str, method: str, params: dict) -> CallTransaction:
         timestamp = int(time.time() * 1_000_000)
         builder = CallTransactionBuilder(nid=self._network_id,
                                          from_=from_address,
                                          to=self._score_address,
-                                         step_limit=2000000,
+                                         step_limit=5_000_000,
                                          timestamp=timestamp,
                                          method=method,
                                          params=params)
@@ -30,7 +30,7 @@ class DidScore:
         params = {'publicKey': public_key}
         return self._build_transaction(from_address, method='create', params=params)
 
-    def get_did(self, from_address: str) -> dict:
+    def get_did(self, from_address: str) -> str:
         call = self._build_call(from_address=from_address, method='getDid')
         return self._iconservice.call(call)
 
@@ -43,6 +43,6 @@ class DidScore:
         call = self._build_call(method='getVersion')
         return self._iconservice.call(call)
 
-    def jwtMethod(self, from_address: str, method: str, jwt: str) -> CallTransaction:
+    def jwt_method(self, from_address: str, method: str, jwt: str) -> CallTransaction:
         params = {'jwt': jwt}
         return self._build_transaction(from_address, method=method, params=params)

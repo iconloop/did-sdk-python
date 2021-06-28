@@ -5,8 +5,8 @@ from didsdk.jwt.jwt import Jwt
 
 
 class Credential(ConvertJwt):
-    """This class to create a verifiable credential,
-    which can be used to express information that a credential represents.
+    """This class to create a verifiable credential, which can be used to express information that a credential represents.
+
     (for example, a city government, national agency, or identification number)
 
     For credential to be verifiable, proof mechanism use Json Web Token.
@@ -18,9 +18,9 @@ class Credential(ConvertJwt):
 
     These claims and metadata must be signed by the issuer.
     After that, you can generate `didsdk.presentation.Presentation`.
-    
     """
-    EXP_DURATION: int = 24*60*60        # second
+
+    EXP_DURATION: int = 24 * 60 * 60        # second
     DEFAULT_TYPE: str = 'CREDENTIAL'
 
     def __init__(self, issuer_did: IssuerDid, target_did: str = None, claim=None,
@@ -64,7 +64,7 @@ class Credential(ConvertJwt):
         """
         self.claim[type_] = value
 
-    def as_jwt(self, issued: int, expiration: int):
+    def as_jwt(self, issued: int, expiration: int) -> Jwt:
         kid = self.did + '#' + self.key_id
         header = Header(alg=self.algorithm, kid=kid)
 
@@ -103,6 +103,5 @@ class Credential(ConvertJwt):
         return Credential(issuer_did, target_did=payload.sub, claim=payload.claim,
                           jti=payload.jti, nonce=payload.nonce, version=payload.version)
 
-    def get_types(self):
+    def get_types(self) -> list:
         return [self.DEFAULT_TYPE] + list(self.claim.keys())
-

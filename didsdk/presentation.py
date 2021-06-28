@@ -7,6 +7,7 @@ from didsdk.jwt.jwt import Jwt
 
 class Presentation(ConvertJwt):
     """This class use to create a verifiable presentation.
+
     A verifiable presentation expresses data from one or more credentials, and is packaged in
     such a way that the authorship of the data is verifiable.
 
@@ -29,6 +30,10 @@ class Presentation(ConvertJwt):
         self.version: str = version
 
     @property
+    def algorithm(self):
+        return self._issuer_did.algorithm
+
+    @property
     def credentials(self) -> list:
         return self._credentials
 
@@ -37,10 +42,6 @@ class Presentation(ConvertJwt):
         self._types = []
         for credential in credentials:
             self.add_credential(credential)
-
-    @property
-    def algorithm(self):
-        return self._issuer_did.algorithm
 
     @property
     def did(self):
@@ -70,7 +71,7 @@ class Presentation(ConvertJwt):
         types.remove(Credential.DEFAULT_TYPE)
         self._types += types
 
-    def as_jwt(self, issued: int, expiration: int):
+    def as_jwt(self, issued: int, expiration: int) -> Jwt:
         kid = self.did + '#' + self.key_id
         header = Header(alg=self.algorithm, kid=kid)
         contents = {

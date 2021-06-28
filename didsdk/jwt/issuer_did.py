@@ -6,11 +6,13 @@ from didsdk.jwt.jwt import Jwt
 
 class IssuerDid(ConvertJwt):
     """This class holds DID-related information of the issuer in JWT.
+
     We can get this information from the JWT header.
     """
+
     # seconds
     EXP_DURATION = 5 * 60
-    
+
     def __init__(self, did: str, algorithm: str, key_id: str):
         self._did: str = did
         self._algorithm: str = algorithm

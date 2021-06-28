@@ -1,13 +1,14 @@
-import time
-
 import pytest
+import time
 from coincurve import PrivateKey
 
 from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.credential import Credential
+from didsdk.did_service import DidService
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.issuer_did import IssuerDid
 from didsdk.jwt.jwt import Jwt
+from tests.utils.icon_service_factory import IconServiceFactory
 
 
 @pytest.fixture
@@ -80,11 +81,12 @@ def credentials(issuer_did, dids, private_key):
         'character': 'niniz'
     }
     credential_c = Credential(issuer_did, target_did=dids['target_did'], claim=claim_c)
-    issued = int(time.time()*1_000_000)
+    issued = int(time.time() * 1_000_000)
     expiration = issued * 2
     return [credential_a.as_jwt(issued, expiration).sign(private_key),
             credential_b.as_jwt(issued, expiration).sign(private_key),
             credential_c.as_jwt(issued, expiration).sign(private_key)]
+
 
 @pytest.fixture
 def header(dids, key_id) -> Header:
@@ -121,3 +123,25 @@ def encoded_jwt(jwt_object, private_key) -> str:
 @pytest.fixture
 def issuer_did(dids, key_id) -> IssuerDid:
     return IssuerDid(did=dids['did'], algorithm=AlgorithmType.ES256K.name, key_id=key_id)
+
+
+@pytest.fixture
+def did_service_local() -> DidService:
+    return DidService(IconServiceFactory.create_local(),
+                      network_id=2,
+                      score_address='cx26484cf9cb42b6eebbf537fbfe6b7df3f86c5079')
+
+
+@pytest.fixture
+def did_service_testnet() -> DidService:
+    return DidService(IconServiceFactory.create_testnet(),
+                      network_id=3,
+                      score_address='cxa18595c0b6b9c99f5ac5b6f12e136d9d2f221f4c')
+
+
+@pytest.fixture
+def test_wallet_keys() -> dict:
+    return {
+        'private': '4252c4abbdb595c08ff042f1af78b019c49792b881c9730cde832815570cf8d7',
+        'public': '02bfc63dd13b7f9ed08f7804470b2a10d039583e2de21a92c8ff4bc0f0e29e4506'
+    }

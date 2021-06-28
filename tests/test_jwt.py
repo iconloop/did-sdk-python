@@ -18,7 +18,7 @@ class TestJwt:
 
         # THEN get same data by decoding jwt with using above signature
         assert compact == jwt_from_encoded_token.compact()
-        assert jwt_from_encoded_token.signature in encoded_token
+        assert jwt_from_encoded_token.signature in Jwt.add_padding(encoded_token.split('.')[2])
 
     def test_verify(self, jwt_object, private_key):
         # GIVEN a Jwt object contains an encoded token

@@ -31,7 +31,8 @@ class TestScoreParameter:
         # THEN success to get same data by PublicKeyProperty object
         assert key_id == public_key_property.id
         assert type_ == public_key_property.algorithm_type
-        assert algorithm.public_key_to_bytes(public_key) == algorithm.public_key_to_bytes(public_key_property.publicKey)
+        assert (algorithm.public_key_to_bytes(public_key)
+                == algorithm.public_key_to_bytes(public_key_property.public_key))
 
     def test_add_key(self, key_id):
         # GIVEN the DidKeyHolder object

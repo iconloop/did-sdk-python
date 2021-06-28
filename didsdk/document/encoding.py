@@ -1,6 +1,7 @@
+from enum import Enum
+
 import abc
 import base64
-from enum import Enum
 
 
 class Encoder(abc.ABC):

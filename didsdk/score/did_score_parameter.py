@@ -1,4 +1,3 @@
-import dataclasses
 import json
 
 from didsdk.core.did_key_holder import DidKeyHolder
@@ -11,18 +10,20 @@ from didsdk.jwt.jwt import Jwt
 
 
 class DidScoreParameter:
-    """This class is used to create transaction parameters that call a score function
-    that can use all the features of the DID document.
+    """This class is used to create transaction parameters.
+
+    The transaction parameters that call a score function that can use all the features of the DID document.
     """
 
     @staticmethod
     def _create_public_key_property(key_provider: KeyProvider, encode_type: EncodeType) -> PublicKeyProperty:
         return PublicKeyProperty(id=key_provider.key_id, type=[key_provider.type.value.identifier],
-                                 publicKey=key_provider.public_key, encodeType=encode_type)
+                                 public_key=key_provider.public_key, encode_type=encode_type)
 
     @staticmethod
     def add_key(did_key_holder: DidKeyHolder, key_provider: KeyProvider, encode_type: EncodeType) -> Jwt:
         """Create a parameter for transaction that update the DID Document. (add publicKey)
+
         It's used for `didsdk.did_service.DidService.add_public_key()`.
 
         :param did_key_holder: the DidKeyHolder object to use for authentication.
@@ -30,7 +31,7 @@ class DidScoreParameter:
         :param encode_type: the encode type
         :return: the Jwt object from parameters.
         """
-        header = Header(alg=did_key_holder.type.name, kid=did_key_holder.key_id)
+        header = Header(alg=did_key_holder.type.name, kid=did_key_holder.kid)
 
         public_key_provider = DidScoreParameter._create_public_key_property(key_provider, encode_type)
         contents = {
@@ -47,6 +48,7 @@ class DidScoreParameter:
     @staticmethod
     def create(key_provider: KeyProvider, encode_type: EncodeType) -> str:
         """Create a parameter set for transaction that creates the DID Document.
+
         It's used for `didsdk.did_service.DidService.create()`.
 
         :param key_provider: keyProvider the KeyProvider object
@@ -59,13 +61,14 @@ class DidScoreParameter:
     @staticmethod
     def revoke_key(did_key_holder: DidKeyHolder, revoke_key_id: str) -> Jwt:
         """Create a parameter for transaction that update the DID Document. (revoke publicKey)
+
         It's used for `didsdk.did_service.DidService.revoke_key()`.
 
         :param did_key_holder: the DidKeyHolder object to use for authentication.
         :param revoke_key_id: the id of the public key to revoke.
         :return: the Jwt object from parameters.
         """
-        header = Header(alg=did_key_holder.type.name, kid=did_key_holder.key_id)
+        header = Header(alg=did_key_holder.type.name, kid=did_key_holder.kid)
 
         contents = {
             PropertyName.KEY_TX_UPDATE_METHOD: PropertyName.KEY_TX_UPDATE_METHOD_REVOKEKEY,

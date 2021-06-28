@@ -22,7 +22,7 @@ class TestPresentation:
     def test_add_credential(self, presentation, credential, private_key):
         # GIVEN a presentation object and a credential object
         # WHEN try to add a credential
-        issued = int(time.time()*1_000_000)
+        issued = int(time.time() * 1_000_000)
         expiration = issued * 2
         presentation.add_credential(credential.as_jwt(issued, expiration).sign(private_key))
         types = presentation.get_types()
@@ -33,7 +33,7 @@ class TestPresentation:
 
     def test_as_jwt(self, presentation):
         # GIVEN a presentation object, an issued time and an expiration
-        issued = int(time.time()*1_000_000)
+        issued = int(time.time() * 1_000_000)
         expiration = issued * 2
 
         # WHEN convert the presentation to jwt

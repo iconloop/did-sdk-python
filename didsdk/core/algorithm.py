@@ -1,12 +1,14 @@
 import abc
-
 from coincurve import PublicKey, PrivateKey
 
 from didsdk.core.algorithm_provider import AlgorithmType
+from didsdk.core.key_provider import KeyProvider
+from didsdk.exceptions import AlgorithmException
 
 
 class Algorithm(abc.ABC):
     """This abstract class is used in the Signing or Verification process of a icon-DID."""
+
     @property
     def type(self) -> AlgorithmType:
         """Returns the type of Algorithm.
@@ -34,20 +36,20 @@ class Algorithm(abc.ABC):
     def generate_key_pair(self):
         raise NotImplementedError
 
-    # def generate_key_provider(self, key_id: str) -> KeyProvider:
-    #     """Create a KeyProvider object.
-    #     This will generate a new public/private key every time it is called.
-    #     And return the id of key, the type of this algorithm instance and the new public/private key.
-    #
-    #     :param key_id: the id of the key to use in the DID document.
-    #     :return: the KeyProvider object.
-    #     """
-    #     try:
-    #         key_pair = self.generate_key_pair()
-    #         return KeyProvider(key_id=key_id, type_=self.type,
-    #                            public_key=key_pair.get_public_key(), private_key=key_pair.get_private_key())
-    #     except Exception as e:
-    #         raise AlgorithmException(e)
+    def generate_key_provider(self, key_id: str) -> KeyProvider:
+        """Create a KeyProvider object.
+
+        This will generate a new public/private key every time it is called.
+        And return the id of key, the type of this algorithm instance and the new public/private key.
+
+        :param key_id: the id of the key to use in the DID document.
+        :return: the KeyProvider object.
+        """
+        try:
+            key_pair = self.generate_key_pair()
+            return KeyProvider(key_id, self.type, key_pair.public_key, key_pair.private_key)
+        except Exception as e:
+            raise AlgorithmException(e)
 
     def public_key_to_bytes(self, public_key: PublicKey) -> bytes:
         """Returns a bytes in primary encoding format of the PublicKey object.
@@ -74,23 +76,6 @@ class Algorithm(abc.ABC):
         """
         raise NotImplementedError
 
-    # def sign_with_signature(self, algorithm: str, private_key: PrivateKey, data: bytes) -> bytes:
-    #     """Sign the given data using the Signature instance and the privateKey.
-    #
-    #     :param algorithm: the name of algorithm.
-    #     :param private_key: a private key for signing.
-    #     :param data: a bytes representing the base64 encoded content to be verified against the signature.
-    #     :return: a signature for data
-    #     """
-    #     # try:
-    #     #     signature = Signature.get_instance(algorithm)
-    #     #     signature.init_sign(private_key)
-    #     #     signature.update(data)
-    #     #     return signature.sign()
-    #     # except Exception as e:
-    #     #     raise AlgorithmException(e)
-    #     raise NotImplementedError
-
     def verify(self, public_key: PublicKey, data: bytes, signature: bytes) -> bool:
         """Verify the given token using this Algorithm instance.
 
@@ -100,21 +85,3 @@ class Algorithm(abc.ABC):
         :return: if the signature is valid, return true, or return false
         """
         raise NotImplementedError
-
-    # def verify_with_signature(self, algorithm: str, public_key: PublicKey, data: bytes, signature: bytes) -> bool:
-    #     """Verify the given token using the Signature instance.
-    #
-    #     :param algorithm: the name of algorithm.
-    #     :param public_key: a public key to use in the verify.
-    #     :param data: a bytes used for signing.
-    #     :param signature: a signature for data.
-    #     :return: if the signature is valid, return true, or return false.
-    #     """
-    #     # try:
-    #     #     new_signature = Signature.get_instance(algorithm)
-    #     #     new_signature.init_verify(public_key)
-    #     #     new_signature.update(data)
-    #     #     return new_signature.verify(signature)
-    #     # except Exception as e:
-    #     #     raise AlgorithmException(e)
-    #     raise NotImplementedError

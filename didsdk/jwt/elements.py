@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from typing import List
 
 from didsdk.exceptions import JwtException
@@ -31,12 +32,12 @@ class Payload:
         return self._contents == other.contents
 
     @property
-    def contents(self) -> dict:
-        return self._contents
-
-    @property
     def aud(self) -> str:
         return self._contents[self.AUDIENCE]
+
+    @property
+    def contents(self) -> dict:
+        return self._contents
 
     @property
     def claim(self) -> dict:
@@ -93,11 +94,11 @@ class Payload:
     def add_time_claim_key_set(self, keys: set):
         self._time_claim_keys.add(keys)
 
+    def asdict(self) -> dict:
+        return self._contents
+
     def is_time_claim(self, name: str):
         return name in self._time_claim_keys
-
-    def to_json_format(self) -> dict:
-        return self._contents
 
     def put(self, name: str, value):
         if value is None:

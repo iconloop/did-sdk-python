@@ -14,13 +14,13 @@ class ConvertJwt(abc.ABC):
         """
         raise NotImplementedError
 
-    def as_jwt(self, issued: int, expiration: int):
+    def as_jwt(self, issued: int, expiration: int) -> Jwt:
         raise NotImplementedError
 
     @staticmethod
-    def from_encoded_jwt(encoded_jwt: str) -> 'Presentation':
+    def from_encoded_jwt(encoded_jwt: str):
         raise NotImplementedError
 
     @staticmethod
-    def from_jwt(jwt: Jwt) -> 'Presentation':
+    def from_jwt(jwt: Jwt):
         raise NotImplementedError

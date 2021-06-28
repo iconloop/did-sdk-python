@@ -48,18 +48,18 @@ class ES256KAlgorithm(Algorithm):
         private_key = PrivateKey()
         return KeyPair(private_key=private_key, public_key=private_key.public_key)
 
-    def public_key_to_bytes(self, public_key: PublicKey):
-        return public_key.format(True)
+    def public_key_to_bytes(self, public_key: PublicKey, compressed: bool = True):
+        return public_key.format(compressed)
 
     def private_key_to_bytes(self, private_key: PrivateKey):
         return private_key.to_pem()
 
     def sign(self, private_key: PrivateKey, data: bytes) -> bytes:
-        return private_key.sign(data)
+        return private_key.sign_recoverable(data)
 
     def verify(self, public_key: PublicKey, data: bytes, signature: bytes) -> bool:
         try:
-            return public_key.verify(signature, data)
-        except Exception as e:
-            traceback.print_exc(e)
+            return public_key == PublicKey.from_signature_and_message(signature, data)
+        except Exception:
+            traceback.print_exc()
             return False
