@@ -1,8 +1,12 @@
-from didsdk.credential import Credential
+from typing import List, Optional
+
+from didsdk.credential import Credential, CredentialVersion
 from didsdk.jwt.convert_jwt import ConvertJwt
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.issuer_did import IssuerDid
 from didsdk.jwt.jwt import Jwt
+from didsdk.protocol.base_vc import BaseVc
+from didsdk.protocol.json_ld.json_ld_vp import JsonLdVp
 
 
 class Presentation(ConvertJwt):
@@ -21,16 +25,19 @@ class Presentation(ConvertJwt):
     EXP_DURATION: int = 5 * 60          # second
     DEFAULT_TYPE: str = 'PRESENTATION'
 
-    def __init__(self, issuer_did: IssuerDid, jti: str = None, nonce: str = None, version: str = None):
-        self._issuer_did = issuer_did
+    def __init__(self, issuer_did: IssuerDid, base_vcs: List[BaseVc] = None):
+        self._issuer_did: IssuerDid = issuer_did
         self._credentials: list = []
-        self._types: list = []
-        self.nonce: str = nonce
-        self.jti: str = jti
-        self.version: str = version
+        self._jwt: Optional[Jwt] = None
+        self._types: List[str] = []
+        self._vp: Optional[JsonLdVp] = None
+        self.nonce: Optional[str] = None
+        self.jti: Optional[str] = None
+        self.version: Optional[str] = None
+        self.base_vcs: List[BaseVc] = base_vcs if base_vcs else []
 
     @property
-    def algorithm(self):
+    def algorithm(self) -> str:
         return self._issuer_did.algorithm
 
     @property
@@ -39,12 +46,17 @@ class Presentation(ConvertJwt):
 
     @credentials.setter
     def credentials(self, credentials: list):
+        """Set the list of credential. Use only version  1.0,  1.1.
+
+        :param credentials: the list of credential
+        :return:
+        """
         self._types = []
         for credential in credentials:
             self.add_credential(credential)
 
     @property
-    def did(self):
+    def did(self) -> str:
         return self._issuer_did.did
 
     @property
@@ -52,12 +64,20 @@ class Presentation(ConvertJwt):
         return self.EXP_DURATION
 
     @property
-    def issuer_did(self):
+    def issuer_did(self) -> IssuerDid:
         return self._issuer_did
 
     @property
-    def key_id(self):
+    def jwt(self) -> Jwt:
+        return self._jwt
+
+    @property
+    def key_id(self) -> str:
         return self._issuer_did.key_id
+
+    @property
+    def vp(self) -> JsonLdVp:
+        return self._vp
 
     def add_credential(self, credential: str):
         """Add the credential
@@ -88,6 +108,28 @@ class Presentation(ConvertJwt):
         return Jwt(header, payload)
 
     @staticmethod
+    def from_(issuer_did: IssuerDid,
+              credentials: list,
+              vp: JsonLdVp,
+              nonce: str,
+              version: str,
+              jwt: Jwt) -> 'Presentation':
+
+        if not version:
+            raise ValueError('version cannot None.')
+
+        presentation = Presentation(issuer_did)
+        if credentials:
+            presentation.credentials = credentials
+        if vp:
+            presentation._vp = vp
+        presentation.nonce = nonce
+        presentation.version = version
+        presentation._jwt = jwt
+
+        return presentation
+
+    @staticmethod
     def from_encoded_jwt(encoded_jwt: str) -> 'Presentation':
         """Returns the presentation object representation of the Jwt argument.
 
@@ -105,9 +147,19 @@ class Presentation(ConvertJwt):
         """
         payload = jwt.payload
         issuer_did = IssuerDid.from_jwt(jwt)
-        presentation = Presentation(issuer_did, nonce=payload.nonce, jti=payload.jti, version=payload.version)
-        presentation.credentials = payload.credential
-        return presentation
+        return Presentation.from_(issuer_did, payload.credential, payload.vp, payload.nonce, payload.version, jwt)
+
+    def get_plain_params(self, key: str) -> list:
+        """get claim values from Presentation VC
+
+        :param key: a claim name
+        :return:
+        """
+        if CredentialVersion.v1_1 == self.version:
+            return [base_vc for base_vc in self.base_vcs if key in base_vc.vc_type]
+        elif CredentialVersion.v2_0 == self.version:
+            return [criteria.param.claims[key].claim_value
+                    for criteria in self.vp.fulfilledCriteria if key in criteria.param.claims]
 
     def get_types(self):
         return [self.DEFAULT_TYPE] + self._types

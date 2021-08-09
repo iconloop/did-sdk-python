@@ -1,7 +1,8 @@
 import json
-from typing import Union
+from typing import Union, Dict, List
 
 from didsdk.core.property_name import PropertyName
+from didsdk.document.authentication_property import AuthenticationProperty
 from didsdk.document.publickey_property import PublicKeyProperty
 
 
@@ -13,36 +14,12 @@ class Document:
 
     def __init__(self, id_: str, created: int, public_key: dict, authentication: list,
                  version: str = None, updated: int = None):
-        self._version: str = version
-        self._id: str = id_
-        self._created: int = created
-        self._updated: int = updated
-        self._public_key: dict = public_key
-        self._authentication: list = authentication
-
-    @property
-    def authentication(self) -> list:
-        return self._authentication
-
-    @property
-    def created(self) -> int:
-        return self._created
-
-    @property
-    def id(self) -> str:
-        return self._id
-
-    @property
-    def public_key(self) -> dict:
-        return self._public_key
-
-    @property
-    def updated(self) -> int:
-        return self._updated
-
-    @property
-    def version(self) -> str:
-        return self._version
+        self.version: str = version
+        self.id: str = id_
+        self.created: int = created
+        self.updated: int = updated
+        self.public_key: Dict[str, PublicKeyProperty] = public_key
+        self.authentication: List[AuthenticationProperty] = authentication
 
     @staticmethod
     def deserialize(json_data: Union[str, dict]) -> 'Document':
@@ -60,18 +37,18 @@ class Document:
                         updated=PropertyName.KEY_DOCUMENT_UPDATED)
 
     def get_public_key_property(self, key_id: str) -> PublicKeyProperty:
-        return self._public_key.get(key_id)
+        return self.public_key.get(key_id)
 
     def serialize(self) -> str:
-        public_key = [public_key_property.asdict() for _, public_key_property in self._public_key.items()]
-        dict_data = {PropertyName.KEY_DOCUMENT_ID: self._id,
-                     PropertyName.KEY_DOCUMENT_CREATED: self._created,
+        public_key = [public_key_property.asdict() for _, public_key_property in self.public_key.items()]
+        dict_data = {PropertyName.KEY_DOCUMENT_ID: self.id,
+                     PropertyName.KEY_DOCUMENT_CREATED: self.created,
                      PropertyName.KEY_DOCUMENT_PUBLICKEY: public_key,
-                     PropertyName.KEY_DOCUMENT_AUTHENTICATION: self._authentication}
+                     PropertyName.KEY_DOCUMENT_AUTHENTICATION: self.authentication}
 
-        if self._updated:
-            dict_data[PropertyName.KEY_DOCUMENT_UPDATED] = self._updated
-        if self._version:
-            dict_data[PropertyName.KEY_VERSION] = self._version
+        if self.updated:
+            dict_data[PropertyName.KEY_DOCUMENT_UPDATED] = self.updated
+        if self.version:
+            dict_data[PropertyName.KEY_VERSION] = self.version
 
         return json.dumps(dict_data)

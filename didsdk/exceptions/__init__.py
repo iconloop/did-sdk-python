@@ -2,6 +2,10 @@ class AlgorithmException(Exception):
     pass
 
 
+class AttributeException(Exception):
+    pass
+
+
 class DocumentException(Exception):
     pass
 

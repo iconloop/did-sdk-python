@@ -1,9 +1,10 @@
-import pytest
 import time
+
+import pytest
 from coincurve import PrivateKey
 
 from didsdk.core.algorithm_provider import AlgorithmType
-from didsdk.credential import Credential
+from didsdk.credential import Credential, CredentialVersion
 from didsdk.did_service import DidService
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.issuer_did import IssuerDid
@@ -105,7 +106,7 @@ def payload(dids, claim, credentials) -> Payload:
         Payload.NONCE: 'b0f184df3f4e92ea9496d9a0aad259ae',
         Payload.JTI: '885c592008a5b95a8e348e56b92a2361',
         Payload.TYPE: [Credential.DEFAULT_TYPE] + list(claim.keys()),
-        Payload.VERSION: '2.0'
+        Payload.VERSION: CredentialVersion.v2_0
     }
     return Payload(contents)
 
