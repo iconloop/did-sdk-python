@@ -32,7 +32,6 @@ class CurveType(Enum):
     CURVE_P521 = CurveTypePlate(curve_name="P-521", algorithm_type=AlgorithmType.NONE,
                                 openssl_name="secp521r1", curve_ec=NIST521p, curve_cry=ec.SECP521R1)
 
-
     @classmethod
     def from_curve_name(cls, curve_name: str) -> CurveTypePlate:
         if not curve_name:

@@ -1,8 +1,9 @@
 import hashlib
+import json
 from typing import Dict, Any, Optional, List
 
 from didsdk.core.property_name import PropertyName
-from didsdk.document.encoding import EncodeType
+from didsdk.document.encoding import Base64URLEncoder
 from didsdk.protocol.base_claim import BaseClaim
 from didsdk.protocol.hash_attribute import HashedAttribute
 from didsdk.protocol.json_ld.base_json_ld import BaseJsonLd
@@ -73,7 +74,7 @@ class JsonLdParam(BaseJsonLd):
             nonce = get_random_nonce(32)
             claim: Claim = Claim(claim_value=value.claim_value, salt=nonce, display_value=value.display_value)
             digested = self._get_digest(claim.claim_value.encode(encoding), nonce.encode(encoding))
-            self.hash_values[key] = EncodeType.BASE64URL.value.encode(digested)
+            self.hash_values[key] = Base64URLEncoder.encode(digested)
             self.claims[key] = claim
 
         self.info = info
@@ -92,10 +93,15 @@ class JsonLdParam(BaseJsonLd):
 
         return self
 
+    @classmethod
+    def from_encoded_param(cls, encoded_param: str):
+        params = json.loads(Base64URLEncoder.decode(encoded_param))
+        return cls(params)
+
     def verify_param(self, params: Dict[str, str], encoding='utf-8') -> bool:
         for key, claim in self.claims.items():
             digest = self._get_digest(value=claim.claim_value.encode(encoding), nonce=claim.salt.encode(encoding))
-            origin = EncodeType.BASE64URL.value.decode(params.get(key))
+            origin = Base64URLEncoder.decode(params.get(key))
             if digest != origin:
                 return False
         return True

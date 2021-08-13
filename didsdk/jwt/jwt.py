@@ -94,10 +94,31 @@ class Jwt:
         else:
             return VerifyResult(success=False, fail_message="JWT signature does not match.")
 
+    def verify_iat(self, valid_micro_second: int = None) -> VerifyResult:
+        if not valid_micro_second:
+            valid_micro_second = 10 * 1_000_000
+
+        now = int(time.time() * 1_000_000)
+        iat = self.payload.iat
+
+        if not iat:
+            return VerifyResult(success=False, fail_message="'iat' is None.")
+        else:
+            if (now + (10 * 1_000_000)) - iat < 0:
+                return VerifyResult(success=False, fail_message="Invalid 'iat'.")
+            elif now - iat > valid_micro_second:
+                return VerifyResult(success=False,
+                                    fail_message=f"Invalid 'iat'. It's over ({valid_micro_second/1_000_000} seconds).")
+
+        return VerifyResult(success=True)
+
     def verify_expired(self) -> VerifyResult:
         now = int(time.time() * 1_000_000)
         exp = self._payload.exp
-        if exp and exp - now <= 0:
+
+        if not exp:
+            return VerifyResult(success=False, fail_message="exp is None.")
+        elif exp - now <= 0:
             return VerifyResult(success=False, fail_message="The expiration date has expired.")
 
         return VerifyResult(success=True)

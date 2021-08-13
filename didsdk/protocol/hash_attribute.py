@@ -2,7 +2,7 @@ import hashlib
 import secrets
 from typing import Dict, List, Optional
 
-from didsdk.document.encoding import EncodeType
+from didsdk.document.encoding import EncodeType, Base64URLEncoder
 from didsdk.protocol.base_param import BaseParam
 from didsdk.protocol.claim_attribute import ClaimAttribute
 
@@ -37,7 +37,7 @@ class HashedAttribute(ClaimAttribute):
         for key, value in values.items():
             nonce = EncodeType.HEX.value.encode(secrets.token_bytes(16)).encode(encoding)
             digested = self._get_digest(value.encode(encoding), nonce)
-            self.hashed_values[key] = EncodeType.BASE64URL.value.encode(digested)
+            self.hashed_values[key] = Base64URLEncoder.encode(digested)
             plain_values[key] = value
             nonces[key] = nonce
 
@@ -57,7 +57,7 @@ class HashedAttribute(ClaimAttribute):
         for key, value in base_param.value.items():
             nonce = base_param.nonce.get(key).encode(encoding)
             digested = self._get_digest(value.encode(encoding), nonce)
-            origin = EncodeType.BASE64URL.value.decode(self.hashed_values.get(key))
+            origin = Base64URLEncoder.decode(self.hashed_values.get(key))
             if origin == digested:
                 return False
 

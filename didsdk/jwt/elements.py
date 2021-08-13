@@ -11,7 +11,7 @@ from didsdk.protocol.json_ld.json_ld_vpr import JsonLdVpr
 from didsdk.protocol.response_result import ResponseResult
 
 
-class AlgorithmType:
+class HeaderAlgorithmType:
     JWE_ALGO_ECDH_ES = "ECDH-ES"
     JWE_ALGO_A128GCM = "A128GCM"
 
@@ -26,10 +26,10 @@ class Header:
     epk: ECDHKey
 
     def is_valid_encryption_method(self):
-        return self.alg == AlgorithmType.JWE_ALGO_A128GCM
+        return self.alg == HeaderAlgorithmType.JWE_ALGO_A128GCM
 
     def is_valid_jwe_algorithm(self):
-        return self.alg == AlgorithmType.JWE_ALGO_ECDH_ES
+        return self.alg == HeaderAlgorithmType.JWE_ALGO_ECDH_ES
 
 
 class Payload:
@@ -176,6 +176,11 @@ class Payload:
 
     def asdict(self) -> dict:
         return self._contents
+
+    def get(self, key: str):
+        if key in self._contents and self.is_time_claim(key):
+            return self._to_timestamp(self._contents[key])
+        return self._contents.get(key)
 
     def get_response_result(self) -> ResponseResult:
         return ResponseResult(self.error_code, self.error_message, self.result)

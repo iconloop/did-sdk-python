@@ -14,6 +14,10 @@ class JwtException(RuntimeError):
     pass
 
 
+class JweException(RuntimeError):
+    pass
+
+
 class KeyPairException(Exception):
     pass
 
