@@ -1,19 +1,33 @@
 import json
+from dataclasses import dataclass
 from typing import Optional
-from ecdsa import ECDH
 
+from ecdsa import ECDH, VerifyingKey
+from jwcrypto import jwe, jwk
+from jwcrypto.common import base64url_encode
+
+from didsdk.core.did_key_holder import DidKeyHolder
+from didsdk.core.property_name import PropertyName
 from didsdk.credential import CredentialVersion, Credential
 from didsdk.document.encoding import Base64URLEncoder
 from didsdk.exceptions import JweException
-from didsdk.jwe.ecdhkey import ECDHKey
+from didsdk.jwe.ecdhkey import ECDHKey, CurveType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.jwe.jwe import Jwe
 from didsdk.jwt.jwt import Jwt
 from didsdk.presentation import Presentation
+from didsdk.protocol.base_param import BaseParam
 from didsdk.protocol.claim_request import ClaimRequest
 from didsdk.protocol.claim_response import ClaimResponse
 from didsdk.protocol.json_ld.json_ld_param import JsonLdParam
 from didsdk.protocol.protocol_type import ProtocolType
+
+
+@dataclass
+class SignResult:
+    success: bool = False
+    result: Optional[dict] = None
+    fail_message: str = None
 
 
 class ProtocolMessage:
@@ -52,6 +66,147 @@ class ProtocolMessage:
         self._jwt: Optional[Jwt] = None
         self._is_protected: bool = is_protected if is_protected else False
         self._is_decrypted: bool = is_decrypted if is_decrypted else False
+
+    @property
+    def base_param(self) -> str:
+        return self._param
+
+    @property
+    def claim_request(self) -> ClaimRequest:
+        if self._is_decrypted:
+            if ProtocolType.is_request_member(self._type):
+                if not self._claim_request:
+                    self._claim_request = ClaimRequest.from_jwt(self._jwt)
+                return self._claim_request
+            else:
+                raise JweException('This is not request message.')
+        else:
+            raise JweException('It is not yet decrypted.')
+
+    @property
+    def claim_response(self) -> ClaimResponse:
+        if self._is_decrypted:
+            if ProtocolType.is_response_member(self._type):
+                if not self._claim_response:
+                    self._claim_response = ClaimResponse.from_jwt(self._jwt)
+                return self._claim_response
+            else:
+                raise JweException('This is not response message.')
+        else:
+            raise JweException('It is not yet decrypted.')
+
+    @property
+    def credential(self) -> Credential:
+        if self._is_decrypted:
+            if ProtocolType.is_credential_member(self._type):
+                if not self._credential:
+                    self._claim_response = Credential.from_jwt(self._jwt)
+                return self._credential
+            else:
+                raise JweException('This is not credential message.')
+        else:
+            raise JweException('It is not yet decrypted.')
+
+    @property
+    def is_protected(self) -> bool:
+        return self._is_protected
+
+    @property
+    def jwe(self) -> Jwe:
+        return self._jwe
+
+    @property
+    def jwe_kid(self) -> str:
+        if not self._jwe:
+            raise JweException('JWE object is None.')
+        return self._jwe.header.kid
+
+    @property
+    def jwt(self) -> Jwt:
+        return self._jwt
+
+    @property
+    def jwt_token(self) -> Optional[str]:
+        return None if self._is_protected else self._plain_message
+
+    @property
+    def ld_param(self) -> JsonLdParam:
+        return self._ld_param
+
+    @property
+    def message(self) -> str:
+        return self._protected_message if self._is_protected else self._plain_message
+
+    @property
+    def param_string(self) -> str:
+        return self._param_string
+
+    @property
+    def presentation(self) -> Presentation:
+        if self._is_decrypted:
+            if ProtocolType.is_presentation_member(self._type):
+                if not self._presentation:
+                    self._presentation = Presentation.from_jwt(self._jwt)
+                return self._presentation
+            else:
+                raise JweException('This is not presentation message.')
+        else:
+            raise JweException('It is not yet decrypted.')
+
+    @property
+    def type(self) -> str:
+        return self._type
+
+    def _decrypt_with_cek(self, cek: bytes, encoding='utf-8'):
+        cek_jwk = jwk.JWK().import_key(k=base64url_encode(cek), kty='oct')
+        jwe_object = jwe.JWE()
+
+        try:
+            jwe_object.deserialize(raw_jwe=self._jwe._encoded_token, key=cek_jwk)
+        except Exception as e:
+            raise JweException(f'JWE decrypt fail: {e}')
+
+        protocol_message = ProtocolMessage(**json.loads(jwe_object.payload))
+        self._plain_message = protocol_message.message
+        self._param_string = protocol_message.param_string
+        self._is_decrypted = True
+        self._is_protected = False
+        self._jwt = protocol_message.jwt
+
+        if ProtocolType.is_request_member(self._type):
+            if self._type == ProtocolType.REQUEST_PRESENTATION.value:
+                self._claim_request = ClaimRequest.from_presentation(self._jwt)
+            else:
+                self._claim_request = ClaimRequest.from_jwt(self._jwt)
+        elif ProtocolType.is_credential_member(self._type):
+            self._credential = Credential.from_jwt(self._jwt)
+            if self._param_string:
+                if self._credential.version == CredentialVersion.v1_1:
+                    param_string = Base64URLEncoder.decode(self._param_string).decode(encoding)
+                    self._param = BaseParam(**json.loads(param_string))
+                elif self._credential.version == CredentialVersion.v2_0:
+                    self._ld_param = JsonLdParam.from_encoded_param(self._param_string)
+        elif ProtocolType.is_presentation_member(self._type):
+            self._presentation = Presentation.from_encoded_jwt(self._plain_message)
+        elif ProtocolType.is_response_member(self._type):
+            self._claim_response = ClaimResponse.from_jwt(self._jwt)
+
+    def _encrypt(self, decoded_json: str, sender_key: ECDHKey, receiver_key: VerifyingKey) -> Jwe:
+        pass
+
+    def decrypt_jwe(self, my_key: ECDHKey):
+        if self._is_decrypted:
+            raise JweException('Already has decrypted JWE token.')
+        if not my_key:
+            raise JweException('ECDH key cannot be None.')
+
+        ecdh = ECDH(curve=CurveType.from_curve_name(my_key.crv).curve_ec,
+                    private_key=my_key.get_ec_private_key(),
+                    public_key=my_key.get_ec_public_key())
+        ecdh.load_received_public_key(self._request_public_key.epk.get_ec_public_key())
+        cek: bytes = ecdh.generate_sharedsecret_bytes()
+
+        self._decrypt_with_cek(cek)
 
     @classmethod
     def from_(cls, type_: str, message: str = None, param: str = None, is_protected: bool = None) -> 'ProtocolMessage':
@@ -180,3 +335,54 @@ class ProtocolMessage:
                         issued=issued,
                         expiration=expiration,
                         request_public_key=request_public_key)
+
+    def sign_encrypt(self, did_key_holder: DidKeyHolder, ecdh_key: Optional[ECDHKey] = None) -> SignResult:
+        if not did_key_holder and self._type != ProtocolType.REQUEST_PRESENTATION.value:
+            return SignResult(fail_message='DidKeyHolder is required for sign.')
+
+        if ProtocolType.is_request_member(self._type):
+            self._plain_message = (did_key_holder.sign(self._claim_request.jwt)
+                                   if did_key_holder else self._claim_request.compact)
+        elif ProtocolType.is_credential_member(self._type):
+            self._plain_message = did_key_holder.sign(self._credential.as_jwt(self._issued, self._expiration))
+            if self._credential.version == CredentialVersion.v1_1:
+                self._param = self._credential.base_claim.attribute.base_param
+                self._param_string = Base64URLEncoder.encode(json.loads(self._param))
+            elif self._credential.version == CredentialVersion.v2_0:
+                self._param = self._credential.param
+                self._param_string = self._ld_param.as_base64_url_string()
+        elif ProtocolType.is_presentation_member(self._type):
+            self._plain_message = did_key_holder.sign(self._presentation.as_jwt(self._issued, self._expiration))
+        elif ProtocolType.is_response_member(self._type):
+            self._plain_message = did_key_holder.sign(self._claim_response.jwt)
+        else:
+            return SignResult(fail_message=f'Type({self._type}) is cannot sign.')
+
+        self._jwt = Jwt.decode(self._plain_message)
+        if self._request_public_key:
+            if not ecdh_key:
+                return SignResult(fail_message="Issuer's ECDH PrivateKey is required for createJwe.")
+
+            decoded_message = dict()
+            decoded_message[PropertyName.KEY_PROTOCOL_MESSAGE] = self._plain_message
+            if self._param_string:
+                decoded_message[PropertyName.KEY_PROTOCOL_PARAM] = self._param_string
+
+            sender_key = ecdh_key
+            receiver_key = self._request_public_key.epk.get_ec_public_key()
+
+            encrypt_jwe: Jwe = self._encrypt(json.dumps(decoded_message), sender_key, receiver_key)
+            result = {
+                PropertyName.KEY_PROTOCOL_TYPE: self._type,
+                PropertyName.KEY_PROTOCOL_PROTECTED: json.dumps(encrypt_jwe.as_json())
+            }
+        else:
+            result = {
+                PropertyName.KEY_PROTOCOL_TYPE: self._type,
+                PropertyName.KEY_PROTOCOL_PROTECTED: self._plain_message
+            }
+
+            if self._param_string:
+                result[PropertyName.KEY_PROTOCOL_PARAM] = self._param_string
+
+        return SignResult(success=True, result=result)

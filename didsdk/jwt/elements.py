@@ -22,8 +22,8 @@ class Header:
     kid: str
 
     # 1.1 jwe
-    enc: str
-    epk: ECDHKey
+    enc: str = None
+    epk: ECDHKey = None
 
     def is_valid_encryption_method(self):
         return self.alg == HeaderAlgorithmType.JWE_ALGO_A128GCM

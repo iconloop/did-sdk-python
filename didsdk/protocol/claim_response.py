@@ -2,8 +2,11 @@ from typing import List
 
 from coincurve import PublicKey
 
+from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
+from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.jwt import Jwt, VerifyResult
+from didsdk.protocol.claim_request import Type
 from didsdk.protocol.response_result import ResponseResult
 
 DID_AUTH = "DID_AUTH"
@@ -78,3 +81,34 @@ class ClaimResponse:
 
     def verify(self, public_key: PublicKey) -> VerifyResult:
         return self.jwt.verify(public_key)
+
+    @classmethod
+    def from_jwt(cls, jwt):
+        header: Header = jwt.header
+        payload: Payload = jwt.payload
+
+        if not payload.version:
+            raise ValueError('version cannot be None.')
+        if not payload.type:
+            raise ValueError('claimTypes cannot be None.')
+
+        response_id: str = ''
+        if payload.aud:
+            response_id = payload.aud
+        elif payload.sub:
+            response_id = payload.sub
+
+        type_ = Type(payload.type[0])
+        if not response_id and type_ != Type.PRESENTATION and Type.INIT != type_:
+            raise ValueError('responseId cannot be None.')
+
+        algorithm: AlgorithmType = AlgorithmType.from_name(header.alg)
+        kid = header.kid
+        if not algorithm:
+            raise ValueError('algorithm cannot be None.')
+        if algorithm != AlgorithmType.NONE and not kid:
+            raise ValueError('kid cannot be None.')
+        elif type_ != Type.PRESENTATION:
+            raise ValueError("NONE type algorithm is only supported when type is presentation")
+
+        return cls(jwt)

@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 
 from didsdk import logger
 from didsdk.core.property_name import PropertyName
+from didsdk.document.encoding import Base64URLEncoder
 
 
 class BaseJsonLd:
@@ -35,3 +36,6 @@ class BaseJsonLd:
         self.id = data.get(PropertyName.JL_ID) or data.get(PropertyName.JL_AT_ID)
         self.type = data.get(PropertyName.JL_TYPE) or data.get(PropertyName.JL_AT_TYPE)
         self.node: Optional[Dict[str, Any]] = data
+
+    def as_base64_url_string(self, encoding='utf-8') -> str:
+        return Base64URLEncoder.encode(json.dumps(self.node).encode(encoding))
