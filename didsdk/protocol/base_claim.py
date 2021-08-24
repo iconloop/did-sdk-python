@@ -38,10 +38,10 @@ class BaseClaim:
     def from_json(cls, json_data: Dict):
         attribute_type: str = json_data.get(cls.ATTRIBUTE_TYPE)
         attribute: Optional['ClaimAttribute'] = None
-        address: Dict = json_data.get(cls.ATTRIBUTE)
+        attr_object: Dict = json_data.get(cls.ATTRIBUTE)
 
         if attribute_type == cls.HASH_TYPE:
-            attribute = HashedAttribute.from_json(address)
+            attribute = HashedAttribute.from_json(attr_object)
         else:
             raise AttributeException(f'Unsupported Attribute Type({attribute_type})')
 

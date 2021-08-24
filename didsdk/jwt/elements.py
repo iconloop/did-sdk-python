@@ -1,6 +1,8 @@
+import copy
 from dataclasses import dataclass
 from typing import List, Optional
 
+from didsdk import credential
 from didsdk.exceptions import JwtException
 from didsdk.jwe.ecdhkey import ECDHKey
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
@@ -66,7 +68,7 @@ class Payload:
 
     @property
     def aud(self) -> str:
-        return self._contents[self.AUDIENCE]
+        return self._contents.get(self.AUDIENCE)
 
     @property
     def contents(self) -> dict:
@@ -74,19 +76,19 @@ class Payload:
 
     @property
     def claim(self) -> dict:
-        return self._contents[self.CLAIM]
+        return self._contents.get(self.CLAIM)
 
     @property
     def credential(self) -> List[str]:
-        return self._contents[self.CREDENTIAL]
+        return self._contents.get(self.CREDENTIAL)
 
     @property
     def error_code(self) -> str:
-        return self._contents[self.ERROR_CODE]
+        return self._contents.get(self.ERROR_CODE)
 
     @property
     def error_message(self) -> str:
-        return self._contents[self.ERROR_MESSAGE]
+        return self._contents.get(self.ERROR_MESSAGE)
 
     @property
     def exp(self) -> int:
@@ -102,7 +104,7 @@ class Payload:
 
     @property
     def jti(self) -> str:
-        return self._contents[self.JTI]
+        return self._contents.get(self.JTI)
 
     @property
     def nonce(self) -> str:
@@ -111,16 +113,16 @@ class Payload:
     # for v1.1
     @property
     def public_key(self) -> Optional[EphemeralPublicKey]:
-        key = self._contents[self.PUBLIC_KEY]
+        key = self._contents.get(self.PUBLIC_KEY)
         return EphemeralPublicKey(**key) if key else None
 
     @property
     def result(self) -> bool:
-        return self._contents[self.RESULT]
+        return self._contents.get(self.RESULT)
 
     @property
     def signature(self) -> str:
-        return self._contents[self.SIGNATURE]
+        return self._contents.get(self.SIGNATURE)
 
     @property
     def sub(self) -> str:
@@ -136,12 +138,12 @@ class Payload:
 
     @property
     def vc_id(self) -> str:
-        return self._contents[self.VC_ID]
+        return self._contents.get(self.VC_ID)
 
     # for v2.0
     @property
     def vc(self) -> Optional[JsonLdVc]:
-        vc = self._contents[self.VC]
+        vc = self._contents.get(self.VC)
         return JsonLdVc(vc) if vc else None
 
     @property
@@ -151,12 +153,12 @@ class Payload:
 
     @property
     def vp(self) -> Optional[JsonLdVp]:
-        vp = self._contents[self.VP]
+        vp = self._contents.get(self.VP)
         return JsonLdVp(vp) if vp else None
 
     @property
     def vpr(self) -> Optional[JsonLdVp]:
-        vpr = self._contents[self.VPR]
+        vpr = self._contents.get(self.VPR)
         return JsonLdVpr.from_json(vpr) if vpr else None
 
     def _to_timestamp(self, value):
@@ -175,7 +177,8 @@ class Payload:
         self._time_claim_keys.add(keys)
 
     def asdict(self) -> dict:
-        return self._contents
+        dict_contents = copy.deepcopy(self._contents)
+        return dict_contents
 
     def get(self, key: str):
         if key in self._contents and self.is_time_claim(key):

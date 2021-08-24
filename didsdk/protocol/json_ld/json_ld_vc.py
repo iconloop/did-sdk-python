@@ -1,3 +1,4 @@
+import copy
 from typing import Dict, Any, List
 
 from didsdk.core.property_name import PropertyName
@@ -10,9 +11,12 @@ class JsonLdVc(BaseJsonLd):
     def __init__(self, vc: Dict[str, Any] = None):
         super().__init__(vc)
 
-        self.credential_subject: Dict[str, str] = self.node.get(PropertyName.JL_CREDENTIAL_SUBJECT)
-        self._refresh: Dict[str, str] = self.node.get(PropertyName.JL_REFRESH_SERVICE)
-        self.revocation: RevocationService = self.node.get(PropertyName.JL_REVOCATION_SERVICE)
+        self.credential_subject: Dict[str, str] = self.node.get(PropertyName.JL_CREDENTIAL_SUBJECT) if vc else {}
+        self._refresh: Dict[str, str] = self.node.get(PropertyName.JL_REFRESH_SERVICE) if vc else {}
+        self.revocation: RevocationService = self.node.get(PropertyName.JL_REVOCATION_SERVICE) if vc else None
+
+    def __eq__(self, other):
+        return self.node == other.node
 
     @property
     def crypto_algorithm(self) -> str:
@@ -30,13 +34,23 @@ class JsonLdVc(BaseJsonLd):
     def refresh_type(self) -> str:
         return self._refresh.get('type')
 
-    def from_(self, param: JsonLdParam,
+    def as_json(self):
+        if PropertyName.JL_REVOCATION_SERVICE in self.node:
+            json_node = copy.deepcopy(self.node)
+            json_node[PropertyName.JL_REVOCATION_SERVICE] = self.node[PropertyName.JL_REVOCATION_SERVICE].as_dict()
+            return json_node
+        return super().as_json()
+
+    @classmethod
+    def from_(cls, param: JsonLdParam,
               credential_subject_id: str = None,
               id_: str = None,
               refresh_id: str = None,
               refresh_type: str = None,
               revocation_service: RevocationService = None,
               terms_of_use: List[Dict[str, str]] = None) -> 'JsonLdVc':
+        vc_object = cls()
+
         if not param:
             raise ValueError('param cannot be empty.')
 
@@ -66,6 +80,6 @@ class JsonLdVc(BaseJsonLd):
         if terms_of_use:
             vc[PropertyName.JL_TERMS_OF_USE] = terms_of_use
 
-        self.set_node(vc)
+        vc_object.set_node(vc)
 
-        return self
+        return vc_object

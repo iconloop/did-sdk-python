@@ -13,7 +13,6 @@ from didsdk.document.encoding import Base64URLEncoder
 from didsdk.exceptions import JweException
 from didsdk.jwe.ecdhkey import ECDHKey, CurveType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
-from didsdk.jwe.jwe import Jwe
 from didsdk.jwt.jwt import Jwt
 from didsdk.presentation import Presentation
 from didsdk.protocol.base_param import BaseParam
@@ -62,7 +61,7 @@ class ProtocolMessage:
         self._issued: int = issued
         self._expiration: int = expiration
         self._request_public_key: EphemeralPublicKey = request_public_key
-        self._jwe: Optional[Jwe] = None
+        self._jwe: Optional[jwe.JWE] = None
         self._jwt: Optional[Jwt] = None
         self._is_protected: bool = is_protected if is_protected else False
         self._is_decrypted: bool = is_decrypted if is_decrypted else False
@@ -112,14 +111,14 @@ class ProtocolMessage:
         return self._is_protected
 
     @property
-    def jwe(self) -> Jwe:
+    def jwe(self) -> jwe.JWE:
         return self._jwe
 
     @property
     def jwe_kid(self) -> str:
         if not self._jwe:
             raise JweException('JWE object is None.')
-        return self._jwe.header.kid
+        return self._jwe.jose_header.get['kid']
 
     @property
     def jwt(self) -> Jwt:
@@ -159,14 +158,13 @@ class ProtocolMessage:
 
     def _decrypt_with_cek(self, cek: bytes, encoding='utf-8'):
         cek_jwk = jwk.JWK().import_key(k=base64url_encode(cek), kty='oct')
-        jwe_object = jwe.JWE()
 
         try:
-            jwe_object.deserialize(raw_jwe=self._jwe._encoded_token, key=cek_jwk)
+            self._jwe.decrypt(key=cek_jwk)
         except Exception as e:
             raise JweException(f'JWE decrypt fail: {e}')
 
-        protocol_message = ProtocolMessage(**json.loads(jwe_object.payload))
+        protocol_message = ProtocolMessage(**json.loads(self._jwe.payload))
         self._plain_message = protocol_message.message
         self._param_string = protocol_message.param_string
         self._is_decrypted = True
@@ -191,7 +189,8 @@ class ProtocolMessage:
         elif ProtocolType.is_response_member(self._type):
             self._claim_response = ClaimResponse.from_jwt(self._jwt)
 
-    def _encrypt(self, decoded_json: str, sender_key: ECDHKey, receiver_key: VerifyingKey) -> Jwe:
+    # TODO: delete if it's unnecessary.
+    def _encrypt(self, decoded_json: str, sender_key: ECDHKey, receiver_key: VerifyingKey) -> jwe.JWE:
         pass
 
     def decrypt_jwe(self, my_key: ECDHKey):
@@ -214,7 +213,7 @@ class ProtocolMessage:
 
         if is_protected:
             protocol_message._protected_message = message
-            protocol_message._jwe = Jwe.decode(message)
+            protocol_message._jwe = jwe.JWE.deserialize(raw_jwe=message)
         else:
             protocol_message._plain_message = message
             protocol_message._jwt = Jwt.decode(message)
@@ -368,13 +367,12 @@ class ProtocolMessage:
             if self._param_string:
                 decoded_message[PropertyName.KEY_PROTOCOL_PARAM] = self._param_string
 
-            sender_key = ecdh_key
             receiver_key = self._request_public_key.epk.get_ec_public_key()
 
-            encrypt_jwe: Jwe = self._encrypt(json.dumps(decoded_message), sender_key, receiver_key)
+            encrypt_jwe: jwe.JWE = jwe.JWE(plaintext=json.dumps(decoded_message), recipient=receiver_key)
             result = {
                 PropertyName.KEY_PROTOCOL_TYPE: self._type,
-                PropertyName.KEY_PROTOCOL_PROTECTED: json.dumps(encrypt_jwe.as_json())
+                PropertyName.KEY_PROTOCOL_PROTECTED: encrypt_jwe.serialize(compact=True)
             }
         else:
             result = {

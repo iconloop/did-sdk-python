@@ -5,7 +5,10 @@ from typing import Any, List, Dict
 @dataclass
 class DisplayLayout:
     layout: Any = None
-    is_string: bool = None
+
+    @property
+    def is_string(self):
+        return True if isinstance(self.layout, str) else False
 
     def get_display(self) -> List[str]:
         return self.layout if self.is_string else None

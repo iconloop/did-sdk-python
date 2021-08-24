@@ -22,7 +22,7 @@ class JsonLdParam(BaseJsonLd):
         self.claims: Optional[Dict[str, Claim]] = None
         self.display_layout: Optional[DisplayLayout] = None
         self.info: Optional[Dict[str, InfoParam]] = None
-        self._digest = HashedAttribute.DEFAULT_ALG
+        self._digest = hashlib.new(HashedAttribute.DEFAULT_ALG)
 
         if param:
             self.credential_params = self.get_term(PropertyName.JL_CREDENTIAL_PARAM)
@@ -48,9 +48,10 @@ class JsonLdParam(BaseJsonLd):
 
         return {key: Claim(**claims.get(key)) for key in claims}
 
-    def from_(self, claim: Optional[Dict[str, Claim]],
+    @classmethod
+    def from_(cls, claim: Optional[Dict[str, Claim]],
+              display_layout: Optional[DisplayLayout],
               context=None,
-              display_layout: Optional[DisplayLayout] = None,
               hash_algorithm: str = None,
               info: Optional[Dict[str, InfoParam]] = None,
               proof_type: Optional[str] = None,
@@ -58,6 +59,7 @@ class JsonLdParam(BaseJsonLd):
         if not claim:
             raise ValueError('Claim cannot be empty.')
 
+        param_object = cls()
         types: List[str] = type_ if type_ else type_[PropertyName.JL_AT_TYPE]
         if PropertyName.JL_TYPE_CREDENTIAL_PARAM not in types:
             types.insert(0, PropertyName.JL_TYPE_CREDENTIAL_PARAM)
@@ -67,31 +69,32 @@ class JsonLdParam(BaseJsonLd):
         }
 
         hash_algorithm = hash_algorithm or HashedAttribute.DEFAULT_ALG
-        self._digest = hashlib.new(hash_algorithm)
-        self.hash_values = {}
-        self.claims = {}
+        param_object._digest = hashlib.new(hash_algorithm)
+        param_object.hash_values = {}
+        param_object.claims = {}
         for key, value in claim.items():
             nonce = get_random_nonce(32)
             claim: Claim = Claim(claim_value=value.claim_value, salt=nonce, display_value=value.display_value)
-            digested = self._get_digest(claim.claim_value.encode(encoding), nonce.encode(encoding))
-            self.hash_values[key] = Base64URLEncoder.encode(digested)
-            self.claims[key] = claim
+            digested = param_object._get_digest(claim.claim_value_as_bytes(encoding), nonce.encode(encoding))
+            param_object.hash_values[key] = Base64URLEncoder.encode(digested)
+            param_object.claims[key] = claim
 
-        self.info = info
-        self.display_layout = display_layout
-        self.credential_params = {
-            PropertyName.JL_CLAIM: self.claims,
-            PropertyName.JL_DISPLAY_LAYOUT: (self.display_layout.get_display() if self.display_layout.is_string
-                                             else self.display_layout.get_object_display()),
+        param_object.info = info
+        param_object.display_layout = display_layout
+        param_object.credential_params = {
+            PropertyName.JL_CLAIM: param_object.claims,
+            PropertyName.JL_DISPLAY_LAYOUT: (param_object.display_layout.get_display()
+                                             if param_object.display_layout.is_string
+                                             else param_object.display_layout.get_object_display()),
             PropertyName.JL_HASH_ALGORITHM: hash_algorithm,
-            PropertyName.JL_INFO: self.info,
+            PropertyName.JL_INFO: param_object.info,
             PropertyName.JL_PROOF_TYPE: proof_type or BaseClaim.HASH_TYPE
         }
 
-        param[PropertyName.JL_CREDENTIAL_PARAM] = self.credential_params
-        self.set_node(param)
+        param[PropertyName.JL_CREDENTIAL_PARAM] = param_object.credential_params
+        param_object.set_node(param)
 
-        return self
+        return param_object
 
     @classmethod
     def from_encoded_param(cls, encoded_param: str):

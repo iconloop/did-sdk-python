@@ -5,6 +5,7 @@ from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.issuer_did import IssuerDid
 from didsdk.jwt.jwt import Jwt
 from didsdk.protocol.base_claim import BaseClaim
+from didsdk.protocol.hash_attribute import HashedAttribute
 from didsdk.protocol.json_ld.json_ld_param import JsonLdParam
 from didsdk.protocol.json_ld.json_ld_vc import JsonLdVc
 from didsdk.protocol.json_ld.revocation_service import RevocationService
@@ -36,11 +37,11 @@ class Credential(ConvertJwt):
     DEFAULT_TYPE: str = 'CREDENTIAL'
 
     def __init__(self, issuer_did: IssuerDid,
+                 version: str,
                  id_: str = None,
                  target_did: str = None,
-                 claim=None,
+                 claim: dict = None,
                  jti: str = None,
-                 version: str = None,
                  nonce: str = None,
                  vc_id: str = None,
                  base_claim: BaseClaim = None,
@@ -53,6 +54,9 @@ class Credential(ConvertJwt):
                  jwt: Jwt = None):
 
         self._issuer_did: IssuerDid = issuer_did
+        self.claim: dict = claim if claim else {}
+        self._base_claim: BaseClaim = base_claim if base_claim else None
+        self._vc: JsonLdVc = vc if vc else None
         self.vc_id: str = vc_id
         self.nonce: str = nonce
         self.jti: str = jti
@@ -66,22 +70,21 @@ class Credential(ConvertJwt):
         self.target_did: str = target_did
 
         if claim:
-            self.claim = claim
             if self.version is CredentialVersion.v1_1:
-                self._base_claim = BaseClaim.from_json(claim)
+                self._base_claim = BaseClaim(attribute_type=BaseClaim.HASH_TYPE,
+                                             algorithm=HashedAttribute.DEFAULT_ALG,
+                                             values=claim)
         elif base_claim:
             self._base_claim = base_claim
         elif param:
             self._json_ld_param = param
-            self._vc = JsonLdVc().from_(id_=id_,
-                                        credential_subject_id=self.target_did,
-                                        param=param,
-                                        refresh_id=refresh_id,
-                                        refresh_type=refresh_type,
-                                        revocation_service=revocation_service,
-                                        terms_of_use=terms_of_use)
-        elif vc:
-            self._vc = vc
+            self._vc = JsonLdVc.from_(id_=id_,
+                                      credential_subject_id=self.target_did,
+                                      param=param,
+                                      refresh_id=refresh_id,
+                                      refresh_type=refresh_type,
+                                      revocation_service=revocation_service,
+                                      terms_of_use=terms_of_use)
 
         self.jwt: Jwt = jwt
 
@@ -164,7 +167,7 @@ class Credential(ConvertJwt):
                 Payload.NONCE: self.nonce,
                 Payload.JTI: self.jti,
                 Payload.TYPE: self.get_types(),
-                Payload.VC: self._vc,
+                Payload.VC: self._vc.as_json(),
                 Payload.VC_ID: self.vc_id,
                 Payload.VERSION: self.version
             }
@@ -173,38 +176,6 @@ class Credential(ConvertJwt):
             raise ValueError('Unsupported version.')
 
         return Jwt(header, payload)
-
-    def from_(self, version: str,
-              claim=None,
-              base_claim: BaseClaim = None,
-              param: JsonLdParam = None,
-              id_: str = None,
-              refresh_id: str = None,
-              refresh_type: str = None,
-              revocation_service: RevocationService = None,
-              terms_of_use: List[Dict[str, str]] = None,
-              vc: JsonLdVc = None,
-              jwt: Jwt = None) -> 'Credential':
-        if claim:
-            self.claim = claim
-            if version == CredentialVersion.v1_1:
-                self._base_claim = BaseClaim.from_json(self.claim)
-        elif base_claim:
-            self._base_claim = base_claim
-        elif param:
-            self._json_ld_param = param
-            self._vc: JsonLdVc = JsonLdVc().from_(id_=id_,
-                                                  credential_subject_id=self.target_did,
-                                                  param=param,
-                                                  refresh_id=refresh_id,
-                                                  refresh_type=refresh_type,
-                                                  revocation_service=revocation_service,
-                                                  terms_of_use=terms_of_use)
-        elif vc:
-            self._vc = vc
-
-        self.jwt = jwt
-        return self
 
     @staticmethod
     def from_encoded_jwt(encoded_jwt: str) -> 'Credential':
@@ -231,6 +202,7 @@ class Credential(ConvertJwt):
                           vc=payload.vc,
                           nonce=payload.nonce,
                           jwt=jwt,
+                          jti=payload.jti,
                           version=payload.version)
 
     def get_types(self) -> list:

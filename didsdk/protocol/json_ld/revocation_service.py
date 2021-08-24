@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Dict
 
 import validators
 
@@ -38,3 +38,10 @@ class RevocationService:
             return False
 
         return self.id_ == other.id_ and self.type_ == other.type_ and self.short_description == other.short_description
+
+    def as_dict(self) -> Dict[str, str]:
+        return {
+            'id': self.id_,
+            'type': self.type_,
+            'shortDescription': self.short_description
+        }

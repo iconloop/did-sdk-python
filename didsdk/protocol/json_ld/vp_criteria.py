@@ -1,7 +1,6 @@
 from typing import Dict, Any, Optional
 
 from didsdk.core.property_name import PropertyName
-from didsdk.credential import Credential
 from didsdk.protocol.json_ld.json_ld_param import JsonLdParam
 
 
@@ -30,5 +29,6 @@ class VpCriteria:
                    condition_id=json_data.get(PropertyName.JL_CONDITION_ID))
 
     def verify_param(self) -> bool:
+        from didsdk.credential import Credential
         credential: Credential = Credential.from_encoded_jwt(self.get_vc())
         return self.param.verify_param(credential.vc.credential_subject)
