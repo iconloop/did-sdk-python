@@ -126,6 +126,7 @@ class Presentation(ConvertJwt):
         presentation.nonce = nonce
         presentation.version = version
         presentation._jwt = jwt
+        presentation.jti = jwt.payload.jti
 
         return presentation
 

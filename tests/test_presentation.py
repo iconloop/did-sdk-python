@@ -2,7 +2,7 @@ import time
 
 import pytest
 
-from didsdk.credential import Credential
+from didsdk.credential import Credential, CredentialVersion
 from didsdk.presentation import Presentation
 
 
@@ -12,15 +12,20 @@ class TestPresentation:
         return Presentation(issuer_did=issuer_did)
 
     @pytest.fixture
-    def credential(self, issuer_did):
-        claim = {
-            'weather': 'summer',
-            'color': 'gray'
-        }
-        return Credential(issuer_did, claim=claim)
+    def credential_v1(self, issuer_did, dids, vc_claim) -> Credential:
+        return Credential(issuer_did=issuer_did,
+                          target_did=dids['target_did'],
+                          version=CredentialVersion.v1_1,
+                          claim=vc_claim)
 
-    def test_add_credential(self, presentation, credential, private_key):
+    @pytest.fixture
+    def credential_v2(self, credentials) -> Credential:
+        return credentials[0]
+
+    @pytest.mark.parametrize('credential', ['credential_v1', 'credential_v2'])
+    def test_add_credential(self, presentation, credential, private_key, request):
         # GIVEN a presentation object and a credential object
+        credential = request.getfixturevalue(credential)
         # WHEN try to add a credential
         issued = int(time.time() * 1_000_000)
         expiration = issued * 2
@@ -41,6 +46,7 @@ class TestPresentation:
 
         # THEN success converting
         assert presentation.did == jwt_object.payload.iss
+        assert presentation.algorithm == jwt_object.header.alg
         assert presentation.key_id == jwt_object.header.kid.split('#')[1]
         assert issued == jwt_object.payload.iat
         assert expiration == jwt_object.payload.exp
@@ -86,3 +92,7 @@ class TestPresentation:
         assert presentation.nonce == payload.nonce
         assert presentation.jti == payload.jti
         assert presentation.version == payload.version
+
+    # TODO
+    def test_get_plain_params(self):
+        pass

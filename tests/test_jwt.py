@@ -2,6 +2,7 @@ import time
 
 import pytest
 
+from didsdk.document.encoding import Base64URLEncoder
 from didsdk.jwt.elements import Payload
 from didsdk.jwt.jwt import Jwt, VerifyResult
 
@@ -18,7 +19,7 @@ class TestJwt:
 
         # THEN get same data by decoding jwt with using above signature
         assert compact == jwt_from_encoded_token.compact()
-        assert jwt_from_encoded_token.signature in Jwt.add_padding(encoded_token.split('.')[2])
+        assert jwt_from_encoded_token.signature in Base64URLEncoder.add_padding(encoded_token.split('.')[2])
 
     def test_verify(self, jwt_object, private_key):
         # GIVEN a Jwt object contains an encoded token
