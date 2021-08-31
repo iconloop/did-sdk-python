@@ -15,7 +15,7 @@ class VprCondition(BaseJsonLd):
     def __init__(self, condition: Dict[str, Any]):
         super().__init__(condition)
 
-        if PropertyName.JL_OPERATOR in condition and PropertyName.JL_CONDITION:
+        if (PropertyName.JL_OPERATOR in condition) and (PropertyName.JL_CONDITION in condition):
             elements: List[str] = condition.get(PropertyName.JL_CONDITION)
             if not isinstance(elements, list):
                 raise ValueError('"condition" must be a type of list.')
@@ -38,10 +38,12 @@ class VprCondition(BaseJsonLd):
         return None if self.is_compound() else self.node.get(PropertyName.JL_PROPERTY)
 
     @classmethod
-    def from_simple_condition(cls, type_, context, condition_id: str,
-                              issuer, credential_type: str, property_) -> 'VprCondition':
+    def from_simple_condition(cls, context, condition_id: str, issuer,
+                              credential_type: str, property_, type_=None) -> 'VprCondition':
         if not(context and credential_type and property_):
             raise ValueError('[context, credential_type, property_] values cannot be None.')
+
+        type_ = ['SimpleCondition'] + type_ if type_ else ['SimpleCondition']
 
         condition = {
             PropertyName.JL_AT_TYPE: type_,

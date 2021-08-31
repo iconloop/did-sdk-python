@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, List
 
@@ -37,7 +36,7 @@ class VPR:
             PropertyName.JL_ID: self.id,
             PropertyName.JL_AT_TYPE: self.type,
             PropertyName.JL_PRESENTATION_URL: self.presentation_url,
-            PropertyName.JL_PRESENTATION_REQUEST: self.pr
+            PropertyName.JL_PRESENTATION_REQUEST: self.pr.as_dict()
         }
 
 
@@ -49,9 +48,33 @@ class JsonLdVpr(BaseJsonLd):
         self.condition: VprCondition = condition
 
     @classmethod
+    def from_(cls, context: list,
+              id_: str,
+              url: str,
+              purpose: str,
+              verifier: str,
+              condition: VprCondition,
+              purpose_label: str = None) -> 'JsonLdVpr':
+        if not (context and id_ and url and purpose and verifier and condition):
+            raise ValueError('Any value of [context, id, url, purpose, verifier, condition] cannot be None.')
+
+        pr: PR = PR(purpose=purpose, purpose_label=purpose_label, verifier=verifier, condition=condition.node)
+        vpr = {
+            PropertyName.JL_CONTEXT: context,
+            PropertyName.JL_ID: id_,
+            PropertyName.JL_AT_TYPE: ['PresentationRequest'],
+            PropertyName.JL_PRESENTATION_URL: url,
+            PropertyName.JL_PRESENTATION_REQUEST: pr.as_dict()
+        }
+        json_ld_vpr: JsonLdVpr = cls(pr, condition)
+        json_ld_vpr.set_node(vpr)
+
+        return json_ld_vpr
+
+    @classmethod
     def from_json(cls, vpr: Dict[str, Any]) -> 'JsonLdVpr':
         pr: Dict[str, Any] = vpr.get(PropertyName.JL_PRESENTATION_REQUEST)
-        condition: VprCondition = VprCondition(json.loads(pr.get(PropertyName.JL_CONDITION)))
+        condition: VprCondition = VprCondition(pr.get(PropertyName.JL_CONDITION))
         pr_object: PR = PR(purpose=pr.get(PropertyName.JL_PURPOSE),
                            purpose_label=pr.get(PropertyName.JL_PURPOSE_LABEL),
                            verifier=pr.get(PropertyName.JL_VERIFIER),
