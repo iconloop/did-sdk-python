@@ -89,34 +89,9 @@ class TestJsonLdVpr:
         json_ld_vpr: JsonLdVpr = JsonLdVpr.from_json(vpr.as_dict())
 
         # THEN success to get above properties from JsonLdVpr
-        assert json_ld_vpr.get_term(PropertyName.JL_CONTEXT) == vpr.context
-        assert json_ld_vpr.get_term(PropertyName.JL_ID) == vpr.id
-        assert json_ld_vpr.get_term(PropertyName.JL_PRESENTATION_URL) == vpr.presentation_url
-
         pr: Dict[str, Any] = json_ld_vpr.get_term(PropertyName.JL_PRESENTATION_REQUEST)
-        assert pr.get(PropertyName.JL_PURPOSE) == vpr.pr.purpose
-        assert pr.get(PropertyName.JL_PURPOSE_LABEL) is vpr.pr.purpose_label
-        assert pr.get(PropertyName.JL_VERIFIER) == vpr.pr.verifier
-
         condition: VprCondition = VprCondition(pr.get(PropertyName.JL_CONDITION))
-        pr_condition: dict[str, Any] = pr.get(PropertyName.JL_CONDITION)
-        assert pr_condition.get(PropertyName.JL_CONTEXT) == condition.context
-        assert pr_condition.get(PropertyName.JL_ID) == condition.id
-        assert pr_condition.get(PropertyName.JL_AT_TYPE) == condition.type
-        assert pr_condition.get(PropertyName.JL_CONDITION_ID) == condition.get_term(PropertyName.JL_CONDITION_ID)
-        assert pr_condition.get(PropertyName.JL_ISSUER) == condition.get_term(PropertyName.JL_ISSUER)
-        assert pr_condition.get(PropertyName.JL_CREDENTIAL_TYPE) == condition.get_term(PropertyName.JL_CREDENTIAL_TYPE)
-        assert pr_condition.get(PropertyName.JL_PROPERTY) == condition.get_term(PropertyName.JL_PROPERTY)
-
-        vpr_condition: VprCondition = json_ld_vpr.condition
-        assert vpr_condition.get_term(PropertyName.JL_CONTEXT) == condition.context
-        assert vpr_condition.get_term(PropertyName.JL_ID) == condition.id
-        assert vpr_condition.get_term(PropertyName.JL_AT_TYPE) == condition.type
-        assert vpr_condition.get_term(PropertyName.JL_CONDITION_ID) == condition.get_term(PropertyName.JL_CONDITION_ID)
-        assert vpr_condition.get_term(PropertyName.JL_ISSUER) == condition.get_term(PropertyName.JL_ISSUER)
-        assert (vpr_condition.get_term(PropertyName.JL_CREDENTIAL_TYPE)
-                == condition.get_term(PropertyName.JL_CREDENTIAL_TYPE))
-        assert vpr_condition.get_term(PropertyName.JL_PROPERTY) == condition.get_term(PropertyName.JL_PROPERTY)
+        self._assert(json_ld_vpr, vpr, condition)
 
     def test_from_vpr(self, vpr: VPR, condition: VprCondition):
         # GIVEN a VprCondition and properties for JsonLdVpr object
@@ -124,6 +99,9 @@ class TestJsonLdVpr:
         json_ld_vpr: JsonLdVpr = JsonLdVpr.from_vpr(vpr, condition)
 
         # THEN success to get above properties from JsonLdVpr
+        self._assert(json_ld_vpr, vpr, condition)
+
+    def _assert(self, json_ld_vpr: JsonLdVpr, vpr: VPR, condition: VprCondition):
         assert json_ld_vpr.get_term(PropertyName.JL_CONTEXT) == vpr.context
         assert json_ld_vpr.get_term(PropertyName.JL_ID) == vpr.id
         assert json_ld_vpr.get_term(PropertyName.JL_PRESENTATION_URL) == vpr.presentation_url

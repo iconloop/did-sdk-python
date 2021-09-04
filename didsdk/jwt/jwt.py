@@ -1,4 +1,3 @@
-import dataclasses
 import json
 import time
 from typing import List
@@ -9,6 +8,7 @@ from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.document.encoding import Base64URLEncoder
 from didsdk.exceptions import JwtException
 from didsdk.jwt.elements import Header, Payload
+from didsdk.protocol.claim_request_type import ClaimRequestType
 
 
 class VerifyResult:
@@ -51,7 +51,7 @@ class Jwt:
         return self._encoded_token[2] if self._encoded_token and len(self._encoded_token) == 3 else None
 
     def _encode(self, encoding: str = 'UTF-8') -> str:
-        header = Base64URLEncoder.encode((json.dumps(dataclasses.asdict(self._header)).encode(encoding)))
+        header = Base64URLEncoder.encode((json.dumps(self._header.asdict()).encode(encoding)))
         payload = Base64URLEncoder.encode(json.dumps(self._payload.asdict()).encode(encoding))
         return f'{header}.{payload}'
 
@@ -117,6 +117,8 @@ class Jwt:
         exp = self._payload.exp
 
         if not exp:
+            if ClaimRequestType.REVOCATION.value in self._payload.type:
+                return VerifyResult(success=True)
             return VerifyResult(success=False, fail_message="exp is None.")
         elif exp - now <= 0:
             return VerifyResult(success=False, fail_message="The expiration date has expired.")

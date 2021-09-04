@@ -2,7 +2,6 @@ import copy
 from dataclasses import dataclass
 from typing import List, Optional
 
-from didsdk import credential
 from didsdk.exceptions import JwtException
 from didsdk.jwe.ecdhkey import ECDHKey
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
@@ -33,6 +32,8 @@ class Header:
     def is_valid_jwe_algorithm(self):
         return self.alg == HeaderAlgorithmType.JWE_ALGO_ECDH_ES
 
+    def asdict(self) -> dict:
+        return {key: value for key, value in self.__dict__.items() if value}
 
 class Payload:
     AUDIENCE = "aud"
@@ -72,7 +73,7 @@ class Payload:
 
     @property
     def contents(self) -> dict:
-        return self._contents
+        return {key: value for key, value in self._contents.items() if value}
 
     @property
     def claim(self) -> dict:
@@ -92,7 +93,7 @@ class Payload:
 
     @property
     def exp(self) -> int:
-        return self._contents[self.EXPIRATION]
+        return self._contents.get(self.EXPIRATION)
 
     @property
     def iat(self) -> int:
@@ -149,7 +150,7 @@ class Payload:
     @property
     def vcr(self) -> Optional[JsonLdVcr]:
         vcr = self._contents[self.VCR]
-        return JsonLdVc(vcr) if vcr else None
+        return JsonLdVcr.from_(vcr) if vcr else None
 
     @property
     def vp(self) -> Optional[JsonLdVp]:
@@ -178,7 +179,7 @@ class Payload:
 
     def asdict(self) -> dict:
         dict_contents = copy.deepcopy(self._contents)
-        return dict_contents
+        return {key: value for key, value in dict_contents.items() if value}
 
     def get(self, key: str):
         if key in self._contents and self.is_time_claim(key):

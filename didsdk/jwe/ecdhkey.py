@@ -1,8 +1,10 @@
+import math
 from dataclasses import dataclass
 from enum import Enum
 from hashlib import sha256
 from typing import Type
 
+import gmpy2
 from cryptography.hazmat.primitives.asymmetric import ec
 from ecdsa import SigningKey, VerifyingKey
 from ecdsa import ellipticcurve
@@ -40,7 +42,7 @@ class CurveType(Enum):
         for member in cls.__members__.values():
             obj: CurveTypePlate = member.value
             if curve_name == obj.curve_name:
-                return member
+                return member.value
 
         raise ValueError(f"The identifier of '{curve_name}' is not supported.")
 
@@ -63,15 +65,15 @@ class ECDHKey:
         provider = AlgorithmProvider.create(CurveType.from_curve_name(curve_name).algorithm_type)
         key = SigningKey.generate(curve=CurveType.from_curve_name(curve_name).curve_ec)
 
-        public_key = key.verifying_key
-        length = (public_key.verifying_key_length + 7)/8
-        x = public_key.pubkey.point.x().to_bytes(length=length, byteorder='big')
-        y = public_key.pubkey.point.y().to_bytes(length=length, byteorder='big')
+        public_key: VerifyingKey = key.verifying_key
+        # length = int((public_key.curve.verifying_key_length + 7)/8)
+        x = gmpy2.to_binary(public_key.pubkey.point.x())
+        y = gmpy2.to_binary(public_key.pubkey.point.y())
 
         private_key = key.privkey
-        d = private_key.secret_multiplier.to_bytes(length=length, byteorder='big')
+        d = gmpy2.to_binary(private_key.order)
         encoder = EncodeType.BASE64URL.value
-        return ECDHKey(kty=provider.type.key_algorithm, crv=curve_name,
+        return ECDHKey(kty=provider.type.value.key_algorithm, crv=curve_name,
                        x=encoder.encode(x), y=encoder.encode(y), d=encoder.encode(d))
 
     def get_ec_public_key(self) -> VerifyingKey:

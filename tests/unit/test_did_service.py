@@ -66,8 +66,7 @@ class TestDidService:
 
         # GIVEN a key_provider
         new_key_id = self.SECOND_KEY_ID
-        new_type = AlgorithmType.ES256K
-        algorithm = AlgorithmProvider.create(new_type)
+        algorithm = AlgorithmProvider.create(AlgorithmType.ES256K)
         key_provider = algorithm.generate_key_provider(new_key_id)
 
         # WHEN try to add new key

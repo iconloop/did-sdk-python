@@ -173,7 +173,7 @@ class ProtocolMessage:
 
         if ProtocolType.is_request_member(self._type):
             if self._type == ProtocolType.REQUEST_PRESENTATION.value:
-                self._claim_request = ClaimRequest.from_presentation(self._jwt)
+                self._claim_request = ClaimRequest.for_presentation(self._jwt)
             else:
                 self._claim_request = ClaimRequest.from_jwt(self._jwt)
         elif ProtocolType.is_credential_member(self._type):
@@ -190,8 +190,8 @@ class ProtocolMessage:
             self._claim_response = ClaimResponse.from_jwt(self._jwt)
 
     # TODO: delete if it's unnecessary.
-    def _encrypt(self, decoded_json: str, sender_key: ECDHKey, receiver_key: VerifyingKey) -> jwe.JWE:
-        pass
+    # def _encrypt(self, decoded_json: str, sender_key: ECDHKey, receiver_key: VerifyingKey) -> jwe.JWE:
+    #     pass
 
     def decrypt_jwe(self, my_key: ECDHKey):
         if self._is_decrypted:
@@ -222,7 +222,7 @@ class ProtocolMessage:
             if ProtocolType.is_request_member(value=type_):
                 version = protocol_message._jwt.payload.version
                 if type_ == ProtocolType.REQUEST_PRESENTATION.value and version == CredentialVersion.v2_0:
-                    protocol_message._claim_request = ClaimRequest.from_presentation(protocol_message._jwt)
+                    protocol_message._claim_request = ClaimRequest.for_presentation(protocol_message._jwt)
                 else:
                     protocol_message._claim_request = ClaimRequest.from_jwt(protocol_message._jwt)
             elif ProtocolType.is_credential_member(value=type_):

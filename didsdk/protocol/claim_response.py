@@ -6,7 +6,7 @@ from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.jwt import Jwt, VerifyResult
-from didsdk.protocol.claim_request import Type
+from didsdk.protocol.claim_request_type import ClaimRequestType
 from didsdk.protocol.response_result import ResponseResult
 
 DID_AUTH = "DID_AUTH"
@@ -98,8 +98,8 @@ class ClaimResponse:
         elif payload.sub:
             response_id = payload.sub
 
-        type_ = Type(payload.type[0])
-        if not response_id and type_ != Type.PRESENTATION and Type.INIT != type_:
+        type_ = ClaimRequestType(payload.type[0])
+        if not response_id and type_ != ClaimRequestType.PRESENTATION and ClaimRequestType.INIT != type_:
             raise ValueError('responseId cannot be None.')
 
         algorithm: AlgorithmType = AlgorithmType.from_name(header.alg)
@@ -108,7 +108,7 @@ class ClaimResponse:
             raise ValueError('algorithm cannot be None.')
         if algorithm != AlgorithmType.NONE and not kid:
             raise ValueError('kid cannot be None.')
-        elif type_ != Type.PRESENTATION:
+        elif type_ != ClaimRequestType.PRESENTATION:
             raise ValueError("NONE type algorithm is only supported when type is presentation")
 
         return cls(jwt)
