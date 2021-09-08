@@ -80,7 +80,6 @@ class TestClaimRequest:
                                                     private_key=key_provider.private_key,
                                                     did=owner_did)
         holder_key = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
-
         request_claim: dict = {
             'name': '엠마스톤',
             'birthDate': '2001-01-23',

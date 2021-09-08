@@ -56,7 +56,7 @@ class TestDidService:
         key_file_path = Path(self.KEY_FILE_NAME)
         if key_file_path.exists():
             os.remove(key_file_path)
-        DidKeyStore.store(f'{self.KEY_FILE_NAME}', self.PASSWORD, key_holder)
+        DidKeyStore.store(self.KEY_FILE_NAME, self.PASSWORD, key_holder)
 
     @pytest.mark.asyncio
     async def test_add_public_key(self, did_service_testnet: DidService,

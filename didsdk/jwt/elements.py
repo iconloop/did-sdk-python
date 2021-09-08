@@ -35,6 +35,7 @@ class Header:
     def asdict(self) -> dict:
         return {key: value for key, value in self.__dict__.items() if value}
 
+
 class Payload:
     AUDIENCE = "aud"
     CLAIM = "claim"
@@ -109,7 +110,7 @@ class Payload:
 
     @property
     def nonce(self) -> str:
-        return self._contents[self.NONCE]
+        return self._contents.get(self.NONCE)
 
     # for v1.1
     @property
