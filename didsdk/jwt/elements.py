@@ -74,7 +74,7 @@ class Payload:
 
     @property
     def contents(self) -> dict:
-        return {key: value for key, value in self._contents.items() if value}
+        return {key: value for key, value in self._contents.items() if value or value is False}
 
     @property
     def claim(self) -> dict:
@@ -180,7 +180,7 @@ class Payload:
 
     def asdict(self) -> dict:
         dict_contents = copy.deepcopy(self._contents)
-        return {key: value for key, value in dict_contents.items() if value}
+        return {key: value for key, value in dict_contents.items() if value or value is False}
 
     def get(self, key: str):
         if key in self._contents and self.is_time_claim(key):
