@@ -58,6 +58,14 @@ class ECDHKey:
     d: str = None
     kid: str = None
 
+    def __eq__(self, target):
+        return (self.kty == target.kty
+                and self.crv == target.crv
+                and self.x == target.x
+                and self.y == target.y
+                and self.d == target.d
+                and self.kid == target.kid)
+
     @staticmethod
     def generate_key(curve_name: str) -> 'ECDHKey':
         key: ecdsa.SigningKey = ecdsa.SigningKey.generate(curve=CurveType.from_curve_name(curve_name).curve_ec,

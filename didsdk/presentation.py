@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.credential import Credential, CredentialVersion
 from didsdk.jwt.convert_jwt import ConvertJwt
 from didsdk.jwt.elements import Header, Payload
@@ -25,8 +26,10 @@ class Presentation(ConvertJwt):
     EXP_DURATION: int = 5 * 60          # second
     DEFAULT_TYPE: str = 'PRESENTATION'
 
-    def __init__(self, issuer_did: IssuerDid, base_vcs: List[BaseVc] = None):
-        self._issuer_did: IssuerDid = issuer_did
+    def __init__(self, algorithm: str, key_id: str, did: str, base_vcs: List[BaseVc] = None):
+        self._algorithm: str = algorithm
+        self._key_id: str = key_id
+        self._did: str = did
         self._credentials: list = []
         self._jwt: Optional[Jwt] = None
         self._types: List[str] = []
@@ -38,7 +41,7 @@ class Presentation(ConvertJwt):
 
     @property
     def algorithm(self) -> str:
-        return self._issuer_did.algorithm
+        return self._algorithm
 
     @property
     def credentials(self) -> list:
@@ -57,15 +60,11 @@ class Presentation(ConvertJwt):
 
     @property
     def did(self) -> str:
-        return self._issuer_did.did
+        return self._did
 
     @property
     def duration(self) -> int:
         return self.EXP_DURATION
-
-    @property
-    def issuer_did(self) -> IssuerDid:
-        return self._issuer_did
 
     @property
     def jwt(self) -> Jwt:
@@ -73,7 +72,7 @@ class Presentation(ConvertJwt):
 
     @property
     def key_id(self) -> str:
-        return self._issuer_did.key_id
+        return self._key_id
 
     @property
     def vp(self) -> JsonLdVp:
@@ -108,17 +107,19 @@ class Presentation(ConvertJwt):
         return Jwt(header, payload)
 
     @staticmethod
-    def from_(issuer_did: IssuerDid,
-              credentials: list,
+    def from_(algorithm: AlgorithmType,
+              key_id: str,
+              did: str,
               vp: JsonLdVp,
               nonce: str,
               version: str,
-              jwt: Jwt) -> 'Presentation':
+              credentials: list = None,
+              jwt: Jwt = None) -> 'Presentation':
 
         if not version:
             raise ValueError('version cannot None.')
 
-        presentation = Presentation(issuer_did)
+        presentation = Presentation(algorithm=algorithm.name, key_id=key_id, did=did)
         if credentials:
             presentation.credentials = credentials
         if vp:
@@ -126,7 +127,7 @@ class Presentation(ConvertJwt):
         presentation.nonce = nonce
         presentation.version = version
         presentation._jwt = jwt
-        presentation.jti = jwt.payload.jti
+        presentation.jti = jwt.payload.jti if jwt else None
 
         return presentation
 
@@ -148,7 +149,14 @@ class Presentation(ConvertJwt):
         """
         payload = jwt.payload
         issuer_did = IssuerDid.from_jwt(jwt)
-        return Presentation.from_(issuer_did, payload.credential, payload.vp, payload.nonce, payload.version, jwt)
+        return Presentation.from_(algorithm=AlgorithmType.from_name(issuer_did.algorithm),
+                                  key_id=issuer_did.key_id,
+                                  did=issuer_did.did,
+                                  credentials=payload.credential,
+                                  vp=payload.vp,
+                                  nonce=payload.nonce,
+                                  version=payload.version,
+                                  jwt=jwt)
 
     def get_plain_params(self, key: str) -> list:
         """get claim values from Presentation VC

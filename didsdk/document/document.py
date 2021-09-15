@@ -40,7 +40,7 @@ class Document:
         return self.public_key.get(key_id)
 
     def serialize(self) -> str:
-        public_key = [public_key_property.asdict() for _, public_key_property in self.public_key.items()]
+        public_key = [public_key_property.as_dict() for _, public_key_property in self.public_key.items()]
         dict_data = {PropertyName.KEY_DOCUMENT_ID: self.id,
                      PropertyName.KEY_DOCUMENT_CREATED: self.created,
                      PropertyName.KEY_DOCUMENT_PUBLICKEY: public_key,

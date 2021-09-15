@@ -1,7 +1,9 @@
 import hashlib
+import json
 import secrets
 from typing import Dict, List, Optional
 
+from didsdk.core.algorithm_provider import AlgorithmProvider
 from didsdk.document.encoding import EncodeType, Base64URLEncoder
 from didsdk.protocol.base_param import BaseParam
 from didsdk.protocol.claim_attribute import ClaimAttribute
@@ -26,7 +28,7 @@ class HashedAttribute(ClaimAttribute):
 
     def _encode_value(self, value, encoding: str = 'utf-8') -> bytes:
         if isinstance(value, Claim):
-            return value.as_json().encode(encoding)
+            return json.dumps(value.as_dict()).encode(encoding)
         else:
             return json_ld_util.as_bytes(value)
 
@@ -43,7 +45,7 @@ class HashedAttribute(ClaimAttribute):
         plain_values = {}
         nonces = {}
         for key, value in values.items():
-            nonce = EncodeType.HEX.value.encode(secrets.token_bytes(16)).encode(encoding)
+            nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_secure_random()).encode(encoding)
             digested = self._get_digest(self._encode_value(value, encoding), nonce)
             self.hashed_values[key] = Base64URLEncoder.encode(digested)
             plain_values[key] = value

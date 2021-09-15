@@ -31,7 +31,7 @@ class PublicKeyProperty:
     def _encode_base64_url(self, data: bytes, encoding: str = 'UTF-8') -> str:
         return base64.urlsafe_b64encode(data).decode(encoding)
 
-    def asdict(self):
+    def as_dict(self):
         pubkey_property = (PropertyName.KEY_DOCUMENT_PUBLICKEY_HEX if self.encode_type == EncodeType.HEX
                            else PropertyName.KEY_DOCUMENT_PUBLICKEY_BASE64)
 

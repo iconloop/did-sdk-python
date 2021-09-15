@@ -13,7 +13,7 @@ from didsdk.document.encoding import EncodeType
 from didsdk.jwe.ecdhkey import ECDHKey, CurveType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.protocol.claim_request import ClaimRequest
-from didsdk.protocol.claim_request_type import ClaimRequestType
+from didsdk.protocol.claim_message_type import ClaimRequestType
 from didsdk.protocol.json_ld.json_ld_vcr import JsonLdVcr
 from didsdk.protocol.protocol_message import ProtocolMessage, SignResult
 from didsdk.protocol.protocol_type import ProtocolType
@@ -94,9 +94,9 @@ class TestProtocolMessage:
         id_: str = "https://www.zzeung.id/vcr/driver_license/123623"
         type_: list = ["IlDriverLicenseKorCredential"]
         json_ld_vcr: JsonLdVcr = JsonLdVcr(context=context, id_=id_, type_=type_, request_claim=request_claim)
-        nonce: str = EncodeType.HEX.value.encode(secrets.token_bytes(16))
+        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_secure_random())
 
-        return ClaimRequest.from_(type_=ClaimRequestType.CREDENTIAL,
+        return ClaimRequest.from_(type_=ClaimRequestType.REQ_CREDENTIAL,
                                   algorithm=holder_did_key_holder_v_2_0.type,
                                   public_key_id=holder_did_key_holder_v_2_0.key_id,
                                   did=holder_did_key_holder_v_2_0.did,
@@ -127,7 +127,7 @@ class TestProtocolMessage:
         decoded_claim_request: ClaimRequest = protocol_message.claim_request
 
         assert decoded_claim_request.jwt.verify(key_provider.public_key).success
-        assert ClaimRequestType.REVOCATION.value in decoded_claim_request.type
+        assert ClaimRequestType.REQ_REVOCATION.value in decoded_claim_request.type
         assert holder_did == decoded_claim_request.did
         assert revocation_sig == decoded_claim_request.signature
 
@@ -152,11 +152,11 @@ class TestProtocolMessage:
         decoded_claim_request: ClaimRequest = _protocol_message.claim_request
 
         assert decoded_claim_request.jwt.verify(holder_did_key_holder.private_key.public_key).success
-        assert ClaimRequestType.CREDENTIAL.value in decoded_claim_request.type
+        assert ClaimRequestType.REQ_CREDENTIAL.value in decoded_claim_request.type
         assert claim_request.nonce in decoded_claim_request.nonce
         assert claim_request.request_id in decoded_claim_request.request_id
         assert claim_request.response_id in decoded_claim_request.response_id
-        assert json.dumps(claim_request.public_key.epk) in json.dumps(decoded_claim_request.public_key.epk)
+        assert claim_request.public_key.epk == decoded_claim_request.public_key.epk
         assert holder_did_key_holder.did == decoded_claim_request.did
         for key, claim in decoded_claim_request.vcr.node.items():
             assert claim == claim_request.vcr.node[key]

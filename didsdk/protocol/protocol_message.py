@@ -178,7 +178,7 @@ class ProtocolMessage:
 
         if ProtocolType.is_request_member(self._type):
             if self._type == ProtocolType.REQUEST_PRESENTATION.value:
-                self._claim_request = ClaimRequest.for_presentation(self._jwt)
+                self._claim_request = ClaimRequest.for_presentation_from_jwt(self._jwt)
             else:
                 self._claim_request = ClaimRequest.from_jwt(self._jwt)
         elif ProtocolType.is_credential_member(self._type):
@@ -209,7 +209,7 @@ class ProtocolMessage:
             if ProtocolType.is_request_member(value=type_):
                 version = protocol_message._jwt.payload.version
                 if type_ == ProtocolType.REQUEST_PRESENTATION.value and version == CredentialVersion.v2_0:
-                    protocol_message._claim_request = ClaimRequest.for_presentation(protocol_message._jwt)
+                    protocol_message._claim_request = ClaimRequest.for_presentation_from_jwt(protocol_message._jwt)
                 else:
                     protocol_message._claim_request = ClaimRequest.from_jwt(protocol_message._jwt)
             elif ProtocolType.is_credential_member(value=type_):
@@ -286,7 +286,7 @@ class ProtocolMessage:
                        expiration: int,
                        request_public_key: EphemeralPublicKey) -> 'ProtocolMessage':
 
-        if not protocol_type.is_response():
+        if not protocol_type.is_credential():
             raise ValueError('type must be a type of '
                              '[RESPONSE_CREDENTIAL, RESPONSE_CREDENTIAL_OLD, RESPONSE_PROTECTED_CREDENTIAL]')
 
@@ -374,7 +374,7 @@ class ProtocolMessage:
                 self._param = self._credential.base_claim.attribute.base_param
                 self._param_string = Base64URLEncoder.encode(json.loads(self._param))
             elif self._credential.version == CredentialVersion.v2_0:
-                self._param = self._credential.param
+                self._ld_param = self._credential.param
                 self._param_string = self._ld_param.as_base64_url_string()
         elif ProtocolType.is_presentation_member(self._type):
             self._plain_message = did_key_holder.sign(self._presentation.as_jwt(self._issued, self._expiration))

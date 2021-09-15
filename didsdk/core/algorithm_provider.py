@@ -1,3 +1,4 @@
+import secrets
 from dataclasses import dataclass
 from enum import Enum
 from os import environ
@@ -60,6 +61,10 @@ class AlgorithmProvider:
                 raise ValueError(f'{type_.name} is not supported yet.')
         else:
             raise ValueError('Type cannot be null.')
+
+    @staticmethod
+    def generate_secure_random() -> bytes:
+        return secrets.token_bytes(16)
 
     @staticmethod
     def is_android_runtime():

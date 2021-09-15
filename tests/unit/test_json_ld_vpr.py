@@ -43,7 +43,7 @@ class TestJsonLdVpr:
 
     @pytest.fixture
     def pr(self, condition: VprCondition, purpose: str, purpose_label: str, verifier: str) -> PR:
-        return PR(purpose, purpose_label, verifier, condition.as_json())
+        return PR(purpose, purpose_label, verifier, condition.as_dict())
 
     @pytest.fixture
     def vpr(self, context: List[str], id_: str, url: str, pr: PR) -> VPR:

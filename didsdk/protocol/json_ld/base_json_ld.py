@@ -20,7 +20,7 @@ class BaseJsonLd:
     def context(self) -> Optional[Dict[str, Any]]:
         return self._context if self._context and self.is_context_object() else None
 
-    def as_json(self):
+    def as_dict(self) -> dict:
         return self.node
 
     def is_context_object(self) -> bool:

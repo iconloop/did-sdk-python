@@ -10,7 +10,9 @@ from didsdk.jwt.jwt import Jwt
 class TestCredential:
     @pytest.fixture
     def credential_v1(self, issuer_did, dids, vc_claim) -> Credential:
-        return Credential(issuer_did=issuer_did,
+        return Credential(algorithm=issuer_did.algorithm,
+                          key_id=issuer_did.key_id,
+                          did=issuer_did.did,
                           target_did=dids['target_did'],
                           version=CredentialVersion.v1_1,
                           claim=vc_claim)
@@ -74,10 +76,9 @@ class TestCredential:
         assert credential.key_id == jwt_object.header.kid.split('#')[1]
         if credential.version in [CredentialVersion.v1_0, CredentialVersion.v1_1]:
             assert credential.claim == payload.claim
-        assert credential.jwt.payload.exp == jwt_object.payload.exp
+        assert credential.jwt.payload.exp == payload.exp
         assert credential.nonce == payload.nonce
         assert credential.jti == payload.jti
-        assert credential.get_types() == payload.type
         assert credential.version == payload.version
         assert credential.vc == payload.vc
 
@@ -99,6 +100,5 @@ class TestCredential:
         assert credential.jwt.payload.exp == jwt_object.payload.exp
         assert credential.nonce == payload.nonce
         assert credential.jti == payload.jti
-        assert credential.get_types() == payload.type
         assert credential.version == payload.version
         assert credential.vc == payload.vc

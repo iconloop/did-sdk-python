@@ -5,7 +5,7 @@ from typing import List
 import pytest
 from coincurve import PrivateKey
 
-from didsdk.core.algorithm_provider import AlgorithmType
+from didsdk.core.algorithm_provider import AlgorithmType, AlgorithmProvider
 from didsdk.credential import Credential, CredentialVersion
 from didsdk.did_service import DidService
 from didsdk.document.encoding import EncodeType
@@ -119,7 +119,9 @@ def create_credential(issuer_did: IssuerDid,
                       param: JsonLdParam,
                       nonce: str,
                       revocation_service: RevocationService) -> Credential:
-    return Credential(issuer_did,
+    return Credential(algorithm=issuer_did.algorithm,
+                      key_id=issuer_did.key_id,
+                      did=issuer_did.did,
                       target_did=target_did,
                       param=param,
                       nonce=nonce,
@@ -136,7 +138,7 @@ def credentials(issuer_did: IssuerDid, dids: dict, vc_claim: dict) -> List[Crede
         'age': '18',
         'level': 'eighteen'
     }
-    nonce = EncodeType.HEX.value.encode(secrets.token_bytes(16))
+    nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_secure_random())
     revocation_service = RevocationService(id_='http://example.com',
                                            type_='SimpleRevocationService',
                                            short_description='revocationShortDescription')

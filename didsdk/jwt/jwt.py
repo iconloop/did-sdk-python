@@ -8,7 +8,7 @@ from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.document.encoding import Base64URLEncoder
 from didsdk.exceptions import JwtException
 from didsdk.jwt.elements import Header, Payload
-from didsdk.protocol.claim_request_type import ClaimRequestType
+from didsdk.protocol.claim_message_type import ClaimRequestType
 
 
 class VerifyResult:
@@ -51,8 +51,8 @@ class Jwt:
         return self._encoded_token[2] if self._encoded_token and len(self._encoded_token) == 3 else None
 
     def _encode(self, encoding: str = 'UTF-8') -> str:
-        header = Base64URLEncoder.encode((json.dumps(self._header.asdict()).encode(encoding)))
-        payload = Base64URLEncoder.encode(json.dumps(self._payload.asdict()).encode(encoding))
+        header = Base64URLEncoder.encode((json.dumps(self._header.as_dict()).encode(encoding)))
+        payload = Base64URLEncoder.encode(json.dumps(self._payload.as_dict()).encode(encoding))
         return f'{header}.{payload}'
 
     def compact(self, encoding: str = 'UTF-8') -> str:
@@ -117,7 +117,7 @@ class Jwt:
         exp = self._payload.exp
 
         if not exp:
-            if ClaimRequestType.REVOCATION.value in self._payload.type:
+            if ClaimRequestType.REQ_REVOCATION.value in self._payload.type:
                 return VerifyResult(success=True)
             return VerifyResult(success=False, fail_message="exp is None.")
         elif exp - now <= 0:

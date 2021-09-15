@@ -12,7 +12,7 @@ from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.jwt import Jwt, VerifyResult
 from didsdk.protocol.claim_request import ClaimRequest
-from didsdk.protocol.claim_request_type import ClaimRequestType
+from didsdk.protocol.claim_message_type import ClaimRequestType
 from didsdk.protocol.json_ld.json_ld_vcr import JsonLdVcr
 
 
@@ -37,7 +37,7 @@ class TestClaimRequest:
                                                     did=owner_did)
 
         # WHEN try to create jwt token of `REQ_CREDENTIAL` message.
-        request: ClaimRequest = ClaimRequest.from_(type_=ClaimRequestType.CREDENTIAL,
+        request: ClaimRequest = ClaimRequest.from_(type_=ClaimRequestType.REQ_CREDENTIAL,
                                                    algorithm=did_key_holder.type,
                                                    public_key_id=did_key_holder.key_id,
                                                    did=did_key_holder.did,
@@ -61,7 +61,7 @@ class TestClaimRequest:
 
         payload: Payload = request.jwt.payload
         assert owner_did == payload.iss
-        assert ClaimRequestType.CREDENTIAL.value == payload.type[0]
+        assert ClaimRequestType.REQ_CREDENTIAL.value == payload.type[0]
         assert list(claims.keys()) == list(decoded_request.claims.keys())
         assert list(claims.values()) == list(decoded_request.claims.values())
         assert request_date == payload.iat
@@ -92,11 +92,11 @@ class TestClaimRequest:
         id_: str = "https://www.zzeung.id/vcr/driver_license/123623"
         type_: list = ["IlDriverLicenseKorCredential"]
         json_ld_vcr: JsonLdVcr = JsonLdVcr(context=context, id_=id_, type_=type_, request_claim=request_claim)
-        nonce: str = EncodeType.HEX.value.encode(secrets.token_bytes(16))
+        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_secure_random())
         request_credential_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holderKey-1', epk=holder_key)
 
         # WHEN try to create jwt token of `REQ_CREDENTIAL` message.
-        request: ClaimRequest = ClaimRequest.from_(type_=ClaimRequestType.CREDENTIAL,
+        request: ClaimRequest = ClaimRequest.from_(type_=ClaimRequestType.REQ_CREDENTIAL,
                                                    algorithm=did_key_holder.type,
                                                    public_key_id=did_key_holder.key_id,
                                                    did=did_key_holder.did,
@@ -153,7 +153,7 @@ class TestClaimRequest:
                                                     did=verifier_did)
 
         # WHEN try to create jwt token of `REQ_PRESENTATION` message.
-        request: ClaimRequest = ClaimRequest.from_(type_=ClaimRequestType.PRESENTATION,
+        request: ClaimRequest = ClaimRequest.from_(type_=ClaimRequestType.REQ_PRESENTATION,
                                                    algorithm=did_key_holder.type,
                                                    public_key_id=did_key_holder.key_id,
                                                    did=did_key_holder.did,
@@ -178,7 +178,7 @@ class TestClaimRequest:
         decoded_payload: Payload = decoded_request.jwt.payload
         assert verifier_did == decoded_payload.iss
         assert owner_did == decoded_payload.aud
-        assert ClaimRequestType.PRESENTATION.value == decoded_payload.type[0]
+        assert ClaimRequestType.REQ_PRESENTATION.value == decoded_payload.type[0]
         assert request_date == decoded_payload.iat
 
         verify_result: VerifyResult = decoded_request.verify(key_provider.public_key)
@@ -210,6 +210,6 @@ class TestClaimRequest:
         jwt: Jwt = Jwt.decode(jwt_token)
         assert issuer_did == jwt.payload.aud
         assert holder_did == jwt.payload.iss
-        assert [ClaimRequestType.REVOCATION.value] == jwt.payload.type
+        assert [ClaimRequestType.REQ_REVOCATION.value] == jwt.payload.type
         assert revocation_sig == jwt.payload.signature
         assert jwt.verify(key_provider.public_key).success

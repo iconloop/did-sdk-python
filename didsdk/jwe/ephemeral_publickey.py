@@ -14,3 +14,12 @@ class EphemeralPublicKey:
             'kid': self.kid,
             'epk': dataclasses.asdict(self.epk)
         }
+
+    @classmethod
+    def from_json(cls, json_data: dict):
+        epk = json_data.get('epk')
+        if isinstance(epk, dict):
+            json_data['epk'] = ECDHKey(**epk)
+
+        return cls(**json_data)
+    

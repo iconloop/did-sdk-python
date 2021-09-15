@@ -9,11 +9,13 @@ from didsdk.presentation import Presentation
 class TestPresentation:
     @pytest.fixture
     def presentation(self, issuer_did):
-        return Presentation(issuer_did=issuer_did)
+        return Presentation(algorithm=issuer_did.algorithm, key_id=issuer_did.key_id, did=issuer_did.did)
 
     @pytest.fixture
     def credential_v1(self, issuer_did, dids, vc_claim) -> Credential:
-        return Credential(issuer_did=issuer_did,
+        return Credential(algorithm=issuer_did.algorithm,
+                          key_id=issuer_did.key_id,
+                          did=issuer_did.did,
                           target_did=dids['target_did'],
                           version=CredentialVersion.v1_1,
                           claim=vc_claim)

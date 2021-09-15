@@ -42,11 +42,10 @@ class JsonLdParam(BaseJsonLd):
         return self._digest.digest()
 
     def _set_claims(self) -> Dict[str, Claim]:
-        claims = self.credential_params.get(PropertyName.JL_CLAIM)
+        claims: dict = self.credential_params.get(PropertyName.JL_CLAIM)
         if not claims:
             raise ValueError('Claim cannot be empty.')
-
-        return {key: Claim(**claims.get(key)) for key in claims}
+        return {key: Claim.from_json(value) for key, value in claims.items()}
 
     @classmethod
     def from_(cls, claim: Optional[Dict[str, Claim]],
@@ -82,12 +81,12 @@ class JsonLdParam(BaseJsonLd):
         param_object.info = info
         param_object.display_layout = display_layout
         param_object.credential_params = {
-            PropertyName.JL_CLAIM: param_object.claims,
+            PropertyName.JL_CLAIM: {key: value.as_dict() for key, value in param_object.claims.items()},
             PropertyName.JL_DISPLAY_LAYOUT: (param_object.display_layout.get_display()
                                              if param_object.display_layout.is_string
                                              else param_object.display_layout.get_object_display()),
             PropertyName.JL_HASH_ALGORITHM: hash_algorithm,
-            PropertyName.JL_INFO: param_object.info,
+            PropertyName.JL_INFO: {key: value.as_dict() for key, value in param_object.info.items()},
             PropertyName.JL_PROOF_TYPE: proof_type or BaseClaim.HASH_TYPE
         }
 

@@ -32,7 +32,7 @@ class Header:
     def is_valid_jwe_algorithm(self):
         return self.alg == HeaderAlgorithmType.JWE_ALGO_ECDH_ES
 
-    def asdict(self) -> dict:
+    def as_dict(self) -> dict:
         return {key: value for key, value in self.__dict__.items() if value}
 
 
@@ -116,7 +116,7 @@ class Payload:
     @property
     def public_key(self) -> Optional[EphemeralPublicKey]:
         key = self._contents.get(self.PUBLIC_KEY)
-        return EphemeralPublicKey(**key) if key else None
+        return EphemeralPublicKey.from_json(key) if key else None
 
     @property
     def result(self) -> bool:
@@ -178,9 +178,13 @@ class Payload:
     def add_time_claim_key_set(self, keys: set):
         self._time_claim_keys.add(keys)
 
-    def asdict(self) -> dict:
+    def as_dict(self) -> dict:
         dict_contents = copy.deepcopy(self._contents)
-        return {key: value for key, value in dict_contents.items() if value or value is False}
+        result = dict()
+        for key, value in dict_contents.items():
+            if value or value is False:
+                result[key] = value.as_dict() if hasattr(value, 'as_dict') else value
+        return result
 
     def get(self, key: str):
         if key in self._contents and self.is_time_claim(key):

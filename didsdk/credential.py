@@ -36,7 +36,9 @@ class Credential(ConvertJwt):
     EXP_DURATION: int = 24 * 60 * 60        # second
     DEFAULT_TYPE: str = 'CREDENTIAL'
 
-    def __init__(self, issuer_did: IssuerDid,
+    def __init__(self, algorithm: str,
+                 key_id: str,
+                 did: str,
                  version: str,
                  id_: str = None,
                  target_did: str = None,
@@ -53,13 +55,16 @@ class Credential(ConvertJwt):
                  vc: JsonLdVc = None,
                  jwt: Jwt = None):
 
-        self._issuer_did: IssuerDid = issuer_did
+        self._algorithm: str = algorithm
+        self._key_id: str = key_id
+        self._did: str = did
         self.claim: dict = claim if claim else {}
         self._base_claim: BaseClaim = base_claim if base_claim else None
         self._vc: JsonLdVc = vc if vc else None
         self.vc_id: str = vc_id
         self.nonce: str = nonce
         self.jti: str = jti
+        self._json_ld_param: Optional[JsonLdParam] = None
 
         self.version: str = CredentialVersion.v1_1 if base_claim else version
         if param and self.version is None:
@@ -70,7 +75,7 @@ class Credential(ConvertJwt):
         self.target_did: str = target_did
 
         if claim:
-            if self.version is CredentialVersion.v1_1:
+            if self.version == CredentialVersion.v1_1:
                 self._base_claim = BaseClaim(attribute_type=BaseClaim.HASH_TYPE,
                                              algorithm=HashedAttribute.DEFAULT_ALG,
                                              values=claim)
@@ -90,23 +95,19 @@ class Credential(ConvertJwt):
 
     @property
     def algorithm(self):
-        return self._issuer_did.algorithm
+        return self._algorithm
 
     @property
     def did(self):
-        return self._issuer_did.did
+        return self._did
 
     @property
     def duration(self) -> int:
         return self.EXP_DURATION
 
     @property
-    def issuer_did(self):
-        return self._issuer_did
-
-    @property
     def key_id(self):
-        return self._issuer_did.key_id
+        return self._key_id
 
     @property
     def base_claim(self):
@@ -134,47 +135,33 @@ class Credential(ConvertJwt):
         header: Optional[Header] = None
         payload: Optional[Payload] = None
 
+        contents = {
+            Payload.ISSUER: self.did,
+            Payload.ISSUED_AT: issued,
+            Payload.EXPIRATION: expiration,
+            Payload.SUBJECT: self.target_did,
+            Payload.NONCE: self.nonce,
+            Payload.JTI: self.jti,
+            Payload.TYPE: self.get_types(),
+            Payload.VC_ID: self.vc_id,
+            Payload.VERSION: self.version
+        }
         kid = self.did + '#' + self.key_id
         if self.version in [CredentialVersion.v1_0, CredentialVersion.v1_1]:
             if self._base_claim:
                 self.claim = self._base_claim.to_json()
 
-            header = Header(alg=self.algorithm, kid=kid)
-
-            contents = {
-                Payload.ISSUER: self.did,
-                Payload.ISSUED_AT: issued,
-                Payload.EXPIRATION: expiration,
-                Payload.SUBJECT: self.target_did,
-                Payload.CLAIM: self.claim,
-                Payload.NONCE: self.nonce,
-                Payload.JTI: self.jti,
-                Payload.TYPE: self.get_types(),
-                Payload.VC_ID: self.vc_id,
-                Payload.VERSION: self.version
-            }
-            payload = Payload(contents=contents)
+            contents[Payload.CLAIM] = self.claim
         elif self.version == CredentialVersion.v2_0:
             if not self._vc:
                 raise ValueError('VC cannot be None.')
 
-            header = Header(alg=self.algorithm, kid=kid)
-            contents = {
-                Payload.ISSUER: self.did,
-                Payload.ISSUED_AT: issued,
-                Payload.EXPIRATION: expiration,
-                Payload.SUBJECT: self.target_did,
-                Payload.NONCE: self.nonce,
-                Payload.JTI: self.jti,
-                Payload.TYPE: self.get_types(),
-                Payload.VC: self._vc.as_json(),
-                Payload.VC_ID: self.vc_id,
-                Payload.VERSION: self.version
-            }
-            payload = Payload(contents=contents)
+            contents[Payload.VC] = self._vc.as_dict()
         else:
             raise ValueError('Unsupported version.')
 
+        header = Header(alg=self.algorithm, kid=kid)
+        payload = Payload(contents=contents)
         return Jwt(header, payload)
 
     @staticmethod
@@ -195,7 +182,9 @@ class Credential(ConvertJwt):
         """
         payload = jwt.payload
         issuer_did = IssuerDid.from_jwt(jwt)
-        return Credential(issuer_did,
+        return Credential(algorithm=issuer_did.algorithm,
+                          key_id=issuer_did.key_id,
+                          did=issuer_did.did,
                           target_did=payload.sub,
                           claim=payload.claim,
                           vc_id=payload.vc_id,
@@ -208,8 +197,10 @@ class Credential(ConvertJwt):
     def get_types(self) -> list:
         types = [self.DEFAULT_TYPE]
         if self.version:
-            if self.version == CredentialVersion.v1_1:
+            if self.version == CredentialVersion.v1_0:
                 return types + list(self.claim.keys())
+            if self.version == CredentialVersion.v1_1:
+                return types + list(self.base_claim.attribute.hashed_values.keys())
 
         return types
 

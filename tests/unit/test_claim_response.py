@@ -3,7 +3,7 @@ from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.credential import CredentialVersion
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.jwt import Jwt
-from didsdk.protocol.claim_request_type import ClaimRequestType
+from didsdk.protocol.claim_message_type import ClaimRequestType
 from didsdk.protocol.claim_response import ClaimResponse
 from didsdk.protocol.response_result import ResponseResult
 
@@ -27,7 +27,7 @@ class TestClaimResponse:
 
         header: Header = Header(alg=issuer_did_key_holder.type.name, kid=issuer_did_key_holder.kid)
         contents = {
-            Payload.TYPE: [ClaimRequestType.REVOCATION.value],
+            Payload.TYPE: [ClaimRequestType.REQ_REVOCATION.value],
             Payload.ISSUER: issuer_did_key_holder.did,
             Payload.AUDIENCE: holder_did,
             Payload.RESULT: response_result.result,
@@ -43,6 +43,6 @@ class TestClaimResponse:
         jwt: Jwt = Jwt.decode(jwt_token)
         assert issuer_did == jwt.payload.iss
         assert holder_did == jwt.payload.aud
-        assert [ClaimRequestType.REVOCATION.value] == jwt.payload.type
+        assert [ClaimRequestType.REQ_REVOCATION.value] == jwt.payload.type
         assert response_result == jwt.payload.get_response_result()
         assert jwt.verify(key_provider.public_key).success

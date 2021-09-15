@@ -34,12 +34,12 @@ class JsonLdVc(BaseJsonLd):
     def refresh_type(self) -> str:
         return self._refresh.get('type')
 
-    def as_json(self):
+    def as_dict(self):
         if PropertyName.JL_REVOCATION_SERVICE in self.node:
             json_node = copy.deepcopy(self.node)
             json_node[PropertyName.JL_REVOCATION_SERVICE] = self.node[PropertyName.JL_REVOCATION_SERVICE].as_dict()
             return json_node
-        return super().as_json()
+        return super().as_dict()
 
     @classmethod
     def from_(cls, param: JsonLdParam,

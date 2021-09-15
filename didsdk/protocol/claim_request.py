@@ -7,7 +7,7 @@ from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.jwt.elements import Payload, Header
 from didsdk.jwt.jwt import Jwt, VerifyResult
-from didsdk.protocol.claim_request_type import ClaimRequestType
+from didsdk.protocol.claim_message_type import ClaimRequestType
 from didsdk.protocol.json_ld.json_ld_vcr import JsonLdVcr
 from didsdk.protocol.json_ld.json_ld_vpr import JsonLdVpr
 
@@ -108,21 +108,22 @@ class ClaimRequest:
               did: str,
               algorithm: AlgorithmType,
               public_key_id: str,
-              request_date: int,
               expired_date: int,
               version: str,
+              request_date: int = None,
               kid: str = None,
               public_key: EphemeralPublicKey = None,
               vc_id: str = None,
               claims: dict = None,
               vcr: JsonLdVcr = None,
+              vpr: JsonLdVpr = None,
               nonce: str = None,
               jti: str = None,
               encoded_token: List[str] = None,
               response_id: str = None) -> 'ClaimRequest':
         if not version:
             raise ValueError('version cannot be None.')
-        if not response_id and (type_ not in [ClaimRequestType.PRESENTATION, ClaimRequestType.INIT]):
+        if not response_id and (type_ not in [ClaimRequestType.REQ_PRESENTATION, ClaimRequestType.DID_INIT]):
             raise ValueError('responseId cannot be None.')
 
         if algorithm != AlgorithmType.NONE:
@@ -134,7 +135,7 @@ class ClaimRequest:
                 raise ValueError('publicKeyId cannot be None.')
             if not kid:
                 kid = did + '#' + public_key_id
-        elif type_ != ClaimRequestType.PRESENTATION:
+        elif type_ != ClaimRequestType.REQ_PRESENTATION:
             raise ValueError(f'None algorithm is supported only for presentation.')
 
         if not request_date:
@@ -152,11 +153,58 @@ class ClaimRequest:
             Payload.NONCE: nonce,
             Payload.JTI: jti,
             Payload.VC_ID: vc_id,
-            Payload.VCR: vcr.as_json() if vcr else None,
+            Payload.VCR: vcr.as_dict() if vcr else None,
+            Payload.VPR: vpr.as_dict() if vpr else None,
             Payload.VERSION: version
         }
         payload = Payload(contents=contents)
         return cls(Jwt(header=header, payload=payload, encoded_token=encoded_token))
+
+    @classmethod
+    def for_did(cls, algorithm: AlgorithmType,
+                did: str,
+                public_key_id: str,
+                response_id: str,
+                version: str,
+                type_: ClaimRequestType,
+                nonce: str,
+                kid: str = None,
+                request_date: int = None,
+                encoded_token: List[str] = None,
+                jti: str = None,
+                public_key: EphemeralPublicKey = None):
+        if not version:
+            raise ValueError('version cannot be None.')
+        if not response_id and type_ != ClaimRequestType.REQ_PRESENTATION and type_ != ClaimRequestType.DID_INIT:
+            raise ValueError('responseId cannot be None.')
+
+        if algorithm != AlgorithmType.NONE:
+            if not did:
+                raise ValueError('did cannot be None.')
+            if not algorithm:
+                raise ValueError('algorithm cannot be None.')
+            if not public_key_id:
+                raise ValueError('publicKeyId cannot be None.')
+            if not kid:
+                kid = did + '#' + public_key_id
+
+        if not request_date:
+            request_date = int(time.time() * 1_000_000)
+
+        contents = {
+            Payload.ISSUER: did,
+            Payload.AUDIENCE: response_id,
+            Payload.ISSUED_AT: request_date,
+            Payload.PUBLIC_KEY: public_key.as_dict() if public_key else None,
+            Payload.NONCE: nonce,
+            Payload.TYPE: [type_.value],
+            Payload.jti: jti,
+            Payload.VERSION: version
+        }
+
+        return cls(Jwt(header=Header(alg=algorithm.name, kid=kid),
+                       payload=Payload(contents=contents),
+                       encoded_token=encoded_token))
 
     @classmethod
     def from_jwt(cls, jwt: Jwt) -> 'ClaimRequest':
@@ -175,7 +223,7 @@ class ClaimRequest:
             response_id = payload.sub
 
         type_ = ClaimRequestType(payload.type[0])
-        if not response_id and type_ != ClaimRequestType.PRESENTATION and ClaimRequestType.INIT != type_:
+        if not response_id and type_ != ClaimRequestType.REQ_PRESENTATION and ClaimRequestType.DID_INIT != type_:
             raise ValueError('responseId cannot be None.')
 
         algorithm: AlgorithmType = AlgorithmType.from_name(header.alg)
@@ -185,23 +233,47 @@ class ClaimRequest:
         if algorithm != AlgorithmType.NONE:
             if not kid:
                 raise ValueError('kid cannot be None.')
-        elif type_ != ClaimRequestType.PRESENTATION:
+        elif type_ != ClaimRequestType.REQ_PRESENTATION:
             raise ValueError(f'None algorithm is supported only for presentation.')
 
         return cls(jwt)
 
     @classmethod
-    def for_presentation(cls, jwt: Jwt) -> 'ClaimRequest':
+    def for_presentation(cls, algorithm: AlgorithmType,
+                         did: str,
+                         public_key_id: str,
+                         response_id: str,
+                         vpr: JsonLdVpr,
+                         public_key: EphemeralPublicKey,
+                         nonce: str,
+                         version: str,
+                         kid: str = None,
+                         encoded_token: List[str] = None,
+                         jti: str = None,
+                         request_date: int = None,
+                         expired_date: int = None):
+        return cls.from_(ClaimRequestType.REQ_PRESENTATION,
+                         did=did,
+                         algorithm=algorithm,
+                         public_key_id=public_key_id,
+                         response_id=response_id,
+                         vpr=vpr,
+                         public_key=public_key,
+                         nonce=nonce,
+                         version=version,
+                         kid=kid,
+                         encoded_token=encoded_token,
+                         jti=jti,
+                         request_date=request_date,
+                         expired_date=expired_date)
+
+    @classmethod
+    def for_presentation_from_jwt(cls, jwt: Jwt) -> 'ClaimRequest':
         header: Header = jwt.header
         payload: Payload = jwt.payload
 
         request_date = payload.iat
-        vpr = JsonLdVpr(payload.get(Payload.VPR))
-        if not payload.version:
-            raise ValueError('version cannot be None.')
-
-        if not vpr:
-            raise ValueError('vpr cannot be None.')
+        vpr = payload.get(Payload.VPR)
 
         response_id: str = ''
         if payload.aud:
@@ -235,12 +307,12 @@ class ClaimRequest:
             Payload.ISSUER: did,
             Payload.AUDIENCE: response_id,
             Payload.ISSUED_AT: request_date,
-            Payload.PUBLIC_KEY: payload.public_key,
+            Payload.PUBLIC_KEY: payload.public_key.as_dict(),
             Payload.CLAIM: {
                 Payload.VPR: vpr
             },
             Payload.NONCE: payload.nonce,
-            Payload.TYPE: ClaimRequestType.PRESENTATION.value,
+            Payload.TYPE: ClaimRequestType.REQ_PRESENTATION.value,
             Payload.VERSION: payload.version
         }
 
@@ -270,13 +342,13 @@ class ClaimRequest:
                 raise ValueError('publicKeyId cannot be None.')
             if not kid:
                 kid = did + '#' + public_key_id
-        elif type_ != ClaimRequestType.PRESENTATION:
+        elif type_ != ClaimRequestType.REQ_PRESENTATION:
             raise ValueError(f'None algorithm is supported only for presentation.')
 
         if not request_date:
             request_date = int(time.time()*1_000_000)
 
-        type_ = [ClaimRequestType.REVOCATION.value, type_.value] if type_ else [ClaimRequestType.REVOCATION.value]
+        type_ = [ClaimRequestType.REQ_REVOCATION.value, type_.value] if type_ else [ClaimRequestType.REQ_REVOCATION.value]
 
         header: Header = Header(alg=algorithm.name, kid=kid)
         contents = {
