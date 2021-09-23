@@ -16,11 +16,16 @@ class VprCondition(BaseJsonLd):
         super().__init__(condition)
 
         if (PropertyName.JL_OPERATOR in condition) and (PropertyName.JL_CONDITION in condition):
-            elements: List[str] = condition.get(PropertyName.JL_CONDITION)
+            elements: List = condition.get(PropertyName.JL_CONDITION)
             if not isinstance(elements, list):
                 raise ValueError('"condition" must be a type of list.')
 
-            self.condition_list: List[dict] = [json.loads(element) for element in elements]
+            self.condition_list: List[dict] = []
+            for element in elements:
+                if isinstance(element, dict):
+                    self.condition_list.append(element)
+                else:
+                    self.condition_list.append(json.loads(element))
 
     def get_condition_id(self) -> str:
         return None if self.is_compound() else self.get_term(PropertyName.JL_CONDITION_ID)
@@ -56,7 +61,7 @@ class VprCondition(BaseJsonLd):
         return cls(condition)
 
     @classmethod
-    def from_compound_condition(cls, type_, operator: str, condition_list: List['VprCondition']) -> 'VprCondition':
+    def from_compound_condition(cls, operator: str, condition_list: List['VprCondition'], type_=None) -> 'VprCondition':
         if not(operator and condition_list):
             raise ValueError('[operator, condition_list] values cannot be None.')
         if len(condition_list) < 2:
