@@ -12,30 +12,45 @@ class TestPresentation:
         return Presentation(algorithm=issuer_did.algorithm, key_id=issuer_did.key_id, did=issuer_did.did)
 
     @pytest.fixture
-    def credential_v1(self, issuer_did, dids, vc_claim) -> Credential:
+    def presentation_v1_0(self, issuer_did):
+        return Presentation(algorithm=issuer_did.algorithm, key_id=issuer_did.key_id, did=issuer_did.did, version=CredentialVersion.v1_0)
+
+    @pytest.fixture
+    def presentation_v1_1(self, issuer_did):
+        return Presentation(algorithm=issuer_did.algorithm, key_id=issuer_did.key_id, did=issuer_did.did, version=CredentialVersion.v1_1)
+
+    @pytest.fixture
+    def credential_v1_0(self, issuer_did, dids, vc_claim_for_v1) -> Credential:
+        return Credential(algorithm=issuer_did.algorithm,
+                          key_id=issuer_did.key_id,
+                          did=issuer_did.did,
+                          target_did=dids['target_did'],
+                          version=CredentialVersion.v1_0,
+                          claim=vc_claim_for_v1)
+
+    @pytest.fixture
+    def credential_v1_1(self, issuer_did, dids, vc_claim_for_v1) -> Credential:
         return Credential(algorithm=issuer_did.algorithm,
                           key_id=issuer_did.key_id,
                           did=issuer_did.did,
                           target_did=dids['target_did'],
                           version=CredentialVersion.v1_1,
-                          claim=vc_claim)
+                          claim=vc_claim_for_v1)
 
     @pytest.fixture
     def credential_v2(self, credentials) -> Credential:
         return credentials[0]
 
-    @pytest.mark.parametrize('credential', ['credential_v1', 'credential_v2'])
-    def test_add_credential(self, presentation, credential, private_key, request):
+    def test_add_credential(self, presentation_v1_0, credential_v1_0, private_key, request):
         # GIVEN a presentation object and a credential object
-        credential = request.getfixturevalue(credential)
         # WHEN try to add a credential
         issued = int(time.time() * 1_000_000)
         expiration = issued * 2
-        presentation.add_credential(credential.as_jwt(issued, expiration).sign(private_key))
-        types = presentation.get_types()
+        presentation_v1_0.add_credential(credential_v1_0.as_jwt(issued, expiration).sign(private_key))
+        types = presentation_v1_0.get_types()
 
         # THEN it contains claims of the credential
-        for claim in credential.claim:
+        for claim in credential_v1_0.claim:
             assert claim in types
 
     def test_as_jwt(self, presentation):
@@ -95,6 +110,6 @@ class TestPresentation:
         assert presentation.jti == payload.jti
         assert presentation.version == payload.version
 
-    # TODO
+    # TODO After knowing it's usage of the method `get_plain_params`.
     def test_get_plain_params(self):
         pass

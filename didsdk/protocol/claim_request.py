@@ -97,7 +97,7 @@ class ClaimRequest:
     def vpr(self) -> Optional[JsonLdVpr]:
         return self.jwt.payload.vpr
 
-    def verify_result_time(self, valid_micro_second: int) -> VerifyResult:
+    def verify_result_time(self, valid_micro_second: int = None) -> VerifyResult:
         return self.jwt.verify_iat(valid_micro_second)
     
     def verify(self, public_key: PublicKey) -> VerifyResult:
@@ -108,9 +108,9 @@ class ClaimRequest:
               did: str,
               algorithm: AlgorithmType,
               public_key_id: str,
-              expired_date: int,
               version: str,
               request_date: int = None,
+              expired_date: int = None,
               kid: str = None,
               public_key: EphemeralPublicKey = None,
               vc_id: str = None,
@@ -243,10 +243,10 @@ class ClaimRequest:
                          did: str,
                          public_key_id: str,
                          response_id: str,
-                         vpr: JsonLdVpr,
                          public_key: EphemeralPublicKey,
                          nonce: str,
                          version: str,
+                         vpr: JsonLdVpr=None,
                          kid: str = None,
                          encoded_token: List[str] = None,
                          jti: str = None,

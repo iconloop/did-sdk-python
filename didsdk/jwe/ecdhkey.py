@@ -21,10 +21,12 @@ class CurveTypePlate:
     curve_ec: Curve
 
 
-# TODO: Remove one attribute of curves(ec, cry).
 class CurveType(Enum):
     CURVE_P256 = CurveTypePlate(curve_name="P-256", algorithm_type=AlgorithmType.ES256,
                                 openssl_name='secp256r1', curve_ec=NIST256p)
+    # TODO: Fix it to be able to using all the alias of algorithm. eg.openssl_name, etc
+    # CURVE_P256K = CurveTypePlate(curve_name="P-256K", algorithm_type=AlgorithmType.ES256K,
+    #                              openssl_name="secp256k1", curve_ec=SECP256k1)
     CURVE_P256K = CurveTypePlate(curve_name="secp256k1", algorithm_type=AlgorithmType.ES256K,
                                  openssl_name="secp256k1", curve_ec=SECP256k1)
     CURVE_P384 = CurveTypePlate(curve_name="P-384", algorithm_type=AlgorithmType.ES256K,

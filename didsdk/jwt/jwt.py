@@ -82,7 +82,10 @@ class Jwt:
         signature: bytes = algorithm.sign(private_key, content.encode(encoding))
         return f'{content}.{Base64URLEncoder.encode(signature)}'
 
-    def verify(self, public_key: PublicKey, encoding: str = 'UTF-8') -> VerifyResult:
+    def verify(self, public_key: PublicKey = None, encoding: str = 'UTF-8') -> VerifyResult:
+        if not public_key:
+            return self.verify_expired()
+
         if not self._encoded_token or len(self._encoded_token) != 3:
             raise JwtException('A signature is required for verify.')
 

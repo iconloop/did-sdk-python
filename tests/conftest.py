@@ -1,4 +1,3 @@
-import secrets
 import time
 from typing import List
 
@@ -12,6 +11,8 @@ from didsdk.document.encoding import EncodeType
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.issuer_did import IssuerDid
 from didsdk.jwt.jwt import Jwt
+from didsdk.protocol.base_claim import BaseClaim
+from didsdk.protocol.hash_attribute import HashedAttribute
 from didsdk.protocol.json_ld.claim import Claim
 from didsdk.protocol.json_ld.display_layout import DisplayLayout
 from didsdk.protocol.json_ld.info_param import InfoParam
@@ -91,6 +92,17 @@ def vc_claim() -> dict:
     }
 
 
+@pytest.fixture
+def vc_claim_for_v1(claim) -> dict:
+    return {
+        BaseClaim.ATTRIBUTE_TYPE: BaseClaim.HASH_TYPE,
+        BaseClaim.ATTRIBUTE: {
+            'alg': HashedAttribute.DEFAULT_ALG,
+            'value': claim
+        }
+    }
+
+
 def create_json_ld_param(vc_claim: dict) -> JsonLdParam:
     description_info_param = InfoParam(name='동의내역', content='아래 내용에 대해 위임 동의 합니다. 어쩌고 저쩌고 ~')
     consent_url_info_param = InfoParam(name='위임 이력 페이지', url='https://example.com/')
@@ -110,8 +122,8 @@ def create_json_ld_param(vc_claim: dict) -> JsonLdParam:
                              info=expected_info_param,
                              context=expected_context,
                              type_=[vc_type],
-                             proof_type='hash',
-                             hash_algorithm='sha256')
+                             proof_type=HashedAttribute.ATTR_TYPE,
+                             hash_algorithm=HashedAttribute.DEFAULT_ALG)
 
 
 def create_credential(issuer_did: IssuerDid,
@@ -138,7 +150,7 @@ def credentials(issuer_did: IssuerDid, dids: dict, vc_claim: dict) -> List[Crede
         'age': '18',
         'level': 'eighteen'
     }
-    nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_secure_random())
+    nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
     revocation_service = RevocationService(id_='http://example.com',
                                            type_='SimpleRevocationService',
                                            short_description='revocationShortDescription')
@@ -193,7 +205,7 @@ def payload(dids: dict, claim: dict, encrypted_credentials: List[str], private_k
         Payload.NONCE: 'b0f184df3f4e92ea9496d9a0aad259ae',
         Payload.JTI: '885c592008a5b95a8e348e56b92a2361',
         Payload.TYPE: [Credential.DEFAULT_TYPE] + list(claim.keys()),
-        Payload.VERSION: CredentialVersion.v1_1
+        Payload.VERSION: CredentialVersion.v1_0
     }
     return Payload(contents)
 

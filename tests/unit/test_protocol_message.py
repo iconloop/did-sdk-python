@@ -94,7 +94,7 @@ class TestProtocolMessage:
         id_: str = "https://www.zzeung.id/vcr/driver_license/123623"
         type_: list = ["IlDriverLicenseKorCredential"]
         json_ld_vcr: JsonLdVcr = JsonLdVcr(context=context, id_=id_, type_=type_, request_claim=request_claim)
-        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_secure_random())
+        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
 
         return ClaimRequest.from_(type_=ClaimRequestType.REQ_CREDENTIAL,
                                   algorithm=holder_did_key_holder_v_2_0.type,

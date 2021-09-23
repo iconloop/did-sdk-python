@@ -2,7 +2,7 @@ import dataclasses
 import json
 import time
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 from jwcrypto import jwe, jwk
 
@@ -11,9 +11,9 @@ from didsdk.core.property_name import PropertyName
 from didsdk.credential import CredentialVersion, Credential
 from didsdk.document.encoding import Base64URLEncoder
 from didsdk.exceptions import JweException
+from didsdk.jwe import JWEHeader
 from didsdk.jwe.ecdhkey import ECDHKey
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
-from didsdk.jwe import JWEHeader
 from didsdk.jwt.elements import HeaderAlgorithmType
 from didsdk.jwt.jwt import Jwt
 from didsdk.presentation import Presentation
@@ -35,7 +35,7 @@ class ProtocolMessage:
     def __init__(self, type_: str,
                  protected_message: str = None,
                  plain_message: str = None,
-                 param: str = None,
+                 param: Union[str, BaseParam] = None,
                  param_string: str = None,
                  is_protected: bool = None,
                  credential: Credential = None,
@@ -58,7 +58,7 @@ class ProtocolMessage:
         self._credential: Optional[Credential] = credential
         self._presentation: Optional[Presentation] = presentation
         self._param_string: str = param_string
-        self._param: str = param
+        self._param: Union[str, BaseParam] = param
         self._ld_param: Optional[JsonLdParam] = None
         self._issued: int = issued
         self._expiration: int = expiration
@@ -69,7 +69,7 @@ class ProtocolMessage:
         self._is_decrypted: bool = is_decrypted if is_decrypted else False
 
     @property
-    def base_param(self) -> str:
+    def base_param(self) -> BaseParam:
         return self._param
 
     @property
@@ -361,7 +361,7 @@ class ProtocolMessage:
                                         issued=issued,
                                         expiration=expiration)
 
-    def sign_encrypt(self, did_key_holder: DidKeyHolder, ecdh_key: Optional[ECDHKey] = None) -> SignResult:
+    def sign_encrypt(self, did_key_holder: Optional[DidKeyHolder], ecdh_key: Optional[ECDHKey] = None) -> SignResult:
         if not did_key_holder and self._type != ProtocolType.REQUEST_PRESENTATION.value:
             return SignResult(fail_message='DidKeyHolder is required for sign.')
 
@@ -372,7 +372,8 @@ class ProtocolMessage:
             self._plain_message = did_key_holder.sign(self._credential.as_jwt(self._issued, self._expiration))
             if self._credential.version == CredentialVersion.v1_1:
                 self._param = self._credential.base_claim.attribute.base_param
-                self._param_string = Base64URLEncoder.encode(json.loads(self._param))
+                a: dict = dataclasses.asdict(self._param)
+                self._param_string = Base64URLEncoder.encode(json.dumps(a).encode('utf-8'))
             elif self._credential.version == CredentialVersion.v2_0:
                 self._ld_param = self._credential.param
                 self._param_string = self._ld_param.as_base64_url_string()

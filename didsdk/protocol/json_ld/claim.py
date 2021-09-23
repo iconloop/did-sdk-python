@@ -11,6 +11,9 @@ class Claim:
     display_value: str = None
     salt: str = None
 
+    def __str__(self):
+        return str(self.claim_value)
+
     def as_dict(self) -> dict:
         claims = {
             PropertyName.JL_CLAIM_VALUE: self.claim_value,

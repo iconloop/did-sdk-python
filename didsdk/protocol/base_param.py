@@ -8,5 +8,5 @@ PARAM_NONCE = "nonce"
 
 @dataclass(frozen=True)
 class BaseParam:
-    value: Dict[str, Any]
+    value: dict
     nonce: Dict[str, str]

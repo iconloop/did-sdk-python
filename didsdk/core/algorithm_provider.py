@@ -63,7 +63,7 @@ class AlgorithmProvider:
             raise ValueError('Type cannot be null.')
 
     @staticmethod
-    def generate_secure_random() -> bytes:
+    def generate_random_nonce() -> bytes:
         return secrets.token_bytes(16)
 
     @staticmethod

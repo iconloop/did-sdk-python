@@ -5,7 +5,6 @@ from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.issuer_did import IssuerDid
 from didsdk.jwt.jwt import Jwt
 from didsdk.protocol.base_claim import BaseClaim
-from didsdk.protocol.hash_attribute import HashedAttribute
 from didsdk.protocol.json_ld.json_ld_param import JsonLdParam
 from didsdk.protocol.json_ld.json_ld_vc import JsonLdVc
 from didsdk.protocol.json_ld.revocation_service import RevocationService
@@ -76,9 +75,7 @@ class Credential(ConvertJwt):
 
         if claim:
             if self.version == CredentialVersion.v1_1:
-                self._base_claim = BaseClaim(attribute_type=BaseClaim.HASH_TYPE,
-                                             algorithm=HashedAttribute.DEFAULT_ALG,
-                                             values=claim)
+                self._base_claim = BaseClaim.from_json(claim)
         elif base_claim:
             self._base_claim = base_claim
         elif param:

@@ -71,7 +71,7 @@ class TestVC_2_0:
                                                              type=AlgorithmType.ES256K,
                                                              private_key=verifier_private_key)
 
-        did_init_nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_secure_random())
+        did_init_nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
         did_init_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='issuerKey-1', epk=issuer_ecdh_key)
 
         ############
@@ -147,7 +147,7 @@ class TestVC_2_0:
         # REQ_CREDENTIAL #
         ##################
         # GIVEN a ClaimRequest
-        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_secure_random())
+        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
         request_date = int(time.time() * 1_000_000)
         credential_request_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holderKey-1', epk=holder_ecdh_key)
         request_claim: dict = {
@@ -314,7 +314,7 @@ class TestVC_2_0:
         # REQ_PRESENTATION #
         ####################
         # GIVEN REQUEST_PRESENTATION parameeters
-        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_secure_random())
+        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
         presentation_request_public_key: EphemeralPublicKey = EphemeralPublicKey(
             kid="verifierKey-1", epk=verifier_ecdh_key)
         require_property: List[str] = ['name', 'residentRegistrationNumberFirst7']

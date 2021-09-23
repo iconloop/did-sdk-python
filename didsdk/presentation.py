@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional
 
 from didsdk.core.algorithm_provider import AlgorithmType
@@ -26,7 +27,8 @@ class Presentation(ConvertJwt):
     EXP_DURATION: int = 5 * 60          # second
     DEFAULT_TYPE: str = 'PRESENTATION'
 
-    def __init__(self, algorithm: str, key_id: str, did: str, base_vcs: List[BaseVc] = None):
+    def __init__(self, algorithm: str, key_id: str, did: str,
+                 version: str = None, nonce: str = None, base_vcs: List[BaseVc] = None):
         self._algorithm: str = algorithm
         self._key_id: str = key_id
         self._did: str = did
@@ -34,9 +36,9 @@ class Presentation(ConvertJwt):
         self._jwt: Optional[Jwt] = None
         self._types: List[str] = []
         self._vp: Optional[JsonLdVp] = None
-        self.nonce: Optional[str] = None
+        self.nonce: Optional[str] = nonce
         self.jti: Optional[str] = None
-        self.version: Optional[str] = None
+        self.version: Optional[str] = version
         self.base_vcs: List[BaseVc] = base_vcs if base_vcs else []
 
     @property
@@ -85,10 +87,15 @@ class Presentation(ConvertJwt):
         :return:
         """
         self._credentials.append(credential)
-        credential = Credential.from_encoded_jwt(credential)
-        types = credential.get_types()
-        types.remove(Credential.DEFAULT_TYPE)
-        self._types += types
+        if self.version == CredentialVersion.v1_0:
+            credential = Credential.from_encoded_jwt(credential)
+            types = credential.get_types()
+            types.remove(Credential.DEFAULT_TYPE)
+            self._types += types
+        elif self.version == CredentialVersion.v1_1:
+            base_vc: BaseVc = BaseVc.from_json(json.loads(credential))
+            self.base_vcs.append(base_vc)
+            self._types += base_vc.vc_type
 
     def as_jwt(self, issued: int, expiration: int) -> Jwt:
         kid = self.did + '#' + self.key_id
@@ -97,12 +104,17 @@ class Presentation(ConvertJwt):
             Payload.ISSUER: self.did,
             Payload.ISSUED_AT: issued,
             Payload.EXPIRATION: expiration,
-            Payload.CLAIM: self._credentials,
             Payload.NONCE: self.nonce,
             Payload.JTI: self.jti,
             Payload.TYPE: self.get_types(),
             Payload.VERSION: self.version
         }
+
+        if self.version == CredentialVersion.v2_0:
+            contents[Payload.VP] = self._vp.node
+        else:
+            contents[Payload.CREDENTIAL] = self._credentials
+
         payload = Payload(contents=contents)
         return Jwt(header, payload)
 
@@ -110,22 +122,24 @@ class Presentation(ConvertJwt):
     def from_(algorithm: AlgorithmType,
               key_id: str,
               did: str,
-              vp: JsonLdVp,
               nonce: str,
               version: str,
               credentials: list = None,
+              vp: JsonLdVp = None,
               jwt: Jwt = None) -> 'Presentation':
 
         if not version:
             raise ValueError('version cannot None.')
 
         presentation = Presentation(algorithm=algorithm.name, key_id=key_id, did=did)
-        if credentials:
-            presentation.credentials = credentials
-        if vp:
-            presentation._vp = vp
         presentation.nonce = nonce
         presentation.version = version
+
+        if credentials:
+            presentation.set_credential(credentials)
+        if vp:
+            presentation._vp = vp
+
         presentation._jwt = jwt
         presentation.jti = jwt.payload.jti if jwt else None
 
@@ -165,10 +179,15 @@ class Presentation(ConvertJwt):
         :return:
         """
         if CredentialVersion.v1_1 == self.version:
-            return [base_vc for base_vc in self.base_vcs if key in base_vc.vc_type]
+            return [base_vc.param.value.get(key) for base_vc in self.base_vcs if key in base_vc.vc_type]
         elif CredentialVersion.v2_0 == self.version:
             return [criteria.param.claims[key].claim_value
                     for criteria in self.vp.fulfilledCriteria if key in criteria.param.claims]
 
     def get_types(self):
         return [self.DEFAULT_TYPE] + self._types
+
+    def set_credential(self, credentials: list):
+        self._types = []
+        for credential in credentials:
+            self.add_credential(credential)
