@@ -6,7 +6,6 @@ from typing import List
 from coincurve import PrivateKey
 from iconsdk.wallet.wallet import KeyWallet
 
-from didsdk.core.algorithm import Algorithm
 from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.credential import CredentialVersion, Credential
@@ -33,7 +32,6 @@ class TestVC_1_1:
         holder_wallet: KeyWallet = KeyWallet.create()
         issuer_wallet: KeyWallet = KeyWallet.create()
 
-        algorithm: Algorithm = AlgorithmProvider.create(AlgorithmType.ES256K)
         holder_private_key: PrivateKey = PrivateKey.from_hex(holder_wallet.get_private_key())
         issuer_private_key: PrivateKey = PrivateKey.from_hex(issuer_wallet.get_private_key())
 
@@ -103,7 +101,7 @@ class TestVC_1_1:
                                             base_claim=base_claim,
                                             version=CredentialVersion.v1_1)
 
-        issued: int = int(time.time()*1_000_000)
+        issued: int = int(time.time() * 1_000_000)
         duration: int = credential.duration * 1000
         expiration: int = issued + duration
         protocol_message = ProtocolMessage.for_credential(protocol_type=ProtocolType.RESPONSE_PROTECTED_CREDENTIAL,
@@ -132,7 +130,7 @@ class TestVC_1_1:
         nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
         request_public_key = EphemeralPublicKey(kid='verifier_key_1', epk=verifier_ecdh_key)
 
-        request_date: int = int(time.time()*1_000_000)
+        request_date: int = int(time.time() * 1_000_000)
         expiration: int = request_date + duration
         presentation_request: ClaimRequest = ClaimRequest.for_presentation(algorithm=issuer_did_key_holder.type,
                                                                            public_key_id=issuer_did_key_holder.key_id,

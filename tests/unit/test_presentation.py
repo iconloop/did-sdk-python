@@ -13,11 +13,17 @@ class TestPresentation:
 
     @pytest.fixture
     def presentation_v1_0(self, issuer_did):
-        return Presentation(algorithm=issuer_did.algorithm, key_id=issuer_did.key_id, did=issuer_did.did, version=CredentialVersion.v1_0)
+        return Presentation(algorithm=issuer_did.algorithm,
+                            key_id=issuer_did.key_id,
+                            did=issuer_did.did,
+                            version=CredentialVersion.v1_0)
 
     @pytest.fixture
     def presentation_v1_1(self, issuer_did):
-        return Presentation(algorithm=issuer_did.algorithm, key_id=issuer_did.key_id, did=issuer_did.did, version=CredentialVersion.v1_1)
+        return Presentation(algorithm=issuer_did.algorithm,
+                            key_id=issuer_did.key_id,
+                            did=issuer_did.did,
+                            version=CredentialVersion.v1_1)
 
     @pytest.fixture
     def credential_v1_0(self, issuer_did, dids, vc_claim_for_v1) -> Credential:

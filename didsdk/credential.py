@@ -70,7 +70,7 @@ class Credential(ConvertJwt):
             self.version = CredentialVersion.v2_0
 
         if not self.version:
-            raise ValueError(f'version cannot be None.')
+            raise ValueError('version cannot be None.')
         self.target_did: str = target_did
 
         if claim:

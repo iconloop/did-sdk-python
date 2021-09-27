@@ -91,7 +91,7 @@ class TestVprCondition:
                                                                            did=issuer_did_key_holder.did,
                                                                            public_key_id=issuer_did_key_holder.key_id,
                                                                            response_id=holder_did,
-                                                                           request_date=int(time.time()*1_000_000),
+                                                                           request_date=int(time.time() * 1_000_000),
                                                                            nonce=nonce,
                                                                            public_key=presentation_request_public_key,
                                                                            version=CredentialVersion.v2_0,

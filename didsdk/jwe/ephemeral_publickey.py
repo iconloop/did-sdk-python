@@ -22,4 +22,3 @@ class EphemeralPublicKey:
             json_data['epk'] = ECDHKey(**epk)
 
         return cls(**json_data)
-    

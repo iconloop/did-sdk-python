@@ -352,7 +352,7 @@ class ProtocolMessage:
                        expiration: int = None) -> 'ProtocolMessage':
 
         if not issued:
-            issued = int(time.time()*1_000_000)
+            issued = int(time.time() * 1_000_000)
         if not expiration:
             expiration = issued * 2
 

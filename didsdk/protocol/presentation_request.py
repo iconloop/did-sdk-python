@@ -13,8 +13,8 @@ REQUEST_CLAIM = "requestClaim"
 
 
 class PresentationRequest:
-    """Presentation request.
-    """
+    """Presentation request."""
+
     def __init__(self, jwt: Jwt):
         self.jwt: Jwt = jwt
 

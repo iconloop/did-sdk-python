@@ -20,6 +20,7 @@ class ClaimRequest:
 
     This class is used when requesting a credential from an issuer or requesting a presentation from holder.
     """
+
     def __init__(self, jwt: Jwt):
         self.jwt: Jwt = jwt
 
@@ -36,7 +37,7 @@ class ClaimRequest:
         types = list(self.jwt.payload.type)
         del types[DEFAULT_TYPE_POSITION]
         return types
-    
+
     @property
     def compact(self) -> str:
         return self.jwt.compact()
@@ -99,7 +100,7 @@ class ClaimRequest:
 
     def verify_result_time(self, valid_micro_second: int = None) -> VerifyResult:
         return self.jwt.verify_iat(valid_micro_second)
-    
+
     def verify(self, public_key: PublicKey) -> VerifyResult:
         return self.jwt.verify(public_key)
 
@@ -136,7 +137,7 @@ class ClaimRequest:
             if not kid:
                 kid = did + '#' + public_key_id
         elif type_ != ClaimRequestType.REQ_PRESENTATION:
-            raise ValueError(f'None algorithm is supported only for presentation.')
+            raise ValueError('None algorithm is supported only for presentation.')
 
         if not request_date:
             request_date = int(time.time() * 1_000_000)
@@ -234,7 +235,7 @@ class ClaimRequest:
             if not kid:
                 raise ValueError('kid cannot be None.')
         elif type_ != ClaimRequestType.REQ_PRESENTATION:
-            raise ValueError(f'None algorithm is supported only for presentation.')
+            raise ValueError('None algorithm is supported only for presentation.')
 
         return cls(jwt)
 
@@ -246,7 +247,7 @@ class ClaimRequest:
                          public_key: EphemeralPublicKey,
                          nonce: str,
                          version: str,
-                         vpr: JsonLdVpr=None,
+                         vpr: JsonLdVpr = None,
                          kid: str = None,
                          encoded_token: List[str] = None,
                          jti: str = None,
@@ -331,7 +332,7 @@ class ClaimRequest:
                        kid: str = None,
                        request_date: int = None) -> 'ClaimRequest':
         if not (version and response_id and signature):
-            raise ValueError(f'Any value in [version, responseId, signature] cannot be None.')
+            raise ValueError('Any value in [version, responseId, signature] cannot be None.')
 
         if algorithm != AlgorithmType.NONE:
             if not did:
@@ -343,12 +344,13 @@ class ClaimRequest:
             if not kid:
                 kid = did + '#' + public_key_id
         elif type_ != ClaimRequestType.REQ_PRESENTATION:
-            raise ValueError(f'None algorithm is supported only for presentation.')
+            raise ValueError('None algorithm is supported only for presentation.')
 
         if not request_date:
-            request_date = int(time.time()*1_000_000)
+            request_date = int(time.time() * 1_000_000)
 
-        type_ = [ClaimRequestType.REQ_REVOCATION.value, type_.value] if type_ else [ClaimRequestType.REQ_REVOCATION.value]
+        type_ = ([ClaimRequestType.REQ_REVOCATION.value, type_.value]
+                 if type_ else [ClaimRequestType.REQ_REVOCATION.value])
 
         header: Header = Header(alg=algorithm.name, kid=kid)
         contents = {

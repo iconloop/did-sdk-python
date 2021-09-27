@@ -30,7 +30,8 @@ from didsdk.protocol.protocol_type import ProtocolType
 
 class TestVC_2_0:
     def test_did_full_sdk(self):
-        """ Icon did sdk full test
+        """Icon did sdk full test
+
         Flow
         1. Holder ---(RequestCredential)--->>> Issuer
         2. Holder <<<---(Credential)--- Issuer
@@ -233,7 +234,7 @@ class TestVC_2_0:
             "name": Claim('홍길순'),
             "birthDate": Claim("2000-01-01", salt="65341c4b0cbff6bee9118da10d6e85a5"),
             "gender": Claim("female", salt="12341c4b0cbff6bee9118da10d6e85a5", display_value="여성"),
-            "telco": Claim("SKT",  salt="91341c4b0cbff6bee9118da10d6e85a5"),
+            "telco": Claim("SKT", salt="91341c4b0cbff6bee9118da10d6e85a5"),
             "phoneNumber": Claim("01031142962", salt="e2341c4b0cbff6bee9118da10d6e85a5", display_value="010-3114-2962"),
             "connectingInformation": Claim("0000000000000000000000000000000000000000",
                                            salt="ff341c4b0cbff6bee9118da10d6e85a5"),
@@ -278,7 +279,7 @@ class TestVC_2_0:
                                 revocation_service=revocation_service,
                                 version=CredentialVersion.v2_0)
 
-        issued: int = int(time.time()*1_000_000)
+        issued: int = int(time.time() * 1_000_000)
         expiration: int = issued + (credential.EXP_DURATION * 1000)
         credential_response_pm: ProtocolMessage = ProtocolMessage.for_credential(
             protocol_type=ProtocolType.RESPONSE_CREDENTIAL,
@@ -389,13 +390,13 @@ class TestVC_2_0:
                                                         version=CredentialVersion.v2_0,
                                                         vp=vp)
 
-        request_date: int = int(time.time()*1_000_000)
+        request_date: int = int(time.time() * 1_000_000)
         presentation_pm: ProtocolMessage = ProtocolMessage.for_presentation(
             ProtocolType.RESPONSE_PROTECTED_PRESENTATION,
             presentation=presentation,
             request_public_key=decrypted_presentation_request.public_key,
             issued=request_date,
-            expiration=request_date + (Credential.EXP_DURATION*1000))
+            expiration=request_date + (Credential.EXP_DURATION * 1000))
 
         # WHEN try to sign to RESPONSE_PROTECTED_PRESENTATION request message
         presentation_request_sign_result: SignResult = presentation_pm.sign_encrypt(

@@ -6,4 +6,3 @@ class JWEHeader:
     kid: str
     alg: str
     enc: str
-

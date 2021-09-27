@@ -4,7 +4,7 @@ class PropertyName:
     ALGO_KEY_ECDSAK = "ES256K"
 
     ALGO_KEYTYPE_ECDSA = "EC"
-    
+
     EC_CURVE_PARAM_SECP256R1 = "secp256r1"
     EC_CURVE_PARAM_SECP256K1 = "secp256k1"
 
@@ -31,7 +31,7 @@ class PropertyName:
     KEY_TX_UPDATE_METHOD_ADDKEY = "addKey"
     KEY_TX_UPDATE_METHOD_REVOKEKEY = "revokeKey"
     KEY_TX_UPDATE_PARAM = "param"
-    
+
     # 1.1
     KEY_PROTOCOL_TYPE = "type"
     KEY_PROTOCOL_MESSAGE = "message"

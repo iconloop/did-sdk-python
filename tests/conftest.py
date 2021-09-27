@@ -82,7 +82,7 @@ def vc_claim() -> dict:
         "name": Claim('홍길순'),
         "birthDate": Claim("2000-01-01", salt="65341c4b0cbff6bee9118da10d6e85a5"),
         "gender": Claim("female", salt="12341c4b0cbff6bee9118da10d6e85a5", display_value="여성"),
-        "telco": Claim("SKT",  salt="91341c4b0cbff6bee9118da10d6e85a5"),
+        "telco": Claim("SKT", salt="91341c4b0cbff6bee9118da10d6e85a5"),
         "phoneNumber": Claim("01031142962", salt="e2341c4b0cbff6bee9118da10d6e85a5", display_value="010-3114-2962"),
         "connectingInformation": Claim("0000000000000000000000000000000000000000",
                                        salt="ff341c4b0cbff6bee9118da10d6e85a5"),

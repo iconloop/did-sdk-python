@@ -1,4 +1,3 @@
-import secrets
 import time
 
 import pytest
@@ -11,8 +10,8 @@ from didsdk.jwe.ecdhkey import ECDHKey, CurveType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.jwt import Jwt, VerifyResult
-from didsdk.protocol.claim_request import ClaimRequest
 from didsdk.protocol.claim_message_type import ClaimRequestType
+from didsdk.protocol.claim_request import ClaimRequest
 from didsdk.protocol.json_ld.json_ld_vcr import JsonLdVcr
 
 
@@ -28,7 +27,7 @@ class TestClaimRequest:
         owner_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
         issuer_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
         version = CredentialVersion.v1_0
-        request_date = int(time.time()*1_000_000)
+        request_date = int(time.time() * 1_000_000)
         expired_date: int = request_date * 2
         claims: dict = {key: value for key, value in zip(claim_types, claim_values)}
         did_key_holder: DidKeyHolder = DidKeyHolder(key_id=key_provider.key_id,
@@ -72,7 +71,7 @@ class TestClaimRequest:
         key_provider = algorithm.generate_key_provider('test_credential_request_v2')
         owner_did = 'did:icon:03:a0da55dc3fb992aa93aefb1132778d724765b22a7ecbc087'
         issuer_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
-        request_date = int(time.time()*1_000_000)
+        request_date = int(time.time() * 1_000_000)
         expired_date: int = request_date * 2
         version = CredentialVersion.v2_0
         did_key_holder: DidKeyHolder = DidKeyHolder(key_id=key_provider.key_id,
@@ -132,7 +131,7 @@ class TestClaimRequest:
         key_provider = algorithm.generate_key_provider('test_presentation_request')
         owner_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
         verifier_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
-        request_date = int(time.time()*1_000_000)
+        request_date = int(time.time() * 1_000_000)
         expired_date: int = request_date * 2
         request_claim: dict = {
             'name': '엠마스톤',

@@ -12,8 +12,8 @@ from didsdk.protocol.response_result import ResponseResult
 
 
 class ClaimResponse:
-    """Credential response.
-    """
+    """Credential response."""
+
     def __init__(self, jwt: Jwt):
         self.jwt: Jwt = jwt
 
@@ -111,7 +111,7 @@ class ClaimResponse:
             if not kid:
                 kid = did + '#' + public_key_id
         else:
-            raise ValueError(f'None algorithm is not supported.')
+            raise ValueError('None algorithm is not supported.')
 
         if not response_date:
             response_date = int(time.time() * 1_000_000)
