@@ -11,6 +11,13 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+      - name: Install dependencies for ecdsa
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          libgmp3-dev \
+          libmpfr-dev \
+          libmpc-dev
       - name: Install dependencies
         run: |
           python -V
@@ -25,6 +32,13 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
+      - name: Install dependencies for ecdsa
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          libgmp3-dev \
+          libmpfr-dev \
+          libmpc-dev
       - name: Install dependencies
         run: |
           python -V
