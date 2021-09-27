@@ -32,13 +32,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
-      - name: Install dependencies for ecdsa
+      - name: Remove unnecessary dependencies for lint test
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-          libgmp3-dev \
-          libmpfr-dev \
-          libmpc-dev
+          echo "" > requirements.txt
       - name: Install dependencies
         run: |
           python -V
