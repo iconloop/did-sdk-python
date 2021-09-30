@@ -1,13 +1,23 @@
-import pytest
 import time
+from typing import List
+
+import pytest
 from coincurve import PrivateKey
 
-from didsdk.core.algorithm_provider import AlgorithmType
-from didsdk.credential import Credential
+from didsdk.core.algorithm_provider import AlgorithmType, AlgorithmProvider
+from didsdk.credential import Credential, CredentialVersion
 from didsdk.did_service import DidService
+from didsdk.document.encoding import EncodeType
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.issuer_did import IssuerDid
 from didsdk.jwt.jwt import Jwt
+from didsdk.protocol.base_claim import BaseClaim
+from didsdk.protocol.hash_attribute import HashedAttribute
+from didsdk.protocol.json_ld.claim import Claim
+from didsdk.protocol.json_ld.display_layout import DisplayLayout
+from didsdk.protocol.json_ld.info_param import InfoParam
+from didsdk.protocol.json_ld.json_ld_param import JsonLdParam
+from didsdk.protocol.json_ld.revocation_service import RevocationService
 from tests.utils.icon_service_factory import IconServiceFactory
 
 
@@ -67,61 +77,151 @@ def claim() -> dict:
 
 
 @pytest.fixture
-def credentials(issuer_did, dids, private_key):
+def vc_claim() -> dict:
+    return {
+        "name": Claim('홍길순'),
+        "birthDate": Claim("2000-01-01", salt="65341c4b0cbff6bee9118da10d6e85a5"),
+        "gender": Claim("female", salt="12341c4b0cbff6bee9118da10d6e85a5", display_value="여성"),
+        "telco": Claim("SKT", salt="91341c4b0cbff6bee9118da10d6e85a5"),
+        "phoneNumber": Claim("01031142962", salt="e2341c4b0cbff6bee9118da10d6e85a5", display_value="010-3114-2962"),
+        "connectingInformation": Claim("0000000000000000000000000000000000000000",
+                                       salt="ff341c4b0cbff6bee9118da10d6e85a5"),
+        "citizenship": Claim(True, salt="f2341c4b0cbff6bee9118da10d6e85a5", display_value="내국인"),
+        "bank": Claim('신한은행'),
+        "accountNumber": Claim('3333012392919393')
+    }
+
+
+@pytest.fixture
+def vc_claim_for_v1(claim) -> dict:
+    return {
+        BaseClaim.ATTRIBUTE_TYPE: BaseClaim.HASH_TYPE,
+        BaseClaim.ATTRIBUTE: {
+            'alg': HashedAttribute.DEFAULT_ALG,
+            'value': claim
+        }
+    }
+
+
+def create_json_ld_param(vc_claim: dict) -> JsonLdParam:
+    description_info_param = InfoParam(name='동의내역', content='아래 내용에 대해 위임 동의 합니다. 어쩌고 저쩌고 ~')
+    consent_url_info_param = InfoParam(name='위임 이력 페이지', url='https://example.com/')
+    consent_image_info_param = InfoParam(name='동의서', data_uri='data:image:png:f0zkel....')
+    expected_info_param = {'description': description_info_param,
+                           'consentUrl': consent_url_info_param,
+                           'consentImage': consent_image_info_param}
+    info_layout = DisplayLayout(expected_info_param)
+    id_card_layout = DisplayLayout({'idCardGroup': ['name', 'birthDate', 'phoneNumber']})
+    account_layout = DisplayLayout({'accountGroup': ['bank', 'accountNumber']})
+    expected_display_layout = DisplayLayout([id_card_layout, account_layout, info_layout])
+    expected_context: list = ["http://zzeung.id/score/credentials/v1.json",
+                              "http://zzeung.id/score/credentials/financial_id/v1.json"]
+    vc_type = 'PdsTestCredential'
+    return JsonLdParam.from_(vc_claim,
+                             display_layout=expected_display_layout,
+                             info=expected_info_param,
+                             context=expected_context,
+                             type_=[vc_type],
+                             proof_type=HashedAttribute.ATTR_TYPE,
+                             hash_algorithm=HashedAttribute.DEFAULT_ALG)
+
+
+def create_credential(issuer_did: IssuerDid,
+                      target_did: str,
+                      param: JsonLdParam,
+                      nonce: str,
+                      revocation_service: RevocationService) -> Credential:
+    return Credential(algorithm=issuer_did.algorithm,
+                      key_id=issuer_did.key_id,
+                      did=issuer_did.did,
+                      target_did=target_did,
+                      param=param,
+                      nonce=nonce,
+                      id_='https://www.iconloop.com/credential/financialId/12360',
+                      refresh_id='refreshId',
+                      refresh_type='refreshType',
+                      revocation_service=revocation_service,
+                      version=CredentialVersion.v2_0)
+
+
+@pytest.fixture
+def credentials(issuer_did: IssuerDid, dids: dict, vc_claim: dict) -> List[Credential]:
     claim_a = {
         'age': '18',
         'level': 'eighteen'
     }
-    credential_a = Credential(issuer_did, target_did=dids['target_did'], claim=claim_a)
+    nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
+    revocation_service = RevocationService(id_='http://example.com',
+                                           type_='SimpleRevocationService',
+                                           short_description='revocationShortDescription')
+    vc_claim['broofContents'] = Claim(claim_a)
+    param: JsonLdParam = create_json_ld_param(vc_claim)
+    credential_a = create_credential(issuer_did, dids['target_did'], param, nonce, revocation_service)
+
     claim_b = {
         'tall': '165'
     }
-    credential_b = Credential(issuer_did, target_did=dids['target_did'], claim=claim_b)
+    vc_claim['broofContents'] = Claim(claim_b)
+    param: JsonLdParam = create_json_ld_param(vc_claim)
+    credential_b = create_credential(issuer_did, dids['target_did'], param, nonce, revocation_service)
+
     claim_c = {
         'character': 'niniz'
     }
-    credential_c = Credential(issuer_did, target_did=dids['target_did'], claim=claim_c)
-    issued = int(time.time() * 1_000_000)
-    expiration = issued * 2
-    return [credential_a.as_jwt(issued, expiration).sign(private_key),
-            credential_b.as_jwt(issued, expiration).sign(private_key),
-            credential_c.as_jwt(issued, expiration).sign(private_key)]
+    vc_claim['broofContents'] = Claim(claim_c)
+    param: JsonLdParam = create_json_ld_param(vc_claim)
+    credential_c = create_credential(issuer_did, dids['target_did'], param, nonce, revocation_service)
+
+    return [credential_a, credential_b, credential_c]
 
 
 @pytest.fixture
-def header(dids, key_id) -> Header:
+def credentials_as_jwt(credentials: List[Credential]) -> List[Jwt]:
+    issued = int(time.time() * 1_000_000)
+    expiration = issued * 2
+
+    return [credential.as_jwt(issued, expiration) for credential in credentials]
+
+
+@pytest.fixture
+def encrypted_credentials(credentials_as_jwt: List[Jwt], private_key: PrivateKey) -> List[str]:
+    return [credential.sign(private_key) for credential in credentials_as_jwt]
+
+
+@pytest.fixture
+def header(dids: dict, key_id: str) -> Header:
     return Header(alg=AlgorithmType.ES256K.name, kid=f"{dids['did']}#{key_id}")
 
 
 @pytest.fixture
-def payload(dids, claim, credentials) -> Payload:
+def payload(dids: dict, claim: dict, encrypted_credentials: List[str], private_key: PrivateKey) -> Payload:
     contents = {
         Payload.ISSUER: dids['did'],
         Payload.ISSUED_AT: 1578445403,
         Payload.EXPIRATION: int(time.time() * 1_000_000) * 2,
-        Payload.CREDENTIAL: credentials,
+        Payload.CREDENTIAL: encrypted_credentials,
         Payload.SUBJECT: dids['target_did'],
         Payload.CLAIM: claim,
         Payload.NONCE: 'b0f184df3f4e92ea9496d9a0aad259ae',
         Payload.JTI: '885c592008a5b95a8e348e56b92a2361',
         Payload.TYPE: [Credential.DEFAULT_TYPE] + list(claim.keys()),
-        Payload.VERSION: '2.0'
+        Payload.VERSION: CredentialVersion.v1_0
     }
     return Payload(contents)
 
 
 @pytest.fixture
-def jwt_object(header, payload) -> Jwt:
+def jwt_object(header: Header, payload: Payload) -> Jwt:
     return Jwt(header, payload)
 
 
 @pytest.fixture
-def encoded_jwt(jwt_object, private_key) -> str:
+def encoded_jwt(jwt_object: Jwt, private_key: PrivateKey) -> str:
     return jwt_object.sign(private_key)
 
 
 @pytest.fixture
-def issuer_did(dids, key_id) -> IssuerDid:
+def issuer_did(dids: dict, key_id: str) -> IssuerDid:
     return IssuerDid(did=dids['did'], algorithm=AlgorithmType.ES256K.name, key_id=key_id)
 
 

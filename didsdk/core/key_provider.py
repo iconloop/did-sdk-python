@@ -1,14 +1,16 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from coincurve import PublicKey, PrivateKey
 
-from didsdk.core.algorithm_provider import AlgorithmType, AlgorithmProvider
+if TYPE_CHECKING:
+    from didsdk.core.algorithm_provider import AlgorithmType, AlgorithmProvider
 
 
 @dataclass(frozen=True)
 class KeyProvider:
     key_id: str
-    type: AlgorithmType
+    type: 'AlgorithmType'
     public_key: PublicKey
     private_key: PrivateKey
 

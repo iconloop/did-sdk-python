@@ -2,11 +2,19 @@ class AlgorithmException(Exception):
     pass
 
 
+class AttributeException(Exception):
+    pass
+
+
 class DocumentException(Exception):
     pass
 
 
 class JwtException(RuntimeError):
+    pass
+
+
+class JweException(RuntimeError):
     pass
 
 

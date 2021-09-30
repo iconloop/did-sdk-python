@@ -19,11 +19,11 @@ class IssuerDid(ConvertJwt):
         self._key_id: str = key_id
 
     @property
-    def algorithm(self):
+    def algorithm(self) -> str:
         return self._algorithm
 
     @property
-    def did(self):
+    def did(self) -> str:
         return self._did
 
     @property
@@ -31,7 +31,7 @@ class IssuerDid(ConvertJwt):
         return self.EXP_DURATION
 
     @property
-    def key_id(self):
+    def key_id(self) -> str:
         return self._key_id
 
     @staticmethod

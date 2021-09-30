@@ -38,7 +38,7 @@ class DidScoreParameter:
             PropertyName.KEY_TX_UPDATE_METHOD: PropertyName.KEY_TX_UPDATE_METHOD_ADDKEY,
             PropertyName.KEY_TX_UPDATE_PARAM: {
                 'id': did_key_holder.did,
-                PropertyName.KEY_DOCUMENT_PUBLICKEY: public_key_provider.asdict()
+                PropertyName.KEY_DOCUMENT_PUBLICKEY: public_key_provider.as_dict()
             }
         }
         payload = Payload(contents=contents)
@@ -56,7 +56,7 @@ class DidScoreParameter:
         :return: the json string
         """
         public_key_property = DidScoreParameter._create_public_key_property(key_provider, encode_type)
-        return json.dumps(public_key_property.asdict())
+        return json.dumps(public_key_property.as_dict())
 
     @staticmethod
     def revoke_key(did_key_holder: DidKeyHolder, revoke_key_id: str) -> Jwt:

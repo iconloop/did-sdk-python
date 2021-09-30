@@ -56,7 +56,7 @@ class TestDidService:
         key_file_path = Path(self.KEY_FILE_NAME)
         if key_file_path.exists():
             os.remove(key_file_path)
-        DidKeyStore.store(f'{self.KEY_FILE_NAME}', self.PASSWORD, key_holder)
+        DidKeyStore.store(self.KEY_FILE_NAME, self.PASSWORD, key_holder)
 
     @pytest.mark.asyncio
     async def test_add_public_key(self, did_service_testnet: DidService,
@@ -66,8 +66,7 @@ class TestDidService:
 
         # GIVEN a key_provider
         new_key_id = self.SECOND_KEY_ID
-        new_type = AlgorithmType.ES256K
-        algorithm = AlgorithmProvider.create(new_type)
+        algorithm = AlgorithmProvider.create(AlgorithmType.ES256K)
         key_provider = algorithm.generate_key_provider(new_key_id)
 
         # WHEN try to add new key
