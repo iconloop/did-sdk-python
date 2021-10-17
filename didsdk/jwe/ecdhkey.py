@@ -7,6 +7,7 @@ from hashlib import sha256
 import ecdsa
 from ecdsa import ellipticcurve
 from ecdsa.curves import Curve, NIST256p, SECP256k1, NIST384p, NIST521p
+from eth_keyfile import load_keyfile
 from jwcrypto.jwk import JWK
 
 from didsdk.core.algorithm_provider import AlgorithmType
@@ -76,6 +77,12 @@ class ECDHKey:
         jwk_json['crv'] = CurveType.from_curve_name(jwk_json.get('crv')).curve_name
 
         return ECDHKey(**jwk_json)
+
+    @staticmethod
+    def load_key(file_path: str) -> 'ECDHKey':
+        with open(file_path, 'rb') as file:
+            keyfile_json = load_keyfile(file)
+            return ECDHKey(**keyfile_json)
 
     def get_ec_public_key(self) -> ecdsa.VerifyingKey:
         x = int.from_bytes(EncodeType.BASE64URL.value.decode(self.x), 'big')
