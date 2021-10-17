@@ -43,7 +43,7 @@ class TestJsonLdVpr:
 
     @pytest.fixture
     def pr(self, condition: VprCondition, purpose: str, purpose_label: str, verifier: str) -> PR:
-        return PR(purpose, purpose_label, verifier, condition.as_dict())
+        return PR(purpose=purpose, purpose_label=purpose_label, verifier=verifier, condition=condition.as_dict())
 
     @pytest.fixture
     def vpr(self, context: List[str], id_: str, url: str, pr: PR) -> VPR:
@@ -52,7 +52,12 @@ class TestJsonLdVpr:
     def test_create(self, condition: VprCondition, context: List[str], id_: str, url: str, purpose: str, verifier: str):
         # GIVEN a VprCondition and properties for JsonLdVpr object
         # WHEN try to create JsonLdVpr object
-        json_ld_vpr: JsonLdVpr = JsonLdVpr.from_(context, id_, url, purpose, verifier, condition)
+        json_ld_vpr: JsonLdVpr = JsonLdVpr.from_(context=context,
+                                                 id_=id_,
+                                                 url=url,
+                                                 purpose=purpose,
+                                                 verifier=verifier,
+                                                 condition=condition)
 
         # THEN success to get above properties from JsonLdVpr
         assert json_ld_vpr.get_term(PropertyName.JL_CONTEXT) == context

@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional, List
 from didsdk.core.property_name import PropertyName
 from didsdk.document.encoding import Base64URLEncoder
 from didsdk.protocol.base_claim import BaseClaim
-from didsdk.protocol.hash_attribute import HashedAttribute
+from didsdk.protocol.hash_attribute import HashedAttribute, HashAlgorithmType
 from didsdk.protocol.json_ld.base_json_ld import BaseJsonLd
 from didsdk.protocol.json_ld.claim import Claim
 from didsdk.protocol.json_ld.display_layout import DisplayLayout
@@ -31,9 +31,10 @@ class JsonLdParam(BaseJsonLd):
             self.display_layout = self.credential_params.get(PropertyName.JL_DISPLAY_LAYOUT)
             self.info = self.credential_params.get(PropertyName.JL_INFO)
 
-            algorithm = self.credential_params.get(PropertyName.JL_HASH_ALGORITHM)
-            if algorithm:
-                self._digest = hashlib.new(algorithm)
+            hash_algorithm = self.credential_params.get(PropertyName.JL_HASH_ALGORITHM)
+            algorithm_name = HashAlgorithmType(hash_algorithm).name if hash_algorithm else HashAlgorithmType.sha256.name
+            if algorithm_name:
+                self._digest = hashlib.new(algorithm_name)
 
     def _get_digest(self, value: bytes, nonce: bytes) -> bytes:
         self._digest.update(value)
@@ -49,7 +50,7 @@ class JsonLdParam(BaseJsonLd):
 
     @classmethod
     def from_(cls, claim: Optional[Dict[str, Claim]],
-              display_layout: Optional[DisplayLayout],
+              display_layout: Optional[DisplayLayout] = None,
               context=None,
               hash_algorithm: str = None,
               info: Optional[Dict[str, InfoParam]] = None,
@@ -63,12 +64,15 @@ class JsonLdParam(BaseJsonLd):
         if PropertyName.JL_TYPE_CREDENTIAL_PARAM not in types:
             types.insert(0, PropertyName.JL_TYPE_CREDENTIAL_PARAM)
         param: Dict[str, Any] = {
-            PropertyName.JL_CONTEXT: context,
             PropertyName.JL_TYPE: types
         }
 
-        hash_algorithm = hash_algorithm or HashedAttribute.DEFAULT_ALG
-        param_object._digest = hashlib.new(hash_algorithm)
+        if context:
+            param[PropertyName.JL_CONTEXT] = context
+
+        hash_algorithm: HashAlgorithmType = (HashAlgorithmType(hash_algorithm)
+                                             if hash_algorithm else HashAlgorithmType.sha256)
+        param_object._digest = hashlib.new(hash_algorithm.name or HashedAttribute.DEFAULT_ALG)
         param_object.hash_values = {}
         param_object.claims = {}
         for key, value in claim.items():
@@ -78,18 +82,23 @@ class JsonLdParam(BaseJsonLd):
             param_object.hash_values[key] = Base64URLEncoder.encode(digested)
             param_object.claims[key] = claim
 
-        param_object.info = info
-        param_object.display_layout = display_layout
         param_object.credential_params = {
             PropertyName.JL_CLAIM: {key: value.as_dict() for key, value in param_object.claims.items()},
-            PropertyName.JL_DISPLAY_LAYOUT: (param_object.display_layout.get_display()
-                                             if param_object.display_layout.is_string
-                                             else param_object.display_layout.get_object_display()),
-            PropertyName.JL_HASH_ALGORITHM: hash_algorithm,
-            PropertyName.JL_INFO: {key: value.as_dict() for key, value in param_object.info.items()},
+            PropertyName.JL_HASH_ALGORITHM: hash_algorithm.value,
             PropertyName.JL_PROOF_TYPE: proof_type or BaseClaim.HASH_TYPE
         }
 
+        if display_layout:
+            param_object.display_layout = display_layout
+            param_object.credential_params[PropertyName.JL_DISPLAY_LAYOUT] = (
+                param_object.display_layout.get_display()
+                if param_object.display_layout.is_string else param_object.display_layout.get_object_display()
+            )
+
+        if info:
+            param_object.info = info
+            param_object.credential_params[PropertyName.JL_INFO] = {
+                key: value.as_dict() for key, value in param_object.info.items()}
         param[PropertyName.JL_CREDENTIAL_PARAM] = param_object.credential_params
         param_object.set_node(param)
 

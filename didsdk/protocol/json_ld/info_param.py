@@ -46,3 +46,11 @@ class InfoParam:
             param['dataUri'] = self.data_uri
 
         return param
+
+    @classmethod
+    def from_json(cls, json_data: dict):
+        return cls(json_data.get('content'),
+                   json_data.get('dataUri'),
+                   json_data.get('name'),
+                   json_data.get(PropertyName.JL_AT_TYPE),
+                   json_data.get('url'))

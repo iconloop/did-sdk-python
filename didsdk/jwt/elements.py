@@ -128,7 +128,7 @@ class Payload:
 
     @property
     def sub(self) -> str:
-        return self._contents[self.SUBJECT]
+        return self._contents.get(self.SUBJECT)
 
     @property
     def type(self) -> List[str]:

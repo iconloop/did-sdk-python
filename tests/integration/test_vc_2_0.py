@@ -72,8 +72,9 @@ class TestVC_2_0:
                                                              type=AlgorithmType.ES256K,
                                                              private_key=verifier_private_key)
 
-        did_init_nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
-        did_init_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='issuerKey-1', epk=issuer_ecdh_key)
+        did_init_nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
+        did_init_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='issuerKey-1',
+                                                                     epk=issuer_ecdh_key.export_public_key())
 
         ############
         # DID_INIT #
@@ -112,7 +113,8 @@ class TestVC_2_0:
         # DID_AUTH #
         ############
         # GIVEN a DID_AUTH ClaimResponse
-        did_auth_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holderKey-1', epk=holder_ecdh_key)
+        did_auth_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holderKey-1',
+                                                                     epk=holder_ecdh_key.export_public_key())
         did_auth_response: ClaimResponse = ClaimResponse.from_(type_=ClaimRequestType.DID_AUTH,
                                                                algorithm=holder_did_key_holder.type,
                                                                public_key_id=holder_did_key_holder.key_id,
@@ -148,9 +150,10 @@ class TestVC_2_0:
         # REQ_CREDENTIAL #
         ##################
         # GIVEN a ClaimRequest
-        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
+        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
         request_date = int(time.time() * 1_000_000)
-        credential_request_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holderKey-1', epk=holder_ecdh_key)
+        credential_request_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holderKey-1',
+                                                                               epk=holder_ecdh_key.export_public_key())
         request_claim: dict = {
             "name": {
                 "claimValue": "홍길순",
@@ -261,7 +264,7 @@ class TestVC_2_0:
                                                           type_=[vc_type],
                                                           claim=vc_claim,
                                                           proof_type='hash',
-                                                          hash_algorithm='sha256')
+                                                          hash_algorithm='SHA-256')
 
         revocation_service = RevocationService(id_='https://www.ubplus.com/kangwondo/revoke/consent/vc',
                                                type_='SimpleRevocationService',
@@ -315,9 +318,9 @@ class TestVC_2_0:
         # REQ_PRESENTATION #
         ####################
         # GIVEN REQUEST_PRESENTATION parameeters
-        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
+        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
         presentation_request_public_key: EphemeralPublicKey = EphemeralPublicKey(
-            kid="verifierKey-1", epk=verifier_ecdh_key)
+            kid="verifierKey-1", epk=verifier_ecdh_key.export_public_key())
         require_property: List[str] = ['name', 'residentRegistrationNumberFirst7']
         condition: VprCondition = VprCondition.from_simple_condition(
             context='http://54.180.16.76/score/credentials/financial_id/v1.json',
@@ -381,7 +384,7 @@ class TestVC_2_0:
                                       id_='https://www.iconloop.com/vp/qnfdkqkd/123623',
                                       type_=['PresentationResponse'],
                                       presenter=holder_did,
-                                      criteria_list=[criteria])
+                                      criteria=criteria)
 
         presentation: Presentation = Presentation.from_(algorithm=holder_did_key_holder.type,
                                                         key_id=holder_did_key_holder.key_id,

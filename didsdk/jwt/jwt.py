@@ -118,8 +118,9 @@ class Jwt:
         exp = self._payload.exp
 
         if not exp:
-            if ClaimRequestType.REQ_REVOCATION.value in self._payload.type:
-                return VerifyResult(success=True)
+            for type_ in self._payload.type:
+                if type_ in [ClaimRequestType.REQ_REVOCATION.value, ClaimRequestType.DID_AUTH.value]:
+                    return VerifyResult(success=True)
             return VerifyResult(success=False, fail_message="exp is None.")
         elif exp - now <= 0:
             return VerifyResult(success=False, fail_message="The expiration date has expired.")

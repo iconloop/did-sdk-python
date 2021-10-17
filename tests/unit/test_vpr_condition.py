@@ -84,7 +84,7 @@ class TestVprCondition:
                                          verifier='did:icon:01:SARAMINoooooicHVN8vwZtY9YmjY',
                                          condition=compound_or_condition)
 
-        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
+        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
         presentation_request_public_key: EphemeralPublicKey = EphemeralPublicKey(
             kid="verifierKey-1", epk=verifier_ecdh_key)
         presentation_request: ClaimRequest = ClaimRequest.for_presentation(algorithm=issuer_did_key_holder.type,

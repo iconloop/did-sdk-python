@@ -59,8 +59,9 @@ class TestVC_1_1:
             'idn': 123
         }
 
-        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
-        request_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holder_key_1', epk=holder_ecdh_key)
+        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
+        request_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holder_key_1',
+                                                                    epk=holder_ecdh_key.export_public_key())
         credential_request: ClaimRequest = ClaimRequest.from_(type_=ClaimRequestType.REQ_CREDENTIAL,
                                                               algorithm=holder_did_key_holder.type,
                                                               public_key_id=holder_did_key_holder.key_id,
@@ -127,8 +128,8 @@ class TestVC_1_1:
         # REQUEST_PRESENTATION #
         ########################
         # GIVEN some data to create request presentation
-        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
-        request_public_key = EphemeralPublicKey(kid='verifier_key_1', epk=verifier_ecdh_key)
+        nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
+        request_public_key = EphemeralPublicKey(kid='verifier_key_1', epk=verifier_ecdh_key.export_public_key())
 
         request_date: int = int(time.time() * 1_000_000)
         expiration: int = request_date + duration

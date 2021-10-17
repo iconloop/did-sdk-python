@@ -4,8 +4,6 @@ import time
 from dataclasses import dataclass
 from typing import Optional, Union
 
-from jwcrypto import jwe, jwk
-
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.core.property_name import PropertyName
 from didsdk.credential import CredentialVersion, Credential
@@ -22,6 +20,7 @@ from didsdk.protocol.claim_request import ClaimRequest
 from didsdk.protocol.claim_response import ClaimResponse
 from didsdk.protocol.json_ld.json_ld_param import JsonLdParam
 from didsdk.protocol.protocol_type import ProtocolType
+from jwcrypto import jwe, jwk
 
 
 @dataclass
@@ -372,8 +371,8 @@ class ProtocolMessage:
             self._plain_message = did_key_holder.sign(self._credential.as_jwt(self._issued, self._expiration))
             if self._credential.version == CredentialVersion.v1_1:
                 self._param = self._credential.base_claim.attribute.base_param
-                a: dict = dataclasses.asdict(self._param)
-                self._param_string = Base64URLEncoder.encode(json.dumps(a).encode('utf-8'))
+                param: dict = dataclasses.asdict(self._param)
+                self._param_string = Base64URLEncoder.encode(json.dumps(param).encode('utf-8'))
             elif self._credential.version == CredentialVersion.v2_0:
                 self._ld_param = self._credential.param
                 self._param_string = self._ld_param.as_base64_url_string()
@@ -398,10 +397,12 @@ class ProtocolMessage:
                                               alg=HeaderAlgorithmType.JWE_ALGO_ECDH_ES,
                                               enc=HeaderAlgorithmType.JWE_ALGO_A128GCM)
 
-            receiver_key = self._request_public_key.epk.get_ec_public_key().to_pem()
+            recipient: jwk.JWK = jwk.JWK.from_json(json.dumps(self._request_public_key.epk.as_dict_without_kid()))
+            epk: jwk.JWK = jwk.JWK.from_json(json.dumps(ecdh_key.as_dict_without_kid()))
             encrypt_jwe: jwe.JWE = jwe.JWE(plaintext=json.dumps(decoded_message),
-                                           recipient=jwk.JWK.from_pem(receiver_key),
-                                           protected=dataclasses.asdict(jwe_header))
+                                           recipient=recipient,
+                                           protected=dataclasses.asdict(jwe_header),
+                                           epk=epk)
             result = {
                 PropertyName.KEY_PROTOCOL_TYPE: self._type,
                 PropertyName.KEY_PROTOCOL_PROTECTED: encrypt_jwe.serialize(compact=True)

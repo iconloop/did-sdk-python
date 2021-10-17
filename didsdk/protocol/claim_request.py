@@ -2,7 +2,6 @@ import time
 from typing import List, Dict, Any, Optional
 
 from coincurve import PublicKey
-
 from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.jwt.elements import Payload, Header
@@ -149,7 +148,8 @@ class ClaimRequest:
             Payload.ISSUED_AT: request_date,
             Payload.EXPIRATION: expired_date,
             REQUEST_CLAIM: claims,
-            Payload.TYPE: [type_.value],
+            Payload.TYPE: type_.value if 'REQ_PRESENTATION' == type_.value else [type_.value],
+            # Payload.TYPE: [type_.value],
             Payload.PUBLIC_KEY: public_key.as_dict() if public_key else None,
             Payload.NONCE: nonce,
             Payload.JTI: jti,
@@ -165,11 +165,11 @@ class ClaimRequest:
     def for_did(cls, algorithm: AlgorithmType,
                 did: str,
                 public_key_id: str,
-                response_id: str,
                 version: str,
                 type_: ClaimRequestType,
                 nonce: str,
                 kid: str = None,
+                response_id: str = None,
                 request_date: int = None,
                 encoded_token: List[str] = None,
                 jti: str = None,
@@ -223,7 +223,8 @@ class ClaimRequest:
         elif payload.sub:
             response_id = payload.sub
 
-        type_ = ClaimRequestType(payload.type[0])
+        type_ = ClaimRequestType(payload.type[0] if isinstance(payload.type, list) else payload.type)
+        # type_ = ClaimRequestType(payload.type[0])
         if not response_id and type_ != ClaimRequestType.REQ_PRESENTATION and ClaimRequestType.DID_INIT != type_:
             raise ValueError('responseId cannot be None.')
 
@@ -244,11 +245,11 @@ class ClaimRequest:
                          did: str,
                          public_key_id: str,
                          response_id: str,
-                         public_key: EphemeralPublicKey,
                          nonce: str,
                          version: str,
                          vpr: JsonLdVpr = None,
                          kid: str = None,
+                         public_key: EphemeralPublicKey = None,
                          encoded_token: List[str] = None,
                          jti: str = None,
                          request_date: int = None,
@@ -308,14 +309,14 @@ class ClaimRequest:
             Payload.ISSUER: did,
             Payload.AUDIENCE: response_id,
             Payload.ISSUED_AT: request_date,
-            Payload.PUBLIC_KEY: payload.public_key.as_dict(),
-            Payload.CLAIM: {
-                Payload.VPR: vpr
-            },
+            Payload.VPR: vpr,
             Payload.NONCE: payload.nonce,
             Payload.TYPE: ClaimRequestType.REQ_PRESENTATION.value,
             Payload.VERSION: payload.version
         }
+
+        if payload.public_key:
+            contents[Payload.PUBLIC_KEY] = payload.public_key.as_dict()
 
         return cls(Jwt(header=Header(alg=algorithm.name, kid=kid),
                        payload=Payload(contents=contents),

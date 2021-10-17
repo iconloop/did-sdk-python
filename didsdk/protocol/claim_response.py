@@ -27,11 +27,11 @@ class ClaimResponse:
 
     @property
     def key_id(self) -> str:
-        return self.jwt.header.kid
+        return self.jwt.header.kid.split('#')[1]
 
     @property
     def kid(self) -> str:
-        return self.jwt.header.kid.split('#')[1]
+        return self.jwt.header.kid
 
     @property
     def message(self) -> str:

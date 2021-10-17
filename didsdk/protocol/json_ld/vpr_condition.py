@@ -43,8 +43,12 @@ class VprCondition(BaseJsonLd):
         return None if self.is_compound() else self.node.get(PropertyName.JL_PROPERTY)
 
     @classmethod
-    def from_simple_condition(cls, context, condition_id: str, issuer,
-                              credential_type: str, property_, type_=None) -> 'VprCondition':
+    def from_simple_condition(cls, context,
+                              condition_id: str,
+                              credential_type: str,
+                              property_,
+                              issuer=None,
+                              type_=None) -> 'VprCondition':
         if not(context and credential_type and property_):
             raise ValueError('[context, credential_type, property_] values cannot be None.')
 
@@ -53,11 +57,14 @@ class VprCondition(BaseJsonLd):
         condition = {
             PropertyName.JL_AT_TYPE: type_,
             PropertyName.JL_CONDITION_ID: condition_id,
-            PropertyName.JL_ISSUER: issuer,
             PropertyName.JL_CONTEXT: context,
             PropertyName.JL_CREDENTIAL_TYPE: credential_type,
             PropertyName.JL_PROPERTY: property_
         }
+
+        if issuer:
+            condition[PropertyName.JL_ISSUER] = issuer
+
         return cls(condition)
 
     @classmethod

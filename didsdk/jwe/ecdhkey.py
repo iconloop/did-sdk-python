@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 from enum import Enum
 from hashlib import sha256
+from typing import Union
 
 import ecdsa
 from ecdsa import ellipticcurve
@@ -25,10 +26,7 @@ class CurveTypePlate:
 class CurveType(Enum):
     CURVE_P256 = CurveTypePlate(curve_name="P-256", algorithm_type=AlgorithmType.ES256,
                                 openssl_name='secp256r1', curve_ec=NIST256p)
-    # TODO: Fix it to be able to using all the alias of algorithm. eg.openssl_name, etc
-    # CURVE_P256K = CurveTypePlate(curve_name="P-256K", algorithm_type=AlgorithmType.ES256K,
-    #                              openssl_name="secp256k1", curve_ec=SECP256k1)
-    CURVE_P256K = CurveTypePlate(curve_name="secp256k1", algorithm_type=AlgorithmType.ES256K,
+    CURVE_P256K = CurveTypePlate(curve_name="P-256K", algorithm_type=AlgorithmType.ES256K,
                                  openssl_name="secp256k1", curve_ec=SECP256k1)
     CURVE_P384 = CurveTypePlate(curve_name="P-384", algorithm_type=AlgorithmType.ES256K,
                                 openssl_name="secp384r1", curve_ec=NIST384p)
@@ -69,6 +67,38 @@ class ECDHKey:
                 and self.d == target.d
                 and self.kid == target.kid)
 
+    def as_dict(self) -> dict:
+        ecdh_key: dict = dataclasses.asdict(self)
+
+        if not self.kid:
+            del ecdh_key['kid']
+        if not self.d:
+            del ecdh_key['d']
+
+        return ecdh_key
+
+    def as_dict_without_kid(self) -> dict:
+        ecdh_key: dict = dataclasses.asdict(self)
+
+        del ecdh_key['kid']
+        if not self.d:
+            del ecdh_key['d']
+
+        return ecdh_key
+
+    def export_private_key(self, as_dict: bool = False) -> Union[dict, 'ECDHKey']:
+        ecdh_key = dataclasses.asdict(self)
+        del ecdh_key['kid']
+
+        return ecdh_key if as_dict else ECDHKey(**ecdh_key)
+
+    def export_public_key(self, as_dict: bool = False) -> Union[dict, 'ECDHKey']:
+        ecdh_key = dataclasses.asdict(self)
+        del ecdh_key['d']
+        del ecdh_key['kid']
+
+        return ecdh_key if as_dict else ECDHKey(**ecdh_key)
+
     @staticmethod
     def generate_key(curve_name: str) -> 'ECDHKey':
         key: ecdsa.SigningKey = ecdsa.SigningKey.generate(curve=CurveType.from_curve_name(curve_name).curve_ec,
@@ -77,12 +107,6 @@ class ECDHKey:
         jwk_json['crv'] = CurveType.from_curve_name(jwk_json.get('crv')).curve_name
 
         return ECDHKey(**jwk_json)
-
-    @staticmethod
-    def load_key(file_path: str) -> 'ECDHKey':
-        with open(file_path, 'rb') as file:
-            keyfile_json = load_keyfile(file)
-            return ECDHKey(**keyfile_json)
 
     def get_ec_public_key(self) -> ecdsa.VerifyingKey:
         x = int.from_bytes(EncodeType.BASE64URL.value.decode(self.x), 'big')
@@ -96,3 +120,9 @@ class ECDHKey:
         key_json: str = json.dumps(dataclasses.asdict(self))
         pem = JWK.from_json(key_json).export_to_pem(private_key=True, password=None)
         return ecdsa.SigningKey.from_pem(pem, hashfunc=sha256)
+
+    @staticmethod
+    def load_key(file_path: str) -> 'ECDHKey':
+        with open(file_path, 'rb') as file:
+            keyfile_json = load_keyfile(file)
+            return ECDHKey(**keyfile_json)

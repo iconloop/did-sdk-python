@@ -9,17 +9,22 @@ from didsdk.protocol.json_ld.vpr_condition import VprCondition
 @dataclass
 class PR:
     purpose: str
-    purpose_label: str
-    verifier: str
     condition: Optional[Dict[str, Any]]
+    verifier: str = None
+    purpose_label: str = None
 
     def as_dict(self) -> Dict[str, Any]:
-        return {
+        pr: dict = {
             PropertyName.JL_PURPOSE: self.purpose,
-            PropertyName.JL_PURPOSE_LABEL: self.purpose_label,
-            PropertyName.JL_VERIFIER: self.verifier,
             PropertyName.JL_CONDITION: self.condition
         }
+
+        if self.verifier:
+            pr[PropertyName.JL_VERIFIER] = self.verifier
+        if self.purpose_label:
+            pr[PropertyName.JL_PURPOSE_LABEL] = self.purpose_label
+
+        return pr
 
 
 @dataclass
@@ -50,22 +55,25 @@ class JsonLdVpr(BaseJsonLd):
     @classmethod
     def from_(cls, context: list,
               id_: str,
-              url: str,
               purpose: str,
-              verifier: str,
               condition: VprCondition,
+              verifier: str = None,
+              url: str = None,
               purpose_label: str = None) -> 'JsonLdVpr':
-        if not (context and id_ and url and purpose and verifier and condition):
-            raise ValueError('Any value of [context, id, url, purpose, verifier, condition] cannot be None.')
+        if not (context and id_ and purpose and condition):
+            raise ValueError('Any value of [context, id, purpose, condition] cannot be None.')
 
         pr: PR = PR(purpose=purpose, purpose_label=purpose_label, verifier=verifier, condition=condition.node)
         vpr = {
             PropertyName.JL_CONTEXT: context,
             PropertyName.JL_ID: id_,
             PropertyName.JL_AT_TYPE: ['PresentationRequest'],
-            PropertyName.JL_PRESENTATION_URL: url,
             PropertyName.JL_PRESENTATION_REQUEST: pr.as_dict()
         }
+
+        if url:
+            vpr[PropertyName.JL_PRESENTATION_URL] = url
+
         json_ld_vpr: JsonLdVpr = cls(pr, condition)
         json_ld_vpr.set_node(vpr)
 
