@@ -73,14 +73,12 @@ class Jwt:
                    payload=Payload(json.loads(decoded_payload.decode(encoding))),
                    encoded_token=encoded_tokens)
 
-    def get_signature(self) -> str:
-        return self._encoded_token[2] if self._encoded_token and len(self._encoded_token) == 3 else None
-
     def sign(self, private_key: PrivateKey, encoding: str = 'UTF-8') -> str:
         content = self._encode(encoding)
         algorithm = AlgorithmProvider.create(AlgorithmType.from_name(self._header.alg))
         signature: bytes = algorithm.sign(private_key, content.encode(encoding))
-        return f'{content}.{Base64URLEncoder.encode(signature)}'
+        self._encoded_token = f'{content}.{Base64URLEncoder.encode(signature)}'
+        return self._encoded_token
 
     def verify(self, public_key: PublicKey = None, encoding: str = 'UTF-8') -> VerifyResult:
         if not public_key:

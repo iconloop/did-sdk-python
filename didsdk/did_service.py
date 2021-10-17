@@ -79,7 +79,7 @@ class DidService:
         :param method: the name of score function
         :return: the TransactionResult object
         """
-        if not Jwt.decode(signed_jwt).get_signature():
+        if not Jwt.decode(signed_jwt).signature:
             raise Exception('JWT string must contain signature to send a transaction.')
 
         transaction = self._did_score.jwt_method(from_address=wallet.get_address(), jwt=signed_jwt, method=method)
