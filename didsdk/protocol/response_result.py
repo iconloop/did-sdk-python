@@ -7,7 +7,7 @@ class ResponseResult:
     error_code: str
     error_message: str
 
-    def __init__(self, error_code: str, error_message: str, result: bool = None):
+    def __init__(self, result: bool, error_code: str = None, error_message: str = None):
         if not result:
             if not error_code:
                 raise ValueError('error_code is None. If result is false, errorMessage is required.')
