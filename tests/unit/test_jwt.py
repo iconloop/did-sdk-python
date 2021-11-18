@@ -33,11 +33,11 @@ class TestJwt:
         assert VerifyResult(success=True) == result
 
     @pytest.mark.parametrize('contents', [
-        {Payload.EXPIRATION: int(time.time() * 1_000_000) * 2},
-        {Payload.EXPIRATION: int(time.time() * 1_000_000) / 2},
+        {Payload.EXPIRATION: int(time.time()) * 2},
+        {Payload.EXPIRATION: int(time.time()) / 2},
     ])
     def test_verify_expired(self, header, contents):
-        now = int(time.time() * 1_000_000)
+        now = int(time.time())
 
         # GIVEN a jwt object contains the expiration parameter
         payload = Payload(contents)

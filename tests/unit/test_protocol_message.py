@@ -77,7 +77,7 @@ class TestProtocolMessage:
     @pytest.fixture
     def claim_request_v_2_0(self, holder_did_key_holder_v_2_0, request_credential_public_key) -> ClaimRequest:
         issuer_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
-        request_date = int(time.time() * 1_000_000)
+        request_date = int(time.time())
         expired_date: int = request_date * 2
         version = CredentialVersion.v2_0
         request_claim: dict = {

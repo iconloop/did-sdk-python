@@ -139,7 +139,7 @@ class ClaimRequest:
             raise ValueError('None algorithm is supported only for presentation.')
 
         if not request_date:
-            request_date = int(time.time() * 1_000_000)
+            request_date = int(time.time())
 
         header: Header = Header(alg=algorithm.name, kid=kid)
         contents = {
@@ -190,7 +190,7 @@ class ClaimRequest:
                 kid = did + '#' + public_key_id
 
         if not request_date:
-            request_date = int(time.time() * 1_000_000)
+            request_date = int(time.time())
 
         contents = {
             Payload.ISSUER: did,
@@ -303,7 +303,7 @@ class ClaimRequest:
                 kid = did + '#' + public_key_id
 
         if not request_date:
-            request_date = int(time.time() * 1_000_000)
+            request_date = int(time.time())
 
         contents = {
             Payload.ISSUER: did,
@@ -348,7 +348,7 @@ class ClaimRequest:
             raise ValueError('None algorithm is supported only for presentation.')
 
         if not request_date:
-            request_date = int(time.time() * 1_000_000)
+            request_date = int(time.time())
 
         type_ = ([ClaimRequestType.REQ_REVOCATION.value, type_.value]
                  if type_ else [ClaimRequestType.REQ_REVOCATION.value])

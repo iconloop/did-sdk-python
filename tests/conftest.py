@@ -177,7 +177,7 @@ def credentials(issuer_did: IssuerDid, dids: dict, vc_claim: dict) -> List[Crede
 
 @pytest.fixture
 def credentials_as_jwt(credentials: List[Credential]) -> List[Jwt]:
-    issued = int(time.time() * 1_000_000)
+    issued = int(time.time())
     expiration = issued * 2
 
     return [credential.as_jwt(issued, expiration) for credential in credentials]
@@ -198,7 +198,7 @@ def payload(dids: dict, claim: dict, encrypted_credentials: List[str], private_k
     contents = {
         Payload.ISSUER: dids['did'],
         Payload.ISSUED_AT: 1578445403,
-        Payload.EXPIRATION: int(time.time() * 1_000_000) * 2,
+        Payload.EXPIRATION: int(time.time()) * 2,
         Payload.CREDENTIAL: encrypted_credentials,
         Payload.SUBJECT: dids['target_did'],
         Payload.CLAIM: claim,

@@ -8,7 +8,6 @@ from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.document.encoding import Base64URLEncoder
 from didsdk.exceptions import JwtException
 from didsdk.jwt.elements import Header, Payload
-from didsdk.protocol.claim_message_type import ClaimRequestType
 
 
 class VerifyResult:
@@ -97,15 +96,15 @@ class Jwt:
 
     def verify_iat(self, valid_micro_second: int = None) -> VerifyResult:
         if not valid_micro_second:
-            valid_micro_second = 10 * 1_000_000
+            valid_micro_second = 10
 
-        now = int(time.time() * 1_000_000)
+        now = int(time.time())
         iat = self.payload.iat
 
         if not iat:
             return VerifyResult(success=False, fail_message="'iat' is None.")
         else:
-            if (now + (10 * 1_000_000)) - iat < 0:
+            if (now + 10) - iat < 0:
                 return VerifyResult(success=False, fail_message="Invalid 'iat'.")
             elif now - iat > valid_micro_second:
                 return VerifyResult(success=False,
@@ -114,15 +113,18 @@ class Jwt:
         return VerifyResult(success=True)
 
     def verify_expired(self) -> VerifyResult:
-        now = int(time.time() * 1_000_000)
+        now = int(time.time())
         exp = self._payload.exp
 
-        if not exp:
-            for type_ in self._payload.type:
-                if type_ in [ClaimRequestType.REQ_REVOCATION.value, ClaimRequestType.DID_AUTH.value]:
-                    return VerifyResult(success=True)
-            return VerifyResult(success=False, fail_message="exp is None.")
-        elif exp - now <= 0:
+        # if not exp:
+        #     for type_ in self._payload.type:
+        #         if type_ in [ClaimRequestType.REQ_REVOCATION.value, ClaimRequestType.DID_AUTH.value]:
+        #             return VerifyResult(success=True)
+        #     return VerifyResult(success=False, fail_message="exp is None.")
+        # elif exp - now <= 0:
+        #     return VerifyResult(success=False, fail_message="The expiration date has expired.")
+
+        if exp and exp - now <= 0:
             return VerifyResult(success=False, fail_message="The expiration date has expired.")
 
         return VerifyResult(success=True)

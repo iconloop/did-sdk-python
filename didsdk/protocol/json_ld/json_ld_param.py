@@ -2,6 +2,8 @@ import hashlib
 import json
 from typing import Dict, Any, Optional, List
 
+from yirgachefe import logger
+
 from didsdk.core.property_name import PropertyName
 from didsdk.document.encoding import Base64URLEncoder
 from didsdk.protocol.base_claim import BaseClaim
@@ -22,7 +24,7 @@ class JsonLdParam(BaseJsonLd):
         self.claims: Optional[Dict[str, Claim]] = None
         self.display_layout: Optional[DisplayLayout] = None
         self.info: Optional[Dict[str, InfoParam]] = None
-        self._digest = hashlib.new(HashedAttribute.DEFAULT_ALG)
+        self._algorithm_name = HashedAttribute.DEFAULT_ALG
 
         if param:
             self.credential_params = self.get_term(PropertyName.JL_CREDENTIAL_PARAM)
@@ -32,15 +34,15 @@ class JsonLdParam(BaseJsonLd):
             self.info = self.credential_params.get(PropertyName.JL_INFO)
 
             hash_algorithm = self.credential_params.get(PropertyName.JL_HASH_ALGORITHM)
-            algorithm_name = HashAlgorithmType(hash_algorithm).name if hash_algorithm else HashAlgorithmType.sha256.name
-            if algorithm_name:
-                self._digest = hashlib.new(algorithm_name)
+            if hash_algorithm:
+                self._algorithm_name = HashAlgorithmType(hash_algorithm).name
 
     def _get_digest(self, value: bytes, nonce: bytes) -> bytes:
-        self._digest.update(value)
-        self._digest.update(nonce)
+        digest = hashlib.new(self._algorithm_name)
+        digest.update(value)
+        digest.update(nonce)
 
-        return self._digest.digest()
+        return digest.digest()
 
     def _set_claims(self) -> Dict[str, Claim]:
         claims: dict = self.credential_params.get(PropertyName.JL_CLAIM)
@@ -110,9 +112,14 @@ class JsonLdParam(BaseJsonLd):
         return cls(params)
 
     def verify_param(self, params: Dict[str, str], encoding='utf-8') -> bool:
+        logger.debug(f'params: {params}')
         for key, claim in self.claims.items():
             digest = self._get_digest(value=claim.claim_value.encode(encoding), nonce=claim.salt.encode(encoding))
             origin = Base64URLEncoder.decode(params.get(key))
             if digest != origin:
+                logger.debug(f'key: {key}, value: {claim.claim_value}, salt: {claim.salt}')
+                logger.debug(f'origin: {origin}')
+                logger.debug(f'digest: {digest}')
                 return False
+
         return True

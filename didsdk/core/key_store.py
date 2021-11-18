@@ -18,7 +18,7 @@ from eth_utils import (
 from iconsdk.utils import store_keystore_file_on_the_path
 from iconsdk.utils.validation import has_keys
 
-from didsdk import logger
+from yirgachefe import logger
 from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.exceptions import KeyStoreException

@@ -151,7 +151,7 @@ class TestVC_2_0:
         ##################
         # GIVEN a ClaimRequest
         nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
-        request_date = int(time.time() * 1_000_000)
+        request_date = int(time.time())
         credential_request_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holderKey-1',
                                                                                epk=holder_ecdh_key.export_public_key())
         request_claim: dict = {
@@ -282,7 +282,7 @@ class TestVC_2_0:
                                 revocation_service=revocation_service,
                                 version=CredentialVersion.v2_0)
 
-        issued: int = int(time.time() * 1_000_000)
+        issued: int = int(time.time())
         expiration: int = issued + (credential.EXP_DURATION * 1000)
         credential_response_pm: ProtocolMessage = ProtocolMessage.for_credential(
             protocol_type=ProtocolType.RESPONSE_CREDENTIAL,
@@ -336,7 +336,7 @@ class TestVC_2_0:
                                          verifier=verifier_did,
                                          condition=condition)
 
-        request_date = int(time.time() * 1_000_000)
+        request_date = int(time.time())
         expired_date = request_date * 2
         presentation_request: ClaimRequest = ClaimRequest.for_presentation(
             algorithm=verifier_did_key_holder.type,
@@ -393,7 +393,7 @@ class TestVC_2_0:
                                                         version=CredentialVersion.v2_0,
                                                         vp=vp)
 
-        request_date: int = int(time.time() * 1_000_000)
+        request_date: int = int(time.time())
         presentation_pm: ProtocolMessage = ProtocolMessage.for_presentation(
             ProtocolType.RESPONSE_PROTECTED_PRESENTATION,
             presentation=presentation,

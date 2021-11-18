@@ -114,7 +114,7 @@ class ClaimResponse:
             raise ValueError('None algorithm is not supported.')
 
         if not response_date:
-            response_date = int(time.time() * 1_000_000)
+            response_date = int(time.time())
 
         header: Header = Header(alg=algorithm.name, kid=kid)
         contents = {

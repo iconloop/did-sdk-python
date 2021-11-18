@@ -24,13 +24,13 @@ class TestCredential:
 
     @pytest.fixture
     def jwt_object_v1(self, credential_v1) -> Jwt:
-        issued = int(time.time() * 1_000_000)
+        issued = int(time.time())
         expiration = issued * 2
         return credential_v1.as_jwt(issued, expiration)
 
     @pytest.fixture
     def jwt_object_v2(self, credential_v2) -> Jwt:
-        issued = int(time.time() * 1_000_000)
+        issued = int(time.time())
         expiration = issued * 2
         return credential_v2.as_jwt(issued, expiration)
 
@@ -50,7 +50,7 @@ class TestCredential:
     def test_as_jwt(self, credential, request):
         # GIVEN a credential object, an issued time and an expiration
         credential = request.getfixturevalue(credential)
-        issued = int(time.time() * 1_000_000)
+        issued = int(time.time())
         expiration = issued * 2
 
         # WHEN convert the credential to jwt
