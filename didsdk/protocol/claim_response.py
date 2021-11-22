@@ -1,3 +1,4 @@
+import dataclasses
 import time
 from typing import List
 
@@ -126,10 +127,12 @@ class ClaimResponse:
             Payload.NONCE: nonce,
             Payload.JTI: jti,
             Payload.VERSION: version,
-            Payload.RESULT: response_result,
             Payload.ERROR_CODE: result_code,
             Payload.ERROR_MESSAGE: message
         }
+        if response_result:
+            contents[Payload.RESULT] = dataclasses.asdict(response_result)
+
         payload = Payload(contents=contents)
         return cls(Jwt(header=header, payload=payload, encoded_token=encoded_token))
 

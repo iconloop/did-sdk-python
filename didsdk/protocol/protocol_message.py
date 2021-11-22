@@ -4,6 +4,9 @@ import time
 from dataclasses import dataclass
 from typing import Optional, Union
 
+from jwcrypto import jwe, jwk
+from yirgachefe import logger
+
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.core.property_name import PropertyName
 from didsdk.credential import CredentialVersion, Credential
@@ -20,7 +23,6 @@ from didsdk.protocol.claim_request import ClaimRequest
 from didsdk.protocol.claim_response import ClaimResponse
 from didsdk.protocol.json_ld.json_ld_param import JsonLdParam
 from didsdk.protocol.protocol_type import ProtocolType
-from jwcrypto import jwe, jwk
 
 
 @dataclass
@@ -169,11 +171,13 @@ class ProtocolMessage:
             raise JweException(f'JWE decryption is failed. {e}')
 
         payload: dict = json.loads(self.jwe.payload.decode(encoding))
+        logger.debug(f'>>>decoded jwt: {payload}')
         self._plain_message = payload[PropertyName.KEY_PROTOCOL_MESSAGE]
         self._param_string = payload.get(PropertyName.KEY_PROTOCOL_PARAM)
         self._is_decrypted = True
         self._is_protected = False
         self._jwt = Jwt.decode(self._plain_message)
+        logger.debug(f'>>>decoded payload: {self._jwt.payload.as_dict()}')
 
         if ProtocolType.is_request_member(self._type):
             if self._type == ProtocolType.REQUEST_PRESENTATION.value:
@@ -384,6 +388,8 @@ class ProtocolMessage:
             return SignResult(fail_message=f'Type({self._type}) is cannot sign.')
 
         self._jwt = Jwt.decode(self._plain_message)
+        logger.debug(f'>>>jwt header:{self._jwt.header.as_dict()}')
+        logger.debug(f'>>>jwt payload:{self._jwt.payload.as_dict()}')
         if self._request_public_key:
             if not ecdh_key:
                 return SignResult(fail_message="Issuer's ECDH PrivateKey is required for createJwe.")
@@ -399,6 +405,7 @@ class ProtocolMessage:
 
             recipient: jwk.JWK = jwk.JWK.from_json(json.dumps(self._request_public_key.epk.as_dict_without_kid()))
             epk: jwk.JWK = jwk.JWK.from_json(json.dumps(ecdh_key.as_dict_without_kid()))
+            logger.debug(f'>>>before decrypt: {decoded_message}')
             encrypt_jwe: jwe.JWE = jwe.JWE(plaintext=json.dumps(decoded_message),
                                            recipient=recipient,
                                            protected=dataclasses.asdict(jwe_header),
