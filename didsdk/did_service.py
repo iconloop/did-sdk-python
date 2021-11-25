@@ -59,6 +59,7 @@ class DidService:
         response = None
         tx_result = None
         while response is None:
+            # TODO: retry logic
             await asyncio.sleep(5)
             try:
                 tx_result = self._iconservice.get_transaction_result(tx_hash)

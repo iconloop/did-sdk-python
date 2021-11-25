@@ -94,9 +94,10 @@ class Jwt:
         else:
             return VerifyResult(success=False, fail_message="JWT signature does not match.")
 
-    def verify_iat(self, valid_micro_second: int = None) -> VerifyResult:
-        if not valid_micro_second:
-            valid_micro_second = 10
+    def verify_iat(self, valid_second: int = None) -> VerifyResult:
+        # default 10 seconds.
+        if not valid_second:
+            valid_second = 10
 
         now = int(time.time())
         iat = self.payload.iat
@@ -104,11 +105,11 @@ class Jwt:
         if not iat:
             return VerifyResult(success=False, fail_message="'iat' is None.")
         else:
-            if (now + 10) - iat < 0:
+            if (now + valid_second) - iat < 0:
                 return VerifyResult(success=False, fail_message="Invalid 'iat'.")
-            elif now - iat > valid_micro_second:
+            elif now - iat > valid_second:
                 return VerifyResult(success=False,
-                                    fail_message=f"Invalid 'iat'. It's over ({valid_micro_second/1_000_000} seconds).")
+                                    fail_message=f"Invalid 'iat'. It's over ({valid_second} seconds).")
 
         return VerifyResult(success=True)
 
@@ -116,6 +117,7 @@ class Jwt:
         now = int(time.time())
         exp = self._payload.exp
 
+        # TODO: Temporary fix to avoid checking empty exp validation for `Zzeung` mobile app.
         # if not exp:
         #     for type_ in self._payload.type:
         #         if type_ in [ClaimRequestType.REQ_REVOCATION.value, ClaimRequestType.DID_AUTH.value]:

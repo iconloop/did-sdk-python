@@ -9,6 +9,8 @@ class JsonLdVp(BaseJsonLd):
     def __init__(self, vp: Dict[str, Any]):
         super().__init__(vp)
         self.fulfilledCriteria: Optional[VpCriteria] = VpCriteria.from_json(vp.get('fulfilledCriteria')) if vp else None
+
+    # TODO: Temporary fix for `Zzeung` mobile app. fulfilledCriteria type List -> Single object(none list).
     # def __init__(self, vp: Dict[str, Any]):
     #     super().__init__(vp)
     #     self.fulfilledCriteria: Optional[List[VpCriteria]] = (
@@ -39,6 +41,8 @@ class JsonLdVp(BaseJsonLd):
         json_ld_vp = cls(vp)
         json_ld_vp.fulfilledCriteria = criteria
         return json_ld_vp
+
+    # TODO: Temporary fix for `Zzeung` mobile app. fulfilledCriteria type List -> Single object(none list).
     # @classmethod
     # def from_(cls, context, id_: str, type_, criteria_list: List[VpCriteria], presenter: str = None) -> 'JsonLdVp':
     #     if not (id_ or criteria_list):

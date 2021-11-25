@@ -74,8 +74,8 @@ class ClaimResponse:
     def version(self) -> str:
         return self.jwt.payload.version
 
-    def verify_result_time(self, valid_micro_second: int) -> VerifyResult:
-        return self.jwt.verify_iat(valid_micro_second)
+    def verify_result_time(self, valid_second: int) -> VerifyResult:
+        return self.jwt.verify_iat(valid_second)
 
     def verify(self, public_key: PublicKey) -> VerifyResult:
         return self.jwt.verify(public_key)

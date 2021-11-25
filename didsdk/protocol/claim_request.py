@@ -97,8 +97,8 @@ class ClaimRequest:
     def vpr(self) -> Optional[JsonLdVpr]:
         return self.jwt.payload.vpr
 
-    def verify_result_time(self, valid_micro_second: int = None) -> VerifyResult:
-        return self.jwt.verify_iat(valid_micro_second)
+    def verify_result_time(self, valid_second: int = None) -> VerifyResult:
+        return self.jwt.verify_iat(valid_second)
 
     def verify(self, public_key: PublicKey) -> VerifyResult:
         return self.jwt.verify(public_key)
@@ -149,6 +149,7 @@ class ClaimRequest:
             Payload.EXPIRATION: expired_date,
             REQUEST_CLAIM: claims,
             Payload.TYPE: type_.value if 'REQ_PRESENTATION' == type_.value else [type_.value],
+            # TODO: Temporary fix for `Zzeung` mobile app. only for  ["REQ_PRESENTATION"] -> "REQ_PRESENTATION".
             # Payload.TYPE: [type_.value],
             Payload.PUBLIC_KEY: public_key.as_dict() if public_key else None,
             Payload.NONCE: nonce,
@@ -224,6 +225,7 @@ class ClaimRequest:
             response_id = payload.sub
 
         type_ = ClaimRequestType(payload.type[0] if isinstance(payload.type, list) else payload.type)
+        # TODO: Temporary fix for `Zzeung` mobile app. only for  ["REQ_PRESENTATION"] -> "REQ_PRESENTATION".
         # type_ = ClaimRequestType(payload.type[0])
         if not response_id and type_ != ClaimRequestType.REQ_PRESENTATION and ClaimRequestType.DID_INIT != type_:
             raise ValueError('responseId cannot be None.')
