@@ -1,4 +1,3 @@
-import dataclasses
 from dataclasses import dataclass
 
 from didsdk.jwe.ecdhkey import ECDHKey
@@ -12,7 +11,7 @@ class EphemeralPublicKey:
     def as_dict(self) -> dict:
         return {
             'kid': self.kid,
-            'epk': dataclasses.asdict(self.epk)
+            'epk': self.epk.as_dict_without_kid()
         }
 
     @classmethod

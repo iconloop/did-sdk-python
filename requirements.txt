@@ -1,4 +1,5 @@
 ecdsa[gmpy2]
 iconsdk
-jwcrypto
+jwcrypto @ git+https://github.com/iconloop/jwcrypto.git
 validators
+yirgachefe @ git+https://git@github.com/iconloop/Yirgachefe.git@develop

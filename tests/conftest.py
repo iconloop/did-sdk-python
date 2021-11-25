@@ -12,7 +12,7 @@ from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.issuer_did import IssuerDid
 from didsdk.jwt.jwt import Jwt
 from didsdk.protocol.base_claim import BaseClaim
-from didsdk.protocol.hash_attribute import HashedAttribute
+from didsdk.protocol.hash_attribute import HashedAttribute, HashAlgorithmType
 from didsdk.protocol.json_ld.claim import Claim
 from didsdk.protocol.json_ld.display_layout import DisplayLayout
 from didsdk.protocol.json_ld.info_param import InfoParam
@@ -123,7 +123,7 @@ def create_json_ld_param(vc_claim: dict) -> JsonLdParam:
                              context=expected_context,
                              type_=[vc_type],
                              proof_type=HashedAttribute.ATTR_TYPE,
-                             hash_algorithm=HashedAttribute.DEFAULT_ALG)
+                             hash_algorithm=HashAlgorithmType.sha256.value)
 
 
 def create_credential(issuer_did: IssuerDid,
@@ -150,7 +150,7 @@ def credentials(issuer_did: IssuerDid, dids: dict, vc_claim: dict) -> List[Crede
         'age': '18',
         'level': 'eighteen'
     }
-    nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
+    nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
     revocation_service = RevocationService(id_='http://example.com',
                                            type_='SimpleRevocationService',
                                            short_description='revocationShortDescription')
@@ -177,7 +177,7 @@ def credentials(issuer_did: IssuerDid, dids: dict, vc_claim: dict) -> List[Crede
 
 @pytest.fixture
 def credentials_as_jwt(credentials: List[Credential]) -> List[Jwt]:
-    issued = int(time.time() * 1_000_000)
+    issued = int(time.time())
     expiration = issued * 2
 
     return [credential.as_jwt(issued, expiration) for credential in credentials]
@@ -198,7 +198,7 @@ def payload(dids: dict, claim: dict, encrypted_credentials: List[str], private_k
     contents = {
         Payload.ISSUER: dids['did'],
         Payload.ISSUED_AT: 1578445403,
-        Payload.EXPIRATION: int(time.time() * 1_000_000) * 2,
+        Payload.EXPIRATION: int(time.time()) * 2,
         Payload.CREDENTIAL: encrypted_credentials,
         Payload.SUBJECT: dids['target_did'],
         Payload.CLAIM: claim,

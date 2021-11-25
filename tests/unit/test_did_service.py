@@ -12,7 +12,7 @@ from didsdk.document.encoding import EncodeType
 from didsdk.exceptions import DocumentException
 from didsdk.jwt.jwt import Jwt
 from didsdk.score.did_score_parameter import DidScoreParameter
-from tests import logger
+from yirgachefe import logger
 
 
 class TestDidService:

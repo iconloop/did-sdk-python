@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from jwcrypto import jwe, jwk
+from yirgachefe import logger
 
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.core.property_name import PropertyName
@@ -170,11 +171,13 @@ class ProtocolMessage:
             raise JweException(f'JWE decryption is failed. {e}')
 
         payload: dict = json.loads(self.jwe.payload.decode(encoding))
+        logger.debug(f'>>>decoded jwt: {payload}')
         self._plain_message = payload[PropertyName.KEY_PROTOCOL_MESSAGE]
         self._param_string = payload.get(PropertyName.KEY_PROTOCOL_PARAM)
         self._is_decrypted = True
         self._is_protected = False
         self._jwt = Jwt.decode(self._plain_message)
+        logger.debug(f'>>>decoded payload: {self._jwt.payload.as_dict()}')
 
         if ProtocolType.is_request_member(self._type):
             if self._type == ProtocolType.REQUEST_PRESENTATION.value:
@@ -352,7 +355,7 @@ class ProtocolMessage:
                        expiration: int = None) -> 'ProtocolMessage':
 
         if not issued:
-            issued = int(time.time() * 1_000_000)
+            issued = int(time.time())
         if not expiration:
             expiration = issued * 2
 
@@ -372,8 +375,8 @@ class ProtocolMessage:
             self._plain_message = did_key_holder.sign(self._credential.as_jwt(self._issued, self._expiration))
             if self._credential.version == CredentialVersion.v1_1:
                 self._param = self._credential.base_claim.attribute.base_param
-                a: dict = dataclasses.asdict(self._param)
-                self._param_string = Base64URLEncoder.encode(json.dumps(a).encode('utf-8'))
+                param: dict = dataclasses.asdict(self._param)
+                self._param_string = Base64URLEncoder.encode(json.dumps(param).encode('utf-8'))
             elif self._credential.version == CredentialVersion.v2_0:
                 self._ld_param = self._credential.param
                 self._param_string = self._ld_param.as_base64_url_string()
@@ -385,6 +388,8 @@ class ProtocolMessage:
             return SignResult(fail_message=f'Type({self._type}) is cannot sign.')
 
         self._jwt = Jwt.decode(self._plain_message)
+        logger.debug(f'>>>jwt header:{self._jwt.header.as_dict()}')
+        logger.debug(f'>>>jwt payload:{self._jwt.payload.as_dict()}')
         if self._request_public_key:
             if not ecdh_key:
                 return SignResult(fail_message="Issuer's ECDH PrivateKey is required for createJwe.")
@@ -398,10 +403,13 @@ class ProtocolMessage:
                                               alg=HeaderAlgorithmType.JWE_ALGO_ECDH_ES,
                                               enc=HeaderAlgorithmType.JWE_ALGO_A128GCM)
 
-            receiver_key = self._request_public_key.epk.get_ec_public_key().to_pem()
+            recipient: jwk.JWK = jwk.JWK.from_json(json.dumps(self._request_public_key.epk.as_dict_without_kid()))
+            epk: jwk.JWK = jwk.JWK.from_json(json.dumps(ecdh_key.as_dict_without_kid()))
+            logger.debug(f'>>>before decrypt: {decoded_message}')
             encrypt_jwe: jwe.JWE = jwe.JWE(plaintext=json.dumps(decoded_message),
-                                           recipient=jwk.JWK.from_pem(receiver_key),
-                                           protected=dataclasses.asdict(jwe_header))
+                                           recipient=recipient,
+                                           protected=dataclasses.asdict(jwe_header),
+                                           epk=epk)
             result = {
                 PropertyName.KEY_PROTOCOL_TYPE: self._type,
                 PropertyName.KEY_PROTOCOL_PROTECTED: encrypt_jwe.serialize(compact=True)

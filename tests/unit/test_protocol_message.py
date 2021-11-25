@@ -77,7 +77,7 @@ class TestProtocolMessage:
     @pytest.fixture
     def claim_request_v_2_0(self, holder_did_key_holder_v_2_0, request_credential_public_key) -> ClaimRequest:
         issuer_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
-        request_date = int(time.time() * 1_000_000)
+        request_date = int(time.time())
         expired_date: int = request_date * 2
         version = CredentialVersion.v2_0
         request_claim: dict = {
@@ -92,7 +92,7 @@ class TestProtocolMessage:
         id_: str = "https://www.zzeung.id/vcr/driver_license/123623"
         type_: list = ["IlDriverLicenseKorCredential"]
         json_ld_vcr: JsonLdVcr = JsonLdVcr(context=context, id_=id_, type_=type_, request_claim=request_claim)
-        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
+        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
 
         return ClaimRequest.from_(type_=ClaimRequestType.REQ_CREDENTIAL,
                                   algorithm=holder_did_key_holder_v_2_0.type,

@@ -63,8 +63,8 @@ class AlgorithmProvider:
             raise ValueError('Type cannot be null.')
 
     @staticmethod
-    def generate_random_nonce() -> bytes:
-        return secrets.token_bytes(16)
+    def generate_random_nonce(size: int) -> bytes:
+        return secrets.token_bytes(size)
 
     @staticmethod
     def is_android_runtime():

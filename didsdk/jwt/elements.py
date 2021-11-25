@@ -128,7 +128,7 @@ class Payload:
 
     @property
     def sub(self) -> str:
-        return self._contents[self.SUBJECT]
+        return self._contents.get(self.SUBJECT)
 
     @property
     def type(self) -> List[str]:
@@ -192,7 +192,7 @@ class Payload:
         return self._contents.get(key)
 
     def get_response_result(self) -> ResponseResult:
-        return ResponseResult(self.error_code, self.error_message, self.result)
+        return ResponseResult(result=self.result, error_code=self.error_code, error_message=self.error_message)
 
     def is_time_claim(self, name: str):
         return name in self._time_claim_keys

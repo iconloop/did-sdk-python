@@ -27,7 +27,7 @@ class TestClaimRequest:
         owner_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
         issuer_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
         version = CredentialVersion.v1_0
-        request_date = int(time.time() * 1_000_000)
+        request_date = int(time.time())
         expired_date: int = request_date * 2
         claims: dict = {key: value for key, value in zip(claim_types, claim_values)}
         did_key_holder: DidKeyHolder = DidKeyHolder(key_id=key_provider.key_id,
@@ -71,7 +71,7 @@ class TestClaimRequest:
         key_provider = algorithm.generate_key_provider('test_credential_request_v2')
         owner_did = 'did:icon:03:a0da55dc3fb992aa93aefb1132778d724765b22a7ecbc087'
         issuer_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
-        request_date = int(time.time() * 1_000_000)
+        request_date = int(time.time())
         expired_date: int = request_date * 2
         version = CredentialVersion.v2_0
         did_key_holder: DidKeyHolder = DidKeyHolder(key_id=key_provider.key_id,
@@ -91,7 +91,7 @@ class TestClaimRequest:
         id_: str = "https://www.zzeung.id/vcr/driver_license/123623"
         type_: list = ["IlDriverLicenseKorCredential"]
         json_ld_vcr: JsonLdVcr = JsonLdVcr(context=context, id_=id_, type_=type_, request_claim=request_claim)
-        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
+        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
         request_credential_public_key: EphemeralPublicKey = EphemeralPublicKey(kid='holderKey-1', epk=holder_key)
 
         # WHEN try to create jwt token of `REQ_CREDENTIAL` message.
@@ -131,7 +131,7 @@ class TestClaimRequest:
         key_provider = algorithm.generate_key_provider('test_presentation_request')
         owner_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
         verifier_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
-        request_date = int(time.time() * 1_000_000)
+        request_date = int(time.time())
         expired_date: int = request_date * 2
         request_claim: dict = {
             'name': '엠마스톤',
@@ -177,7 +177,8 @@ class TestClaimRequest:
         decoded_payload: Payload = decoded_request.jwt.payload
         assert verifier_did == decoded_payload.iss
         assert owner_did == decoded_payload.aud
-        assert ClaimRequestType.REQ_PRESENTATION.value == decoded_payload.type[0]
+        assert ClaimRequestType.REQ_PRESENTATION.value == decoded_payload.type
+        # assert ClaimRequestType.REQ_PRESENTATION.value == decoded_payload.type[0]
         assert request_date == decoded_payload.iat
 
         verify_result: VerifyResult = decoded_request.verify(key_provider.public_key)

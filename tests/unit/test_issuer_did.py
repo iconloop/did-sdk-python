@@ -15,7 +15,7 @@ class TestIssuerDid:
     def test_as_jwt(self, dids, key_id):
         # GIVEN a issuer_did, an issued time and an expiration
         issuer_did = IssuerDid(dids['did'], AlgorithmType.ES256K.name, key_id)
-        issued = int(time.time() * 1_000_000)
+        issued = int(time.time())
         expiration = issued * 2
 
         # WHEN convert issuer_did to jwt

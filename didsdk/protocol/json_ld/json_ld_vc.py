@@ -54,7 +54,7 @@ class JsonLdVc(BaseJsonLd):
         if not param:
             raise ValueError('param cannot be empty.')
 
-        types: List[str] = param.get_term(PropertyName.JL_TYPE)
+        types: List[str] = param.get_term(PropertyName.JL_TYPE)[:]
         types.remove(PropertyName.JL_TYPE_CREDENTIAL_PARAM)
         types.insert(0, PropertyName.JL_TYPE_VERIFIABLE_CREDENTIAL)
 

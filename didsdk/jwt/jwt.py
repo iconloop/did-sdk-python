@@ -8,7 +8,6 @@ from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.document.encoding import Base64URLEncoder
 from didsdk.exceptions import JwtException
 from didsdk.jwt.elements import Header, Payload
-from didsdk.protocol.claim_message_type import ClaimRequestType
 
 
 class VerifyResult:
@@ -73,14 +72,12 @@ class Jwt:
                    payload=Payload(json.loads(decoded_payload.decode(encoding))),
                    encoded_token=encoded_tokens)
 
-    def get_signature(self) -> str:
-        return self._encoded_token[2] if self._encoded_token and len(self._encoded_token) == 3 else None
-
     def sign(self, private_key: PrivateKey, encoding: str = 'UTF-8') -> str:
         content = self._encode(encoding)
         algorithm = AlgorithmProvider.create(AlgorithmType.from_name(self._header.alg))
         signature: bytes = algorithm.sign(private_key, content.encode(encoding))
-        return f'{content}.{Base64URLEncoder.encode(signature)}'
+        self._encoded_token = f'{content}.{Base64URLEncoder.encode(signature)}'
+        return self._encoded_token
 
     def verify(self, public_key: PublicKey = None, encoding: str = 'UTF-8') -> VerifyResult:
         if not public_key:
@@ -97,33 +94,39 @@ class Jwt:
         else:
             return VerifyResult(success=False, fail_message="JWT signature does not match.")
 
-    def verify_iat(self, valid_micro_second: int = None) -> VerifyResult:
-        if not valid_micro_second:
-            valid_micro_second = 10 * 1_000_000
+    def verify_iat(self, valid_second: int = None) -> VerifyResult:
+        # default 10 seconds.
+        if not valid_second:
+            valid_second = 10
 
-        now = int(time.time() * 1_000_000)
+        now = int(time.time())
         iat = self.payload.iat
 
         if not iat:
             return VerifyResult(success=False, fail_message="'iat' is None.")
         else:
-            if (now + (10 * 1_000_000)) - iat < 0:
+            if (now + valid_second) - iat < 0:
                 return VerifyResult(success=False, fail_message="Invalid 'iat'.")
-            elif now - iat > valid_micro_second:
+            elif now - iat > valid_second:
                 return VerifyResult(success=False,
-                                    fail_message=f"Invalid 'iat'. It's over ({valid_micro_second/1_000_000} seconds).")
+                                    fail_message=f"Invalid 'iat'. It's over ({valid_second} seconds).")
 
         return VerifyResult(success=True)
 
     def verify_expired(self) -> VerifyResult:
-        now = int(time.time() * 1_000_000)
+        now = int(time.time())
         exp = self._payload.exp
 
-        if not exp:
-            if ClaimRequestType.REQ_REVOCATION.value in self._payload.type:
-                return VerifyResult(success=True)
-            return VerifyResult(success=False, fail_message="exp is None.")
-        elif exp - now <= 0:
+        # TODO: Temporary fix to avoid checking empty exp validation for `Zzeung` mobile app.
+        # if not exp:
+        #     for type_ in self._payload.type:
+        #         if type_ in [ClaimRequestType.REQ_REVOCATION.value, ClaimRequestType.DID_AUTH.value]:
+        #             return VerifyResult(success=True)
+        #     return VerifyResult(success=False, fail_message="exp is None.")
+        # elif exp - now <= 0:
+        #     return VerifyResult(success=False, fail_message="The expiration date has expired.")
+
+        if exp and exp - now <= 0:
             return VerifyResult(success=False, fail_message="The expiration date has expired.")
 
         return VerifyResult(success=True)

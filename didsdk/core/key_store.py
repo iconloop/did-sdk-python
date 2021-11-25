@@ -18,7 +18,7 @@ from eth_utils import (
 from iconsdk.utils import store_keystore_file_on_the_path
 from iconsdk.utils.validation import has_keys
 
-from didsdk import logger
+from yirgachefe import logger
 from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.exceptions import KeyStoreException
@@ -189,11 +189,7 @@ class DidKeyStore:
         }
 
         try:
-            key_store_contents.update(_create_v3_keyfile_json(
-                bytes.fromhex(key_holder.private_key.to_hex()),
-                bytes(password, 'utf-8')
-            ))
-
+            key_store_contents.update(_create_v3_keyfile_json(key_holder.private_key.secret, bytes(password, 'utf-8')))
             if is_did_keystore_file(key_store_contents):
                 json_string_keystore_data = json.dumps(key_store_contents)
                 store_keystore_file_on_the_path(file_path, json_string_keystore_data)

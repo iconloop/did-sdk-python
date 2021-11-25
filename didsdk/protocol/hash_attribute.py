@@ -1,5 +1,6 @@
 import hashlib
 import json
+from enum import Enum
 from typing import Dict, List, Optional
 
 from didsdk.core.algorithm_provider import AlgorithmProvider
@@ -10,11 +11,15 @@ from didsdk.protocol.json_ld import json_ld_util
 from didsdk.protocol.json_ld.claim import Claim
 
 
+class HashAlgorithmType(Enum):
+    sha256 = 'SHA-256'
+
+
 class HashedAttribute(ClaimAttribute):
     _ATTR_VALUE = "value"
     _ATTR_HASH = "alg"
     ATTR_TYPE = "hash"
-    DEFAULT_ALG = 'sha256'
+    DEFAULT_ALG = HashAlgorithmType.sha256.name
 
     def __init__(self, alg: str, values: Dict[str, str], is_decrypted=False):
         self.alg: str = alg
@@ -46,7 +51,7 @@ class HashedAttribute(ClaimAttribute):
         plain_values = {}
         nonces = {}
         for key, value in values.items():
-            nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
+            nonce = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
             encoded_nonce = nonce.encode(encoding)
             digested = self._get_digest(self._encode_value(value, encoding), encoded_nonce)
             self.hashed_values[key] = Base64URLEncoder.encode(digested)

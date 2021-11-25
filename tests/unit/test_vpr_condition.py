@@ -14,7 +14,7 @@ from didsdk.protocol.json_ld.json_ld_vpr import JsonLdVpr
 from didsdk.protocol.json_ld.vpr_condition import VprCondition, Operator
 from didsdk.protocol.protocol_message import ProtocolMessage, SignResult
 from didsdk.protocol.protocol_type import ProtocolType
-from tests import logger
+from yirgachefe import logger
 
 
 class TestVprCondition:
@@ -84,14 +84,14 @@ class TestVprCondition:
                                          verifier='did:icon:01:SARAMINoooooicHVN8vwZtY9YmjY',
                                          condition=compound_or_condition)
 
-        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce())
+        nonce: str = EncodeType.HEX.value.encode(AlgorithmProvider.generate_random_nonce(32))
         presentation_request_public_key: EphemeralPublicKey = EphemeralPublicKey(
             kid="verifierKey-1", epk=verifier_ecdh_key)
         presentation_request: ClaimRequest = ClaimRequest.for_presentation(algorithm=issuer_did_key_holder.type,
                                                                            did=issuer_did_key_holder.did,
                                                                            public_key_id=issuer_did_key_holder.key_id,
                                                                            response_id=holder_did,
-                                                                           request_date=int(time.time() * 1_000_000),
+                                                                           request_date=int(time.time()),
                                                                            nonce=nonce,
                                                                            public_key=presentation_request_public_key,
                                                                            version=CredentialVersion.v2_0,

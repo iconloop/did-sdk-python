@@ -59,7 +59,8 @@ class DidService:
         response = None
         tx_result = None
         while response is None:
-            await asyncio.sleep(1)
+            # TODO: retry logic
+            await asyncio.sleep(5)
             try:
                 tx_result = self._iconservice.get_transaction_result(tx_hash)
             except JSONRPCException as e:
@@ -79,7 +80,7 @@ class DidService:
         :param method: the name of score function
         :return: the TransactionResult object
         """
-        if not Jwt.decode(signed_jwt).get_signature():
+        if not Jwt.decode(signed_jwt).signature:
             raise Exception('JWT string must contain signature to send a transaction.')
 
         transaction = self._did_score.jwt_method(from_address=wallet.get_address(), jwt=signed_jwt, method=method)
