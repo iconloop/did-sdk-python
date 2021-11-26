@@ -235,8 +235,8 @@ def did_service_local() -> DidService:
 @pytest.fixture
 def did_service_testnet() -> DidService:
     return DidService(IconServiceFactory.create_testnet(),
-                      network_id=3,
-                      score_address='cxa18595c0b6b9c99f5ac5b6f12e136d9d2f221f4c')
+                      network_id=2,
+                      score_address='cxdd0cb8465b15e2971272c1ecf05691198552f770')
 
 
 @pytest.fixture

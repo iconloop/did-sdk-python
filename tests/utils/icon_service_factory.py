@@ -5,7 +5,7 @@ from iconsdk.providers.http_provider import HTTPProvider
 
 class IconServiceFactory:
     LOCAL_BASE_DOMAIN = "http://127.0.0.1:9000"
-    TESTNET_BASE_DOMAIN = "https://bicon.net.solidwallet.io"
+    TESTNET_BASE_DOMAIN = "https://lisbon.net.solidwallet.io"
     VERSION = 3
 
     @staticmethod
