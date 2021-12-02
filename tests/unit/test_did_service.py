@@ -1,7 +1,9 @@
 import os
+from pathlib import Path
+
 import pytest
 from iconsdk.wallet.wallet import KeyWallet
-from pathlib import Path
+from yirgachefe import logger
 
 from didsdk.core.algorithm_provider import AlgorithmType, AlgorithmProvider
 from didsdk.core.did_key_holder import DidKeyHolder
@@ -12,7 +14,6 @@ from didsdk.document.encoding import EncodeType
 from didsdk.exceptions import DocumentException
 from didsdk.jwt.jwt import Jwt
 from didsdk.score.did_score_parameter import DidScoreParameter
-from yirgachefe import logger
 
 
 class TestDidService:
@@ -81,17 +82,6 @@ class TestDidService:
         logger.debug(f"signed jwt: {signed_jwt}")
         logger.debug(f"document: {document}")
         logger.debug(f"document json: {document.serialize()}")
-
-    def test_get_did(self, did_service_testnet: DidService,
-                     test_wallet_keys, key_holder_from_key_store_file: DidKeyHolder):
-        # GIVEN a wallet and a did key holder
-        wallet = KeyWallet.load(bytes.fromhex(test_wallet_keys['private']))
-
-        # WHEN try to get did
-        did = did_service_testnet.get_did(wallet.get_address())
-
-        # THEN success to get the did from the wallet.
-        assert did == key_holder_from_key_store_file.did
 
     def test_get_public_key(self, did_service_testnet: DidService, key_holder_from_key_store_file: DidKeyHolder):
         # GIVEN a key provider

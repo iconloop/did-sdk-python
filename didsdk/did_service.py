@@ -140,14 +140,6 @@ class DidService:
 
         return self.read_document(did)
 
-    def get_did(self, address: str) -> str:
-        """Get the id of document from the did score.
-
-        :param address: the address of wallet is used for transaction.
-        :return: the id of document.
-        """
-        return self._did_score.get_did(address)
-
     def get_public_key(self, did: str, key_id: str) -> PublicKey:
         """Get a publicKey that matches the id of DID document and the id of publicKey.
 
