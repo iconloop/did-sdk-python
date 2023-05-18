@@ -6,7 +6,7 @@ from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.credential import CredentialVersion
 from didsdk.document.encoding import EncodeType
-from didsdk.jwe.ecdhkey import ECDHKey, CurveType
+from didsdk.jwe.ecdhkey import ECDHKey, EcdhCurveType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.jwt import Jwt, VerifyResult
@@ -78,7 +78,7 @@ class TestClaimRequest:
                                                     type=key_provider.type,
                                                     private_key=key_provider.private_key,
                                                     did=owner_did)
-        holder_key = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
+        holder_key = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
         request_claim: dict = {
             'name': '엠마스톤',
             'birthDate': '2001-01-23',

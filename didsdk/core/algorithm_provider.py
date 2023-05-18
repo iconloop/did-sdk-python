@@ -39,8 +39,14 @@ class AlgorithmType(Enum):
         raise ValueError(f"The identifier of '{identifier}' is not supported.")
 
     @classmethod
-    def from_name(cls, name: str) -> 'AlgorithmType':
-        return cls.__members__.get(name)
+    def from_ecdsa_curve(cls, ecdsa_curve: str) -> 'AlgorithmType':
+        if not ecdsa_curve:
+            raise ValueError("The attribute of 'ecdsa_curve' can not be None or emptied.")
+
+        for member in cls.__members__.values():
+            obj: TypePlate = member.value
+            if ecdsa_curve == obj.ecdsa_curve:
+                return member
 
 
 class AlgorithmProvider:

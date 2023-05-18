@@ -10,7 +10,7 @@ from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.credential import CredentialVersion, Credential
 from didsdk.document.encoding import EncodeType
-from didsdk.jwe.ecdhkey import ECDHKey, CurveType
+from didsdk.jwe.ecdhkey import ECDHKey, EcdhCurveType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.presentation import Presentation
 from didsdk.protocol.base_claim import BaseClaim
@@ -25,9 +25,9 @@ from didsdk.protocol.protocol_type import ProtocolType
 class TestVC_1_1:
     def test_did_full_sdk(self):
         # GIVEN some data for test
-        holder_ecdh_key: ECDHKey = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
-        issuer_ecdh_key: ECDHKey = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
-        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
+        holder_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
+        issuer_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
+        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
 
         holder_wallet: KeyWallet = KeyWallet.create()
         issuer_wallet: KeyWallet = KeyWallet.create()

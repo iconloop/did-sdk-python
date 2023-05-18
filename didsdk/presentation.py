@@ -163,7 +163,7 @@ class Presentation(ConvertJwt):
         """
         payload = jwt.payload
         issuer_did = IssuerDid.from_jwt(jwt)
-        return Presentation.from_(algorithm=AlgorithmType.from_name(issuer_did.algorithm),
+        return Presentation.from_(algorithm=AlgorithmType[issuer_did.algorithm],
                                   key_id=issuer_did.key_id,
                                   did=issuer_did.did,
                                   credentials=payload.credential,

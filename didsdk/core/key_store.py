@@ -163,7 +163,7 @@ class DidKeyStore:
                 private_key: bytes = decode_keyfile_json(keyfile_json, bytes(password, 'utf-8'))
                 return DidKeyHolder(did=keyfile_json['did'],
                                     key_id=keyfile_json['keyId'],
-                                    type=AlgorithmType.from_name(keyfile_json['type']),
+                                    type=AlgorithmType[keyfile_json['type']],
                                     private_key=PrivateKey(private_key))
         except FileNotFoundError as e:
             raise KeyStoreException(f'File not found: {e}')

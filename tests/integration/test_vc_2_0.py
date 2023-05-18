@@ -8,7 +8,7 @@ from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.credential import CredentialVersion, Credential
 from didsdk.document.encoding import EncodeType
-from didsdk.jwe.ecdhkey import ECDHKey, CurveType
+from didsdk.jwe.ecdhkey import ECDHKey, EcdhCurveType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.presentation import Presentation
 from didsdk.protocol.claim_message_type import ClaimRequestType
@@ -40,9 +40,9 @@ class TestVC_2_0:
         :return:
         """
         # GIVEN keys and data of participants
-        holder_ecdh_key: ECDHKey = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
-        issuer_ecdh_key: ECDHKey = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
-        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
+        holder_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
+        issuer_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
+        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
 
         algorithm: Algorithm = AlgorithmProvider.create(AlgorithmType.ES256K)
         holder_private_key: PrivateKey = algorithm.bytes_to_private_key(

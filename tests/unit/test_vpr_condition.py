@@ -7,7 +7,7 @@ from didsdk.core.algorithm_provider import AlgorithmType, AlgorithmProvider
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.credential import CredentialVersion
 from didsdk.document.encoding import EncodeType
-from didsdk.jwe.ecdhkey import CurveType, ECDHKey
+from didsdk.jwe.ecdhkey import EcdhCurveType, ECDHKey
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.protocol.claim_request import ClaimRequest
 from didsdk.protocol.json_ld.json_ld_vpr import JsonLdVpr
@@ -50,7 +50,7 @@ class TestVprCondition:
                                                            key_id=issuer_key_id,
                                                            type=AlgorithmType.ES256K,
                                                            private_key=issuer_private_key)
-        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
+        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
 
         condition_1_1: VprCondition = VprCondition.from_simple_condition(
             condition_id='uuid-requisite-0000-1111-2222',

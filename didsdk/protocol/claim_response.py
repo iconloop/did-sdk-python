@@ -156,7 +156,7 @@ class ClaimResponse:
         if not response_id and type_ != ClaimRequestType.REQ_PRESENTATION and ClaimRequestType.DID_INIT != type_:
             raise ValueError('responseId cannot be None.')
 
-        algorithm: AlgorithmType = AlgorithmType.from_name(header.alg)
+        algorithm: AlgorithmType = AlgorithmType[header.alg]
         kid = header.kid
         if not algorithm:
             raise ValueError('algorithm cannot be None.')

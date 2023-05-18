@@ -23,15 +23,23 @@ class CurveTypePlate:
     curve_ec: Curve
 
 
-class CurveType(Enum):
-    CURVE_P256 = CurveTypePlate(curve_name="P-256", algorithm_type=AlgorithmType.ES256,
-                                openssl_name='secp256r1', curve_ec=NIST256p)
-    CURVE_P256K = CurveTypePlate(curve_name="P-256K", algorithm_type=AlgorithmType.ES256K,
-                                 openssl_name="secp256k1", curve_ec=SECP256k1)
-    CURVE_P384 = CurveTypePlate(curve_name="P-384", algorithm_type=AlgorithmType.ES256K,
-                                openssl_name="secp384r1", curve_ec=NIST384p)
-    CURVE_P521 = CurveTypePlate(curve_name="P-521", algorithm_type=AlgorithmType.NONE,
-                                openssl_name="secp521r1", curve_ec=NIST521p)
+class EcdhCurveType(Enum):
+    P256 = CurveTypePlate(curve_name="P-256",
+                          algorithm_type=AlgorithmType.ES256,
+                          openssl_name='secp256r1',
+                          curve_ec=NIST256p)
+    P256K = CurveTypePlate(curve_name="P-256K",
+                           algorithm_type=AlgorithmType.ES256K,
+                           openssl_name="secp256k1",
+                           curve_ec=SECP256k1)
+    P384 = CurveTypePlate(curve_name="P-384",
+                          algorithm_type=AlgorithmType.ES256K,
+                          openssl_name="secp384r1",
+                          curve_ec=NIST384p)
+    P521 = CurveTypePlate(curve_name="P-521",
+                          algorithm_type=AlgorithmType.NONE,
+                          openssl_name="secp521r1",
+                          curve_ec=NIST521p)
 
     @classmethod
     def from_curve_name(cls, curve_name: str) -> CurveTypePlate:
@@ -44,10 +52,6 @@ class CurveType(Enum):
                 return member.value
 
         raise ValueError(f"The curve name of '{curve_name}' is not supported.")
-
-    @classmethod
-    def from_name(cls, name: str) -> CurveTypePlate:
-        return cls.__members__.get(name)
 
 
 @dataclass
@@ -101,17 +105,17 @@ class ECDHKey:
 
     @staticmethod
     def generate_key(curve_name: str) -> 'ECDHKey':
-        key: ecdsa.SigningKey = ecdsa.SigningKey.generate(curve=CurveType.from_curve_name(curve_name).curve_ec,
+        key: ecdsa.SigningKey = ecdsa.SigningKey.generate(curve=EcdhCurveType.from_curve_name(curve_name).curve_ec,
                                                           hashfunc=sha256)
         jwk_json: dict = JWK.from_pem(key.to_pem()).export(as_dict=True)
-        jwk_json['crv'] = CurveType.from_curve_name(jwk_json.get('crv')).curve_name
+        jwk_json['crv'] = EcdhCurveType.from_curve_name(jwk_json.get('crv')).curve_name
 
         return ECDHKey(**jwk_json)
 
     def get_ec_public_key(self) -> ecdsa.VerifyingKey:
         x = int.from_bytes(EncodeType.BASE64URL.value.decode(self.x), 'big')
         y = int.from_bytes(EncodeType.BASE64URL.value.decode(self.y), 'big')
-        ec_curve: Curve = CurveType.from_curve_name(self.crv).curve_ec
+        ec_curve: Curve = EcdhCurveType.from_curve_name(self.crv).curve_ec
         point = ellipticcurve.Point(ec_curve.curve, x, y)
 
         return ecdsa.VerifyingKey.from_public_point(point, curve=ec_curve, hashfunc=sha256)
