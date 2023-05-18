@@ -196,13 +196,15 @@ class ClaimRequest:
         contents = {
             Payload.ISSUER: did,
             Payload.AUDIENCE: response_id,
-            Payload.ISSUED_AT: request_date,
-            Payload.PUBLIC_KEY: public_key.as_dict() if public_key else None,
             Payload.NONCE: nonce,
             Payload.TYPE: [type_.value],
-            Payload.jti: jti,
             Payload.VERSION: version
         }
+
+        if public_key:
+            contents.update({Payload.PUBLIC_KEY: public_key.as_dict()})
+        if jti:
+            contents.update({Payload.JTI: jti})
 
         return cls(Jwt(header=Header(alg=algorithm.name, kid=kid),
                        payload=Payload(contents=contents),
