@@ -1,13 +1,13 @@
-from dataclasses import dataclass
-
 import json
 import uuid
+from dataclasses import dataclass
+
+from coincurve import PrivateKey
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import scrypt
 from Crypto.Util import Counter
-from coincurve import PrivateKey
-from eth_keyfile import load_keyfile, decode_keyfile_json
+from eth_keyfile import decode_keyfile_json, load_keyfile
 from eth_utils import (
     big_endian_to_int,
     encode_hex,
@@ -17,8 +17,8 @@ from eth_utils import (
 )
 from iconsdk.utils import store_keystore_file_on_the_path
 from iconsdk.utils.validation import has_keys
-
 from yirgachefe import logger
+
 from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.exceptions import KeyStoreException
@@ -47,11 +47,11 @@ def _create_v3_keyfile_json(private_key, password, kdf=None, work_factor=None):
             n=work_factor,
         )
         kdfparams = {
-            'dklen': DKLEN,
-            'n': work_factor,
-            'r': R,
-            'p': P_STANDARD,
-            'salt': encode_hex_no_prefix(salt),
+            "dklen": DKLEN,
+            "n": work_factor,
+            "r": R,
+            "p": P_STANDARD,
+            "salt": encode_hex_no_prefix(salt),
         }
     else:
         raise NotImplementedError("KDF not implemented: {0}".format(kdf))
@@ -62,18 +62,18 @@ def _create_v3_keyfile_json(private_key, password, kdf=None, work_factor=None):
     mac = keccak(derived_key[16:32] + ciphertext)
 
     return {
-        'crypto': {
-            'cipher': 'aes-128-ctr',
-            'cipherparams': {
-                'iv': encode_hex_no_prefix(int_to_big_endian(iv)),
+        "crypto": {
+            "cipher": "aes-128-ctr",
+            "cipherparams": {
+                "iv": encode_hex_no_prefix(int_to_big_endian(iv)),
             },
-            'ciphertext': encode_hex_no_prefix(ciphertext),
-            'kdf': kdf,
-            'kdfparams': kdfparams,
-            'mac': encode_hex_no_prefix(mac),
+            "ciphertext": encode_hex_no_prefix(ciphertext),
+            "kdf": kdf,
+            "kdfparams": kdfparams,
+            "mac": encode_hex_no_prefix(mac),
         },
-        'id': str(uuid.uuid4()),
-        'version': CURRENT_VERSION,
+        "id": str(uuid.uuid4()),
+        "version": CURRENT_VERSION,
     }
 
 
@@ -112,9 +112,11 @@ def is_did_keystore_file(keystore: dict) -> bool:
     crypto_keys = ["ciphertext", "cipherparams", "cipher", "kdf", "kdfparams", "mac"]
     crypto_cipherparams_keys = ["iv"]
 
-    is_valid = (has_keys(keystore, root_keys)
-                and has_keys(keystore["crypto"], crypto_keys)
-                and has_keys(keystore["crypto"]["cipherparams"], crypto_cipherparams_keys))
+    is_valid = (
+        has_keys(keystore, root_keys)
+        and has_keys(keystore["crypto"], crypto_keys)
+        and has_keys(keystore["crypto"]["cipherparams"], crypto_cipherparams_keys)
+    )
 
     if is_valid:
         return is_valid
@@ -143,7 +145,7 @@ class DidKeyStoreFile:
 
     @property
     def kid(self):
-        return self.did + '#' + self.keyId
+        return self.did + "#" + self.keyId
 
 
 class DidKeyStore:
@@ -158,19 +160,23 @@ class DidKeyStore:
         :return: An instance of DidKeyHolder class.
         """
         try:
-            with open(file_path, 'rb') as file:
+            with open(file_path, "rb") as file:
                 keyfile_json = load_keyfile(file)
-                private_key: bytes = decode_keyfile_json(keyfile_json, bytes(password, 'utf-8'))
-                return DidKeyHolder(did=keyfile_json['did'],
-                                    key_id=keyfile_json['keyId'],
-                                    type=AlgorithmType[keyfile_json['type']],
-                                    private_key=PrivateKey(private_key))
+                private_key: bytes = decode_keyfile_json(
+                    keyfile_json, bytes(password, "utf-8")
+                )
+                return DidKeyHolder(
+                    did=keyfile_json["did"],
+                    key_id=keyfile_json["keyId"],
+                    type=AlgorithmType[keyfile_json["type"]],
+                    private_key=PrivateKey(private_key),
+                )
         except FileNotFoundError as e:
-            raise KeyStoreException(f'File not found: {e}')
+            raise KeyStoreException(f"File not found: {e}")
         except ValueError as e:
-            raise KeyStoreException(f'Wrong password: {e}')
+            raise KeyStoreException(f"Wrong password: {e}")
         except Exception as e:
-            raise KeyStoreException(f'Keystore error: {e}')
+            raise KeyStoreException(f"Keystore error: {e}")
 
     @staticmethod
     def store(file_path: str, password: str, key_holder: DidKeyHolder):
@@ -182,18 +188,15 @@ class DidKeyStore:
             type(str)
         :param key_holder: A DidKeyHolder object for key store file.
         """
-        key_store_contents = {
-            'did': key_holder.did,
-            'keyId': key_holder.key_id,
-            'type': key_holder.type.name
-        }
+        key_store_contents = key_holder.to_dict(password)
 
         try:
-            key_store_contents.update(_create_v3_keyfile_json(key_holder.private_key.secret, bytes(password, 'utf-8')))
             if is_did_keystore_file(key_store_contents):
                 json_string_keystore_data = json.dumps(key_store_contents)
                 store_keystore_file_on_the_path(file_path, json_string_keystore_data)
-                logger.info(f"Stored Key. DID: {key_holder.did}, File path: {file_path}")
+                logger.info(
+                    f"Stored Key. DID: {key_holder.did}, File path: {file_path}"
+                )
         except FileExistsError:
             raise KeyStoreException("File already exists.")
         except PermissionError:
