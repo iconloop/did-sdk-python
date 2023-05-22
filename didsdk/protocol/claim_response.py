@@ -88,7 +88,7 @@ class ClaimResponse:
         did: str,
         algorithm: AlgorithmType,
         public_key_id: str,
-        version: str,
+        version: str = None,
         kid: str = None,
         public_key: EphemeralPublicKey = None,
         jti: str = None,
@@ -125,13 +125,19 @@ class ClaimResponse:
             Payload.AUDIENCE: response_id,
             Payload.ISSUED_AT: response_date,
             Payload.TYPE: [type_.value],
-            Payload.PUBLIC_KEY: public_key.as_dict() if public_key else None,
-            Payload.NONCE: nonce,
-            Payload.JTI: jti,
-            Payload.VERSION: version,
-            Payload.ERROR_CODE: result_code,
-            Payload.ERROR_MESSAGE: message,
         }
+        if public_key:
+            contents.update({Payload.PUBLIC_KEY: public_key.as_dict()})
+        if nonce:
+            contents.update({Payload.NONCE: nonce})
+        if jti:
+            contents.update({Payload.JTI: jti})
+        if version:
+            contents.update({Payload.VERSION: version})
+        if result_code:
+            contents.update({Payload.ERROR_CODE: result_code})
+        if message:
+            contents.update({Payload.ERROR_MESSAGE: message})
         if response_result:
             contents[Payload.RESULT] = dataclasses.asdict(response_result)
 
