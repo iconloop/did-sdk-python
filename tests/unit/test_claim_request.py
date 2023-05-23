@@ -177,8 +177,8 @@ class TestClaimRequest:
         decoded_payload: Payload = decoded_request.jwt.payload
         assert verifier_did == decoded_payload.iss
         assert owner_did == decoded_payload.aud
-        assert ClaimRequestType.REQ_PRESENTATION.value == decoded_payload.type
-        # assert ClaimRequestType.REQ_PRESENTATION.value == decoded_payload.type[0]
+        # assert ClaimRequestType.REQ_PRESENTATION.value == decoded_payload.type
+        assert ClaimRequestType.REQ_PRESENTATION.value == decoded_payload.type[0]
         assert request_date == decoded_payload.iat
 
         verify_result: VerifyResult = decoded_request.verify(key_provider.public_key)

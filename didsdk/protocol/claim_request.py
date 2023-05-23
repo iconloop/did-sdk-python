@@ -107,13 +107,13 @@ class ClaimRequest:
     def from_(cls, type_: ClaimRequestType,
               did: str,
               algorithm: AlgorithmType,
-              public_key_id: str,
-              version: str,
+              version: str = None,
+              vc_id: str = None,
+              public_key_id: str = None,
               request_date: int = None,
               expired_date: int = None,
               kid: str = None,
               public_key: EphemeralPublicKey = None,
-              vc_id: str = None,
               claims: dict = None,
               vcr: JsonLdVcr = None,
               vpr: JsonLdVpr = None,
@@ -144,21 +144,33 @@ class ClaimRequest:
         header: Header = Header(alg=algorithm.name, kid=kid)
         contents = {
             Payload.ISSUER: did,
-            Payload.AUDIENCE: response_id,
             Payload.ISSUED_AT: request_date,
-            Payload.EXPIRATION: expired_date,
-            REQUEST_CLAIM: claims,
-            Payload.TYPE: type_.value if 'REQ_PRESENTATION' == type_.value else [type_.value],
-            # TODO: Temporary fix for `Zzeung` mobile app. only for  ["REQ_PRESENTATION"] -> "REQ_PRESENTATION".
-            # Payload.TYPE: [type_.value],
-            Payload.PUBLIC_KEY: public_key.as_dict() if public_key else None,
-            Payload.NONCE: nonce,
-            Payload.JTI: jti,
+            Payload.TYPE: [type_.value],
+            # Payload.TYPE: type_.value if 'REQ_PRESENTATION' == type_.value else [type_.value],
             Payload.VC_ID: vc_id,
-            Payload.VCR: vcr.as_dict() if vcr else None,
-            Payload.VPR: vpr.as_dict() if vpr else None,
-            Payload.VERSION: version
         }
+
+        if response_id:
+            contents.update({Payload.AUDIENCE: response_id})
+        if expired_date:
+            contents.update({Payload.EXPIRATION: expired_date})
+        if vc_id:
+            contents.update({Payload.VC_ID: vc_id})
+        if claims:
+            contents.update({REQUEST_CLAIM: claims})
+        if public_key:
+            contents.update({Payload.PUBLIC_KEY: public_key.as_dict()})
+        if nonce:
+            contents.update({Payload.NONCE: nonce})
+        if jti:
+            contents.update({Payload.JTI: jti})
+        if vcr:
+            contents.update({Payload.VCR: vcr.as_dict()})
+        if vpr:
+            contents.update({Payload.VPR: vpr.as_dict()})
+        if version:
+            contents.update({Payload.VERSION: version})
+
         payload = Payload(contents=contents)
         return cls(Jwt(header=header, payload=payload, encoded_token=encoded_token))
 
