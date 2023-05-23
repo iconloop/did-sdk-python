@@ -122,7 +122,9 @@ class Credential(ConvertJwt):
 
     @property
     def param(self):
-        return self._json_ld_param if self._check_version(CredentialVersion.v2_0) else None
+        return (
+            self._json_ld_param if self._check_version(CredentialVersion.v2_0) else None
+        )
 
     def add_claim(self, type_: str, value: str):
         """Add the information that express the owner's credential.
