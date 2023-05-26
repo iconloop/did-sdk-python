@@ -5,7 +5,7 @@ import pytest
 from iconsdk.wallet.wallet import KeyWallet
 from yirgachefe import logger
 
-from didsdk.core.algorithm_provider import AlgorithmType, AlgorithmProvider
+from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.core.key_store import DidKeyStore
 from didsdk.did_service import DidService
@@ -17,21 +17,21 @@ from didsdk.score.did_score_parameter import DidScoreParameter
 
 
 class TestDidService:
-    KEY_FILE_NAME = 'key_file_for_test.json'
-    PASSWORD = 'P@ssw0rd'
-    FIRST_KEY_ID = 'python-sdk-key'
-    SECOND_KEY_ID = '2nd-key'
+    KEY_FILE_NAME = "key_file_for_test.json"
+    PASSWORD = "P@ssw0rd"
+    FIRST_KEY_ID = "python-sdk-key"
+    SECOND_KEY_ID = "2nd-key"
 
     @pytest.fixture
     def key_holder_from_key_store_file(self) -> DidKeyHolder:
-        did_key_holder = DidKeyStore.load_did_key_holer(f'{self.KEY_FILE_NAME}', self.PASSWORD)
+        did_key_holder = DidKeyStore.load_did_key_holder(f"{self.KEY_FILE_NAME}", self.PASSWORD)
         logger.debug(f"did key holder: {did_key_holder}")
         return did_key_holder
 
     @pytest.mark.asyncio
     async def test_create(self, did_service_testnet: DidService, test_wallet_keys):
         # GIVEN a wallet and a key provider
-        wallet = KeyWallet.load(bytes.fromhex(test_wallet_keys['private']))
+        wallet = KeyWallet.load(bytes.fromhex(test_wallet_keys["private"]))
         algorithm_type = AlgorithmType.ES256K
         algorithm = AlgorithmProvider.create(algorithm_type)
         key_provider = algorithm.generate_key_provider(self.FIRST_KEY_ID)
@@ -44,14 +44,16 @@ class TestDidService:
         logger.debug(f"did: {document.id}")
 
         # THEN success to get data same with above given data by the created Document object.
-        key_holder = DidKeyHolder(did=document.id, key_id=key_provider.key_id,
-                                  type=key_provider.type, private_key=key_provider.private_key)
+        key_holder = DidKeyHolder(
+            did=document.id, key_id=key_provider.key_id, type=key_provider.type, private_key=key_provider.private_key
+        )
         public_key_property = document.get_public_key_property(self.FIRST_KEY_ID)
 
         assert self.FIRST_KEY_ID == public_key_property.id
         assert key_provider.public_key.format() == public_key_property.public_key.format()
-        assert (algorithm.public_key_to_bytes(key_provider.public_key)
-                == algorithm.public_key_to_bytes(public_key_property.public_key))
+        assert algorithm.public_key_to_bytes(key_provider.public_key) == algorithm.public_key_to_bytes(
+            public_key_property.public_key
+        )
 
         # for other test
         key_file_path = Path(self.KEY_FILE_NAME)
@@ -60,10 +62,11 @@ class TestDidService:
         DidKeyStore.store(self.KEY_FILE_NAME, self.PASSWORD, key_holder)
 
     @pytest.mark.asyncio
-    async def test_add_public_key(self, did_service_testnet: DidService,
-                                  test_wallet_keys, key_holder_from_key_store_file: DidKeyHolder):
+    async def test_add_public_key(
+        self, did_service_testnet: DidService, test_wallet_keys, key_holder_from_key_store_file: DidKeyHolder
+    ):
         # GIVEN a wallet and a did key holder
-        wallet = KeyWallet.load(bytes.fromhex(test_wallet_keys['private']))
+        wallet = KeyWallet.load(bytes.fromhex(test_wallet_keys["private"]))
 
         # GIVEN a key_provider
         new_key_id = self.SECOND_KEY_ID
@@ -109,10 +112,11 @@ class TestDidService:
         assert document.public_key == key_holder_from_key_store_file.private_key.public_key
 
     @pytest.mark.asyncio
-    async def test_revoke_key(self, did_service_testnet: DidService,
-                              test_wallet_keys, key_holder_from_key_store_file: DidKeyHolder):
+    async def test_revoke_key(
+        self, did_service_testnet: DidService, test_wallet_keys, key_holder_from_key_store_file: DidKeyHolder
+    ):
         # GIVEN a did key holder, a wallet and a revoke_key_id
-        wallet = KeyWallet.load(bytes.fromhex(test_wallet_keys['private']))
+        wallet = KeyWallet.load(bytes.fromhex(test_wallet_keys["private"]))
         revoke_key_id = self.SECOND_KEY_ID
         jwt: Jwt = DidScoreParameter.revoke_key(key_holder_from_key_store_file, revoke_key_id)
         signed_jwt = key_holder_from_key_store_file.sign(jwt)

@@ -8,13 +8,8 @@ from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import scrypt
 from Crypto.Util import Counter
 from eth_keyfile import decode_keyfile_json, load_keyfile
-from eth_utils import (
-    big_endian_to_int,
-    encode_hex,
-    int_to_big_endian,
-    keccak,
-    remove_0x_prefix,
-)
+from eth_utils import (big_endian_to_int, encode_hex, int_to_big_endian,
+                       keccak, remove_0x_prefix)
 from iconsdk.utils import store_keystore_file_on_the_path
 from iconsdk.utils.validation import has_keys
 from yirgachefe import logger
@@ -150,7 +145,7 @@ class DidKeyStoreFile:
 
 class DidKeyStore:
     @staticmethod
-    def load_did_key_holer(file_path: str, password: str) -> DidKeyHolder:
+    def load_did_key_holder(file_path: str, password: str) -> DidKeyHolder:
         """Loads a DidKeyHolder object from a keystore file with your password.
 
         :param file_path: File path of the keystore file. type(str)
@@ -162,9 +157,7 @@ class DidKeyStore:
         try:
             with open(file_path, "rb") as file:
                 keyfile_json = load_keyfile(file)
-                private_key: bytes = decode_keyfile_json(
-                    keyfile_json, bytes(password, "utf-8")
-                )
+                private_key: bytes = decode_keyfile_json(keyfile_json, bytes(password, "utf-8"))
                 return DidKeyHolder(
                     did=keyfile_json["did"],
                     key_id=keyfile_json["keyId"],
@@ -194,9 +187,7 @@ class DidKeyStore:
             if is_did_keystore_file(key_store_contents):
                 json_string_keystore_data = json.dumps(key_store_contents)
                 store_keystore_file_on_the_path(file_path, json_string_keystore_data)
-                logger.info(
-                    f"Stored Key. DID: {key_holder.did}, File path: {file_path}"
-                )
+                logger.info(f"Stored Key. DID: {key_holder.did}, File path: {file_path}")
         except FileExistsError:
             raise KeyStoreException("File already exists.")
         except PermissionError:
