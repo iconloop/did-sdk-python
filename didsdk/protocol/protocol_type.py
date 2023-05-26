@@ -21,17 +21,6 @@ class ProtocolType(Enum):
 
     UNKNOWN = "unknown"
 
-    @classmethod
-    def from_name(cls, name: str) -> 'ProtocolType':
-        if not name:
-            raise ValueError("The attribute of 'name' cannot be None or emptied.")
-
-        for member in cls.__members__.values():
-            if name == member.value:
-                return member
-
-        return cls.UNKNOWN
-
     def is_credential(self) -> bool:
         return self in [self.RESPONSE_CREDENTIAL, self.RESPONSE_CREDENTIAL_OLD, self.RESPONSE_PROTECTED_CREDENTIAL]
 

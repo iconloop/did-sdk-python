@@ -33,7 +33,7 @@ setup_options = {
         "lint": req_lint,
         "dev": req_dev
     },
-    'python_requires': '~=3.7',
+    'python_requires': '~=3.11',
     'license': 'Apache License 2.0',
     'classifiers': [
         'Development Status :: 5 - Production/Stable',

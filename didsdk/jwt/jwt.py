@@ -74,7 +74,7 @@ class Jwt:
 
     def sign(self, private_key: PrivateKey, encoding: str = 'UTF-8') -> str:
         content = self._encode(encoding)
-        algorithm = AlgorithmProvider.create(AlgorithmType.from_name(self._header.alg))
+        algorithm = AlgorithmProvider.create(AlgorithmType[self._header.alg])
         signature: bytes = algorithm.sign(private_key, content.encode(encoding))
         self._encoded_token = f'{content}.{Base64URLEncoder.encode(signature)}'
         return self._encoded_token
@@ -88,7 +88,7 @@ class Jwt:
 
         content = '.'.join(self._encoded_token[0:2])
         signature = Base64URLEncoder.decode(self._encoded_token[2])
-        algorithm = AlgorithmProvider.create(AlgorithmType.from_name(self._header.alg))
+        algorithm = AlgorithmProvider.create(AlgorithmType[self._header.alg])
         if algorithm.verify(public_key, content.encode(encoding), signature):
             return self.verify_expired()
         else:

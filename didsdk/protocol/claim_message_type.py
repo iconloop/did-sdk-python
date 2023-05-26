@@ -7,6 +7,8 @@ class ClaimRequestType(Enum):
     DID_INIT = "DID_INIT"
     REQ_REVOCATION = "REQ_REVOCATION"
 
+
+class ClaimResponseType(Enum):
     DID_AUTH = "DID_AUTH"
     CREDENTIAL_RESULT = "CREDENTIAL_RESULT"
     RES_REVOCATION = "RES_REVOCATION"

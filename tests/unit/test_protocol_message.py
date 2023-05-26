@@ -8,7 +8,7 @@ from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.core.key_provider import KeyProvider
 from didsdk.credential import CredentialVersion
 from didsdk.document.encoding import EncodeType
-from didsdk.jwe.ecdhkey import ECDHKey, CurveType
+from didsdk.jwe.ecdhkey import ECDHKey, EcdhCurveType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.protocol.claim_message_type import ClaimRequestType
 from didsdk.protocol.claim_request import ClaimRequest
@@ -67,11 +67,11 @@ class TestProtocolMessage:
 
     @pytest.fixture
     def holder_ecdh_key(self) -> ECDHKey:
-        return ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
+        return ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
 
     @pytest.fixture
     def request_credential_public_key(self, holder_ecdh_key) -> EphemeralPublicKey:
-        # holder_ecdh_key = ECDHKey.generate_key(CurveType.CURVE_P256K.value.curve_name)
+        # holder_ecdh_key = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
         return EphemeralPublicKey(kid='holderKey-1', epk=holder_ecdh_key)
 
     @pytest.fixture

@@ -21,3 +21,7 @@ class EphemeralPublicKey:
             json_data['epk'] = ECDHKey(**epk)
 
         return cls(**json_data)
+
+    @classmethod
+    def from_ecdh_key(cls, ecdh_key: ECDHKey):
+        return cls(kid=ecdh_key.kid, epk=ecdh_key)

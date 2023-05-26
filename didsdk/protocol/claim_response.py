@@ -1,14 +1,14 @@
 import dataclasses
-import time
 from typing import List
 
+import time
 from coincurve import PublicKey
 
 from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.jwt.elements import Header, Payload
 from didsdk.jwt.jwt import Jwt, VerifyResult
-from didsdk.protocol.claim_message_type import ClaimRequestType
+from didsdk.protocol.claim_message_type import ClaimResponseType
 from didsdk.protocol.response_result import ResponseResult
 
 
@@ -24,11 +24,11 @@ class ClaimResponse:
 
     @property
     def did(self) -> str:
-        return self.jwt.header.kid.split('#')[0]
+        return self.jwt.header.kid.split("#")[0]
 
     @property
     def key_id(self) -> str:
-        return self.jwt.header.kid.split('#')[1]
+        return self.jwt.header.kid.split("#")[1]
 
     @property
     def kid(self) -> str:
@@ -36,7 +36,7 @@ class ClaimResponse:
 
     @property
     def message(self) -> str:
-        return self.jwt.payload.get('message')
+        return self.jwt.payload.get("message")
 
     @property
     def nonce(self) -> str:
@@ -64,7 +64,7 @@ class ClaimResponse:
 
     @property
     def ret_code(self) -> int:
-        return self.jwt.payload.get('retCode')
+        return self.jwt.payload.get("retCode")
 
     @property
     def type(self) -> List[str]:
@@ -81,38 +81,40 @@ class ClaimResponse:
         return self.jwt.verify(public_key)
 
     @classmethod
-    def from_(cls,
-              type_: ClaimRequestType,
-              response_id: str,
-              did: str,
-              algorithm: AlgorithmType,
-              public_key_id: str,
-              version: str,
-              kid: str = None,
-              public_key: EphemeralPublicKey = None,
-              jti: str = None,
-              nonce: str = None,
-              response_date: int = None,
-              encoded_token: List[str] = None,
-              result_code: int = None,
-              message: str = None,
-              response_result: ResponseResult = None):
+    def from_(
+        cls,
+        type_: ClaimResponseType,
+        response_id: str,
+        did: str,
+        algorithm: AlgorithmType,
+        public_key_id: str,
+        version: str = None,
+        kid: str = None,
+        public_key: EphemeralPublicKey = None,
+        jti: str = None,
+        nonce: str = None,
+        response_date: int = None,
+        encoded_token: List[str] = None,
+        result_code: int = None,
+        message: str = None,
+        response_result: ResponseResult = None,
+    ):
         if not version:
-            raise ValueError('version cannot be None.')
+            raise ValueError("version cannot be None.")
         if not response_id:
-            raise ValueError('responseId cannot be None.')
+            raise ValueError("responseId cannot be None.")
 
         if algorithm != AlgorithmType.NONE:
             if not did:
-                raise ValueError('did cannot be None.')
+                raise ValueError("did cannot be None.")
             if not algorithm:
-                raise ValueError('algorithm cannot be None.')
+                raise ValueError("algorithm cannot be None.")
             if not public_key_id:
-                raise ValueError('publicKeyId cannot be None.')
+                raise ValueError("publicKeyId cannot be None.")
             if not kid:
-                kid = did + '#' + public_key_id
+                kid = did + "#" + public_key_id
         else:
-            raise ValueError('None algorithm is not supported.')
+            raise ValueError("None algorithm is not supported.")
 
         if not response_date:
             response_date = int(time.time())
@@ -123,13 +125,19 @@ class ClaimResponse:
             Payload.AUDIENCE: response_id,
             Payload.ISSUED_AT: response_date,
             Payload.TYPE: [type_.value],
-            Payload.PUBLIC_KEY: public_key.as_dict() if public_key else None,
-            Payload.NONCE: nonce,
-            Payload.JTI: jti,
-            Payload.VERSION: version,
-            Payload.ERROR_CODE: result_code,
-            Payload.ERROR_MESSAGE: message
         }
+        if public_key:
+            contents.update({Payload.PUBLIC_KEY: public_key.as_dict()})
+        if nonce:
+            contents.update({Payload.NONCE: nonce})
+        if jti:
+            contents.update({Payload.JTI: jti})
+        if version:
+            contents.update({Payload.VERSION: version})
+        if result_code:
+            contents.update({Payload.ERROR_CODE: result_code})
+        if message:
+            contents.update({Payload.ERROR_MESSAGE: message})
         if response_result:
             contents[Payload.RESULT] = dataclasses.asdict(response_result)
 
@@ -142,27 +150,15 @@ class ClaimResponse:
         payload: Payload = jwt.payload
 
         if not payload.version:
-            raise ValueError('version cannot be None.')
+            raise ValueError("version cannot be None.")
         if not payload.type:
-            raise ValueError('claimTypes cannot be None.')
+            raise ValueError("claimTypes cannot be None.")
 
-        response_id: str = ''
-        if payload.aud:
-            response_id = payload.aud
-        elif payload.sub:
-            response_id = payload.sub
-
-        type_ = ClaimRequestType(payload.type[0])
-        if not response_id and type_ != ClaimRequestType.REQ_PRESENTATION and ClaimRequestType.DID_INIT != type_:
-            raise ValueError('responseId cannot be None.')
-
-        algorithm: AlgorithmType = AlgorithmType.from_name(header.alg)
+        algorithm: AlgorithmType = AlgorithmType[header.alg]
         kid = header.kid
         if not algorithm:
-            raise ValueError('algorithm cannot be None.')
+            raise ValueError("algorithm cannot be None.")
         if algorithm != AlgorithmType.NONE and not kid:
-            raise ValueError('kid cannot be None.')
-        # elif type_ != ClaimRequestType.REQ_PRESENTATION:
-        #     raise ValueError("NONE type algorithm is only supported when type is presentation")
+            raise ValueError("kid cannot be None.")
 
         return cls(jwt)
