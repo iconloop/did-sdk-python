@@ -17,8 +17,9 @@ class CredentialVersion:
 
 
 class Credential(ConvertJwt):
-    """This class to create a verifiable credential, which can be used to express information that a credential represents.
+    """This class to create a verifiable credential.
 
+    IT can be used to express information that a credential represents.
     (for example, a city government, national agency, or identification number)
 
     For credential to be verifiable, proof mechanism use Json Web Token.
@@ -121,9 +122,7 @@ class Credential(ConvertJwt):
 
     @property
     def param(self):
-        return (
-            self._json_ld_param if self._check_version(CredentialVersion.v2_0) else None
-        )
+        return self._json_ld_param if self._check_version(CredentialVersion.v2_0) else None
 
     def add_claim(self, type_: str, value: str):
         """Add the information that express the owner's credential.

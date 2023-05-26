@@ -1,14 +1,14 @@
 import json
 from enum import Enum
-from typing import List, Any, Dict
+from typing import Any, Dict, List
 
 from didsdk.core.property_name import PropertyName
 from didsdk.protocol.json_ld.base_json_ld import BaseJsonLd
 
 
 class Operator(Enum):
-    AND = 'and'
-    OR = 'or'
+    AND = "and"
+    OR = "or"
 
 
 class VprCondition(BaseJsonLd):
@@ -43,23 +43,20 @@ class VprCondition(BaseJsonLd):
         return None if self.is_compound() else self.node.get(PropertyName.JL_PROPERTY)
 
     @classmethod
-    def from_simple_condition(cls, context,
-                              condition_id: str,
-                              credential_type: str,
-                              property_,
-                              issuer=None,
-                              type_=None) -> 'VprCondition':
-        if not(context and credential_type and property_):
-            raise ValueError('[context, credential_type, property_] values cannot be None.')
+    def from_simple_condition(
+        cls, context, condition_id: str, credential_type: str, property_, issuer=None, type_=None
+    ) -> "VprCondition":
+        if not (context and credential_type and property_):
+            raise ValueError("[context, credential_type, property_] values cannot be None.")
 
-        type_ = ['SimpleCondition'] + type_ if type_ else ['SimpleCondition']
+        type_ = ["SimpleCondition"] + type_ if type_ else ["SimpleCondition"]
 
         condition = {
             PropertyName.JL_AT_TYPE: type_,
             PropertyName.JL_CONDITION_ID: condition_id,
             PropertyName.JL_CONTEXT: context,
             PropertyName.JL_CREDENTIAL_TYPE: credential_type,
-            PropertyName.JL_PROPERTY: property_
+            PropertyName.JL_PROPERTY: property_,
         }
 
         if issuer:
@@ -68,9 +65,9 @@ class VprCondition(BaseJsonLd):
         return cls(condition)
 
     @classmethod
-    def from_compound_condition(cls, operator: str, condition_list: List['VprCondition'], type_=None) -> 'VprCondition':
-        if not(operator and condition_list):
-            raise ValueError('[operator, condition_list] values cannot be None.')
+    def from_compound_condition(cls, operator: str, condition_list: List["VprCondition"], type_=None) -> "VprCondition":
+        if not (operator and condition_list):
+            raise ValueError("[operator, condition_list] values cannot be None.")
         if len(condition_list) < 2:
             raise ValueError('"condition" requires elements at least 2.')
 
@@ -78,7 +75,7 @@ class VprCondition(BaseJsonLd):
         condition = {
             PropertyName.JL_AT_TYPE: type_,
             PropertyName.JL_OPERATOR: operator,
-            PropertyName.JL_CONDITION: condition_list
+            PropertyName.JL_CONDITION: condition_list,
         }
         return cls(condition)
 
