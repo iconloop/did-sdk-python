@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 from coincurve import PrivateKey
-from eth_keyfile import create_keyfile_json
+from eth_keyfile import create_keyfile_json, decode_keyfile_json
 
 from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.jwt.jwt import Jwt
@@ -42,6 +42,16 @@ class DidKeyHolder:
         """
         return jwt.sign(self.private_key)
 
+    @classmethod
+    def from_dict(cls, key_holder: Dict[str, Any], password: str) -> "DidKeyHolder":
+        private_key: bytes = decode_keyfile_json(key_holder, password)
+        return DidKeyHolder(
+            did=key_holder.get("did"),
+            key_id=key_holder.get("keyId"),
+            type=AlgorithmType[key_holder.get("type")],
+            private_key=PrivateKey(private_key),
+        )
+
     def to_dict(self, password: str) -> Dict[str, Any]:
         result: Dict[str, Any] = create_keyfile_json(
             self.private_key.secret,
@@ -50,5 +60,4 @@ class DidKeyHolder:
             kdf="scrypt",
         )
         result.update({"did": self.did, "keyId": self.key_id, "type": self.type.name})
-        # result.update(_create_v3_keyfile_json(self.private_key.secret, bytes(password, 'utf-8')))
         return result
