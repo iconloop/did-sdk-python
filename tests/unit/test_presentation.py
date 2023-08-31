@@ -13,35 +13,37 @@ class TestPresentation:
 
     @pytest.fixture
     def presentation_v1_0(self, issuer_did):
-        return Presentation(algorithm=issuer_did.algorithm,
-                            key_id=issuer_did.key_id,
-                            did=issuer_did.did,
-                            version=CredentialVersion.v1_0)
+        return Presentation(
+            algorithm=issuer_did.algorithm, key_id=issuer_did.key_id, did=issuer_did.did, version=CredentialVersion.v1_0
+        )
 
     @pytest.fixture
     def presentation_v1_1(self, issuer_did):
-        return Presentation(algorithm=issuer_did.algorithm,
-                            key_id=issuer_did.key_id,
-                            did=issuer_did.did,
-                            version=CredentialVersion.v1_1)
+        return Presentation(
+            algorithm=issuer_did.algorithm, key_id=issuer_did.key_id, did=issuer_did.did, version=CredentialVersion.v1_1
+        )
 
     @pytest.fixture
     def credential_v1_0(self, issuer_did, dids, vc_claim_for_v1) -> Credential:
-        return Credential(algorithm=issuer_did.algorithm,
-                          key_id=issuer_did.key_id,
-                          did=issuer_did.did,
-                          target_did=dids['target_did'],
-                          version=CredentialVersion.v1_0,
-                          claim=vc_claim_for_v1)
+        return Credential(
+            algorithm=issuer_did.algorithm,
+            key_id=issuer_did.key_id,
+            did=issuer_did.did,
+            target_did=dids["target_did"],
+            version=CredentialVersion.v1_0,
+            claim=vc_claim_for_v1,
+        )
 
     @pytest.fixture
     def credential_v1_1(self, issuer_did, dids, vc_claim_for_v1) -> Credential:
-        return Credential(algorithm=issuer_did.algorithm,
-                          key_id=issuer_did.key_id,
-                          did=issuer_did.did,
-                          target_did=dids['target_did'],
-                          version=CredentialVersion.v1_1,
-                          claim=vc_claim_for_v1)
+        return Credential(
+            algorithm=issuer_did.algorithm,
+            key_id=issuer_did.key_id,
+            did=issuer_did.did,
+            target_did=dids["target_did"],
+            version=CredentialVersion.v1_1,
+            claim=vc_claim_for_v1,
+        )
 
     @pytest.fixture
     def credential_v2(self, credentials) -> Credential:
@@ -70,7 +72,7 @@ class TestPresentation:
         # THEN success converting
         assert presentation.did == jwt_object.payload.iss
         assert presentation.algorithm == jwt_object.header.alg
-        assert presentation.key_id == jwt_object.header.kid.split('#')[1]
+        assert presentation.key_id == jwt_object.header.kid.split("#")[1]
         assert issued == jwt_object.payload.iat
         assert expiration == jwt_object.payload.exp
 
@@ -83,7 +85,7 @@ class TestPresentation:
         # THEN success converting
         assert presentation.did == payload.iss
         assert presentation.algorithm == jwt_object.header.alg
-        assert presentation.key_id == jwt_object.header.kid.split('#')[1]
+        assert presentation.key_id == jwt_object.header.kid.split("#")[1]
 
         types = presentation.get_types()
         for encoded_credential in payload.credential:
@@ -104,7 +106,7 @@ class TestPresentation:
         # THEN success converting
         assert presentation.did == payload.iss
         assert presentation.algorithm == jwt_object.header.alg
-        assert presentation.key_id == jwt_object.header.kid.split('#')[1]
+        assert presentation.key_id == jwt_object.header.kid.split("#")[1]
 
         types = presentation.get_types()
         for encoded_credential in payload.credential:

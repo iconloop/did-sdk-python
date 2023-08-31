@@ -1,9 +1,9 @@
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 import pytest
 
 from didsdk.core.property_name import PropertyName
-from didsdk.protocol.json_ld.json_ld_vpr import JsonLdVpr, VPR, PR
+from didsdk.protocol.json_ld.json_ld_vpr import PR, VPR, JsonLdVpr
 from didsdk.protocol.json_ld.vpr_condition import VprCondition
 
 
@@ -15,7 +15,8 @@ class TestJsonLdVpr:
             condition_id="uuid-requisite-0000-1111-2222",
             issuer=["did:icon:01:c07bbcf24b7d9c7a1202e8ed0a64d17eee956aa48561bc9"],
             context=["https://vc-test.zzeung.id/credentials/mobile_authentication/kor/v1.json"],
-            property_=["name", "gender", "telco", "phoneNumber", "connectingInformation", "birthDate"])
+            property_=["name", "gender", "telco", "phoneNumber", "connectingInformation", "birthDate"],
+        )
 
     @pytest.fixture
     def context(self) -> List[str]:
@@ -35,7 +36,7 @@ class TestJsonLdVpr:
 
     @pytest.fixture
     def purpose_label(self) -> str:
-        return 'purpose_label'
+        return "purpose_label"
 
     @pytest.fixture
     def verifier(self) -> str:
@@ -52,12 +53,9 @@ class TestJsonLdVpr:
     def test_create(self, condition: VprCondition, context: List[str], id_: str, url: str, purpose: str, verifier: str):
         # GIVEN a VprCondition and properties for JsonLdVpr object
         # WHEN try to create JsonLdVpr object
-        json_ld_vpr: JsonLdVpr = JsonLdVpr.from_(context=context,
-                                                 id_=id_,
-                                                 url=url,
-                                                 purpose=purpose,
-                                                 verifier=verifier,
-                                                 condition=condition)
+        json_ld_vpr: JsonLdVpr = JsonLdVpr.from_(
+            context=context, id_=id_, url=url, purpose=purpose, verifier=verifier, condition=condition
+        )
 
         # THEN success to get above properties from JsonLdVpr
         assert json_ld_vpr.get_term(PropertyName.JL_CONTEXT) == context
@@ -84,8 +82,9 @@ class TestJsonLdVpr:
         assert vpr_condition.get_term(PropertyName.JL_AT_TYPE) == condition.type
         assert vpr_condition.get_term(PropertyName.JL_CONDITION_ID) == condition.get_term(PropertyName.JL_CONDITION_ID)
         assert vpr_condition.get_term(PropertyName.JL_ISSUER) == condition.get_term(PropertyName.JL_ISSUER)
-        assert (vpr_condition.get_term(PropertyName.JL_CREDENTIAL_TYPE)
-                == condition.get_term(PropertyName.JL_CREDENTIAL_TYPE))
+        assert vpr_condition.get_term(PropertyName.JL_CREDENTIAL_TYPE) == condition.get_term(
+            PropertyName.JL_CREDENTIAL_TYPE
+        )
         assert vpr_condition.get_term(PropertyName.JL_PROPERTY) == condition.get_term(PropertyName.JL_PROPERTY)
 
     def test_from_json(self, vpr: VPR):
@@ -131,6 +130,7 @@ class TestJsonLdVpr:
         assert vpr_condition.get_term(PropertyName.JL_AT_TYPE) == condition.type
         assert vpr_condition.get_term(PropertyName.JL_CONDITION_ID) == condition.get_term(PropertyName.JL_CONDITION_ID)
         assert vpr_condition.get_term(PropertyName.JL_ISSUER) == condition.get_term(PropertyName.JL_ISSUER)
-        assert (vpr_condition.get_term(PropertyName.JL_CREDENTIAL_TYPE)
-                == condition.get_term(PropertyName.JL_CREDENTIAL_TYPE))
+        assert vpr_condition.get_term(PropertyName.JL_CREDENTIAL_TYPE) == condition.get_term(
+            PropertyName.JL_CREDENTIAL_TYPE
+        )
         assert vpr_condition.get_term(PropertyName.JL_PROPERTY) == condition.get_term(PropertyName.JL_PROPERTY)

@@ -38,7 +38,7 @@ class PresentationRequest:
 
     @property
     def did(self) -> str:
-        return self.jwt.header.kid.split('#')[0]
+        return self.jwt.header.kid.split("#")[0]
 
     @property
     def key_id(self) -> str:
@@ -46,7 +46,7 @@ class PresentationRequest:
 
     @property
     def kid(self) -> str:
-        return self.jwt.header.kid.split('#')[1]
+        return self.jwt.header.kid.split("#")[1]
 
     @property
     def nonce(self) -> str:

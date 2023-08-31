@@ -16,7 +16,7 @@ class ConvertJwt(abc.ABC):
         """
         raise NotImplementedError
 
-    def as_jwt(self, issued: int, expiration: int) -> 'Jwt':
+    def as_jwt(self, issued: int, expiration: int) -> "Jwt":
         raise NotImplementedError
 
     @staticmethod
@@ -24,5 +24,5 @@ class ConvertJwt(abc.ABC):
         raise NotImplementedError
 
     @staticmethod
-    def from_jwt(jwt: 'Jwt'):
+    def from_jwt(jwt: "Jwt"):
         raise NotImplementedError

@@ -1,4 +1,4 @@
-from coincurve import PublicKey, PrivateKey
+from coincurve import PrivateKey, PublicKey
 
 from didsdk.core.algorithm import Algorithm
 from didsdk.core.algorithm_provider import AlgorithmType

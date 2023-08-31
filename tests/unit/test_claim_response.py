@@ -11,19 +11,18 @@ from didsdk.protocol.response_result import ResponseResult
 class TestClaimResponse:
     def test_revocation_response(self):
         # GIVEN data for ClaimResponse
-        holder_did = 'did:icon:03:a0da55dc3fb992aa93aefb1132778d724765b22a7ecbc087'
-        issuer_did = 'did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55'
-        issuer_key_id = 'issuer'
+        holder_did = "did:icon:03:a0da55dc3fb992aa93aefb1132778d724765b22a7ecbc087"
+        issuer_did = "did:icon:03:485e12f86bea2d16905e6ad4f657031c7a56280af3648b55"
+        issuer_key_id = "issuer"
         algorithm = AlgorithmProvider.create(AlgorithmType.ES256K)
         key_provider = algorithm.generate_key_provider(issuer_key_id)
-        issuer_did_key_holder = DidKeyHolder(did=issuer_did,
-                                             key_id=issuer_key_id,
-                                             type=key_provider.type,
-                                             private_key=key_provider.private_key)
+        issuer_did_key_holder = DidKeyHolder(
+            did=issuer_did, key_id=issuer_key_id, type=key_provider.type, private_key=key_provider.private_key
+        )
 
-        response_result: ResponseResult = ResponseResult(result=False,
-                                                         error_code='100',
-                                                         error_message='Not found Error')
+        response_result: ResponseResult = ResponseResult(
+            result=False, error_code="100", error_message="Not found Error"
+        )
 
         header: Header = Header(alg=issuer_did_key_holder.type.name, kid=issuer_did_key_holder.kid)
         contents = {
@@ -33,7 +32,7 @@ class TestClaimResponse:
             Payload.RESULT: response_result.result,
             Payload.ERROR_CODE: response_result.error_code,
             Payload.ERROR_MESSAGE: response_result.error_message,
-            Payload.VERSION: CredentialVersion.v2_0
+            Payload.VERSION: CredentialVersion.v2_0,
         }
         payload: Payload = Payload(contents)
         claim_response: ClaimResponse = ClaimResponse(Jwt(header, payload))

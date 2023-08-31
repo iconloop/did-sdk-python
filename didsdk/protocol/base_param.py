@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict
 
-
 PARAM_VALUE = "value"
 PARAM_NONCE = "nonce"
 

@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "icon-did-sdk"
 description = ''
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 license = "MIT"
 keywords = []
 authors = [
@@ -20,9 +20,8 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "pytest-asyncio==0.21.1",
   "ecdsa[gmpy2]==0.18.0",
-  "iconsdk==2.5.0",
+  "iconsdk~=2.4.5",
   "jwcrypto @ git+https://github.com/iconloop/jwcrypto.git",
   "loguru==0.7.0",
   "pydantic[dotenv]==1.10.7",
@@ -33,6 +32,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 dev = [
   "pytest~=7.2.2",
+  "pytest-asyncio==0.21.1",
   "pytest-cov~=4.0.0",
   "pytest-mock~=3.10.0",
   "anyio[trio]~=3.7.0",

@@ -17,8 +17,12 @@ class DidScoreParameter:
 
     @staticmethod
     def _create_public_key_property(key_provider: KeyProvider, encode_type: EncodeType) -> PublicKeyProperty:
-        return PublicKeyProperty(id=key_provider.key_id, type=[key_provider.type.value.identifier],
-                                 public_key=key_provider.public_key, encode_type=encode_type)
+        return PublicKeyProperty(
+            id=key_provider.key_id,
+            type=[key_provider.type.value.identifier],
+            public_key=key_provider.public_key,
+            encode_type=encode_type,
+        )
 
     @staticmethod
     def add_key(did_key_holder: DidKeyHolder, key_provider: KeyProvider, encode_type: EncodeType) -> Jwt:
@@ -37,9 +41,9 @@ class DidScoreParameter:
         contents = {
             PropertyName.KEY_TX_UPDATE_METHOD: PropertyName.KEY_TX_UPDATE_METHOD_ADDKEY,
             PropertyName.KEY_TX_UPDATE_PARAM: {
-                'id': did_key_holder.did,
-                PropertyName.KEY_DOCUMENT_PUBLICKEY: public_key_provider.as_dict()
-            }
+                "id": did_key_holder.did,
+                PropertyName.KEY_DOCUMENT_PUBLICKEY: public_key_provider.as_dict(),
+            },
         }
         payload = Payload(contents=contents)
 
@@ -74,8 +78,8 @@ class DidScoreParameter:
             PropertyName.KEY_TX_UPDATE_METHOD: PropertyName.KEY_TX_UPDATE_METHOD_REVOKEKEY,
             PropertyName.KEY_TX_UPDATE_PARAM: {
                 PropertyName.KEY_DOCUMENT_ID: did_key_holder.did,
-                PropertyName.KEY_DOCUMENT_PUBLICKEY: revoke_key_id
-            }
+                PropertyName.KEY_DOCUMENT_PUBLICKEY: revoke_key_id,
+            },
         }
         payload = Payload(contents=contents)
 

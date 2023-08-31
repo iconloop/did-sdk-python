@@ -6,4 +6,4 @@ class JWEHeader:
     kid: str
     alg: str
     enc: str
-    typ: str = 'JWE'
+    typ: str = "JWE"

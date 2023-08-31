@@ -11,12 +11,14 @@ from didsdk.jwt.jwt import Jwt
 class TestCredential:
     @pytest.fixture
     def credential_v1(self, issuer_did, dids, vc_claim_for_v1) -> Credential:
-        return Credential(algorithm=issuer_did.algorithm,
-                          key_id=issuer_did.key_id,
-                          did=issuer_did.did,
-                          target_did=dids['target_did'],
-                          version=CredentialVersion.v1_1,
-                          claim=vc_claim_for_v1)
+        return Credential(
+            algorithm=issuer_did.algorithm,
+            key_id=issuer_did.key_id,
+            did=issuer_did.did,
+            target_did=dids["target_did"],
+            version=CredentialVersion.v1_1,
+            claim=vc_claim_for_v1,
+        )
 
     @pytest.fixture
     def credential_v2(self, credentials) -> Credential:
@@ -34,19 +36,19 @@ class TestCredential:
         expiration = issued * 2
         return credential_v2.as_jwt(issued, expiration)
 
-    @pytest.mark.parametrize('credential', ['credential_v1', 'credential_v2'])
+    @pytest.mark.parametrize("credential", ["credential_v1", "credential_v2"])
     def test_add_claim(self, credential, request):
         # GIVEN a credential object
         credential = request.getfixturevalue(credential)
         # WHEN try to add a claim
-        type_ = 'test_claim'
-        value = 'hello'
+        type_ = "test_claim"
+        value = "hello"
         credential.add_claim(type_, value)
 
         # THEN it contains the claim
         assert credential.claim.get(type_) == value
 
-    @pytest.mark.parametrize('credential', ['credential_v1', 'credential_v2'])
+    @pytest.mark.parametrize("credential", ["credential_v1", "credential_v2"])
     def test_as_jwt(self, credential, request):
         # GIVEN a credential object, an issued time and an expiration
         credential = request.getfixturevalue(credential)
@@ -58,11 +60,11 @@ class TestCredential:
 
         # THEN success converting
         assert credential.did == jwt_object.payload.iss
-        assert credential.key_id == jwt_object.header.kid.split('#')[1]
+        assert credential.key_id == jwt_object.header.kid.split("#")[1]
         assert issued == jwt_object.payload.iat
         assert expiration == jwt_object.payload.exp
 
-    @pytest.mark.parametrize('jwt_object', ['jwt_object_v1', 'jwt_object_v2'])
+    @pytest.mark.parametrize("jwt_object", ["jwt_object_v1", "jwt_object_v2"])
     def test_from_encoded_jwt(self, jwt_object, private_key: PrivateKey, request):
         # GIVEN a Jwt object and a private_key.
         jwt_object: Jwt = request.getfixturevalue(jwt_object)
@@ -72,7 +74,7 @@ class TestCredential:
         # THEN success converting
         self.check_assertion(credential, jwt_object)
 
-    @pytest.mark.parametrize('jwt_object', ['jwt_object_v1', 'jwt_object_v2'])
+    @pytest.mark.parametrize("jwt_object", ["jwt_object_v1", "jwt_object_v2"])
     def test_from_jwt(self, jwt_object, request):
         # GIVEN a Jwt object.
         jwt_object: Jwt = request.getfixturevalue(jwt_object)
@@ -88,7 +90,7 @@ class TestCredential:
         assert credential.did == payload.iss
         assert credential.target_did == payload.sub
         assert credential.algorithm == jwt_object.header.alg
-        assert credential.key_id == jwt_object.header.kid.split('#')[1]
+        assert credential.key_id == jwt_object.header.kid.split("#")[1]
         if credential.version in [CredentialVersion.v1_0, CredentialVersion.v1_1]:
             assert credential.claim == payload.claim
         assert credential.jwt.payload.exp == payload.exp

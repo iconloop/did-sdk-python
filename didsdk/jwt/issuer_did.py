@@ -35,7 +35,7 @@ class IssuerDid(ConvertJwt):
         return self._key_id
 
     @staticmethod
-    def from_did_key_holder(did_key_holder: DidKeyHolder) -> 'IssuerDid':
+    def from_did_key_holder(did_key_holder: DidKeyHolder) -> "IssuerDid":
         """Returns the IssuerDid object representation of the String argument.
 
         :param did_key_holder: encodedJwt the String returned by calling `didsdk.core.did_key_holder.sign(Jwt)`.
@@ -44,7 +44,7 @@ class IssuerDid(ConvertJwt):
         return IssuerDid(did=did_key_holder.did, algorithm=did_key_holder.type.name, key_id=did_key_holder.key_id)
 
     @staticmethod
-    def from_encoded_jwt(encoded_jwt: str) -> 'IssuerDid':
+    def from_encoded_jwt(encoded_jwt: str) -> "IssuerDid":
         """Returns the IssuerDid object representation of the Jwt argument.
 
         :param encoded_jwt: the encoded jwt.
@@ -53,13 +53,13 @@ class IssuerDid(ConvertJwt):
         return IssuerDid.from_jwt(Jwt.decode(encoded_jwt))
 
     @staticmethod
-    def from_jwt(jwt: Jwt) -> 'IssuerDid':
+    def from_jwt(jwt: Jwt) -> "IssuerDid":
         """Returns the IssuerDid object representation of the Jwt argument.
 
         :param jwt: the JWT with properties of the Presentation object.
         :return: the IssuerDid object from Jwt.
         """
-        kid = jwt.header.kid.split('#')
+        kid = jwt.header.kid.split("#")
         return IssuerDid(did=kid[0], algorithm=jwt.header.alg, key_id=kid[1])
 
     def as_jwt(self, issued: int, expiration: int) -> Jwt:
@@ -69,12 +69,8 @@ class IssuerDid(ConvertJwt):
         :param expiration: expiration time for the JWT token.
         :return: a JWT token from this object.
         """
-        kid = f'{self.did}#{self._key_id}'
-        contents = {
-            Payload.ISSUER: self._did,
-            Payload.ISSUED_AT: issued,
-            Payload.EXPIRATION: expiration
-        }
+        kid = f"{self.did}#{self._key_id}"
+        contents = {Payload.ISSUER: self._did, Payload.ISSUED_AT: issued, Payload.EXPIRATION: expiration}
         header = Header(alg=self._algorithm, kid=kid)
         payload = Payload(contents=contents)
         return Jwt(header, payload)

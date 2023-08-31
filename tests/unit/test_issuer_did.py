@@ -10,11 +10,11 @@ from didsdk.jwt.issuer_did import IssuerDid
 class TestIssuerDid:
     @pytest.fixture
     def did_key_holder(self, dids, key_id, private_key) -> DidKeyHolder:
-        return DidKeyHolder(dids['did'], key_id, AlgorithmType.ES256K, private_key)
+        return DidKeyHolder(dids["did"], key_id, AlgorithmType.ES256K, private_key)
 
     def test_as_jwt(self, dids, key_id):
         # GIVEN a issuer_did, an issued time and an expiration
-        issuer_did = IssuerDid(dids['did'], AlgorithmType.ES256K.name, key_id)
+        issuer_did = IssuerDid(dids["did"], AlgorithmType.ES256K.name, key_id)
         issued = int(time.time())
         expiration = issued * 2
 
@@ -24,7 +24,7 @@ class TestIssuerDid:
         # THEN success converting
         assert issuer_did.did == jwt_object.payload.iss
         assert issuer_did.algorithm == jwt_object.header.alg
-        assert issuer_did.key_id == jwt_object.header.kid.split('#')[1]
+        assert issuer_did.key_id == jwt_object.header.kid.split("#")[1]
 
     def test_from_did_key_holder(self, did_key_holder):
         # GIVEN a did key holder object
@@ -44,7 +44,7 @@ class TestIssuerDid:
         # THEN success converting
         assert issuer_did.did == jwt_object.payload.iss
         assert issuer_did.algorithm == jwt_object.header.alg
-        assert issuer_did.key_id == jwt_object.header.kid.split('#')[1]
+        assert issuer_did.key_id == jwt_object.header.kid.split("#")[1]
 
     def test_from_jwt(self, jwt_object):
         # GIVEN a Jwt object.
@@ -54,4 +54,4 @@ class TestIssuerDid:
         # THEN success converting
         assert issuer_did.did == jwt_object.payload.iss
         assert issuer_did.algorithm == jwt_object.header.alg
-        assert issuer_did.key_id == jwt_object.header.kid.split('#')[1]
+        assert issuer_did.key_id == jwt_object.header.kid.split("#")[1]

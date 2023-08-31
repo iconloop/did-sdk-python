@@ -19,7 +19,7 @@ class TestJwt:
 
         # THEN get same data by decoding jwt with using above signature
         assert compact == jwt_from_encoded_token.compact()
-        assert jwt_from_encoded_token.signature in Base64URLEncoder.add_padding(encoded_token.split('.')[2])
+        assert jwt_from_encoded_token.signature in Base64URLEncoder.add_padding(encoded_token.split(".")[2])
 
     def test_verify(self, jwt_object, private_key):
         # GIVEN a Jwt object contains an encoded token
@@ -32,10 +32,13 @@ class TestJwt:
         # THEN get success result
         assert VerifyResult(success=True) == result
 
-    @pytest.mark.parametrize('contents', [
-        {Payload.EXPIRATION: int(time.time()) * 2},
-        {Payload.EXPIRATION: int(time.time()) / 2},
-    ])
+    @pytest.mark.parametrize(
+        "contents",
+        [
+            {Payload.EXPIRATION: int(time.time()) * 2},
+            {Payload.EXPIRATION: int(time.time()) / 2},
+        ],
+    )
     def test_verify_expired(self, header, contents):
         now = int(time.time())
 
