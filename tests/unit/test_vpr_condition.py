@@ -1,9 +1,10 @@
 import time
 
 from coincurve import PrivateKey
+from loguru import logger
 
 from didsdk.core.algorithm import Algorithm
-from didsdk.core.algorithm_provider import AlgorithmType, AlgorithmProvider
+from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.credential import CredentialVersion
 from didsdk.document.encoding import EncodeType
@@ -11,10 +12,9 @@ from didsdk.jwe.ecdhkey import EcdhCurveType, ECDHKey
 from didsdk.jwe.ephemeral_publickey import EphemeralPublicKey
 from didsdk.protocol.claim_request import ClaimRequest
 from didsdk.protocol.json_ld.json_ld_vpr import JsonLdVpr
-from didsdk.protocol.json_ld.vpr_condition import VprCondition, Operator
+from didsdk.protocol.json_ld.vpr_condition import Operator, VprCondition
 from didsdk.protocol.protocol_message import ProtocolMessage, SignResult
 from didsdk.protocol.protocol_type import ProtocolType
-from yirgachefe import logger
 
 
 class TestVprCondition:

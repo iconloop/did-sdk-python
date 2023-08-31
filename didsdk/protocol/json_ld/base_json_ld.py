@@ -1,7 +1,8 @@
 import json
 from typing import Any, Dict, Optional
 
-from yirgachefe import logger
+from loguru import logger
+
 from didsdk.core.property_name import PropertyName
 from didsdk.document.encoding import Base64URLEncoder
 

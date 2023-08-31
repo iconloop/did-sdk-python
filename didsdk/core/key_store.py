@@ -8,11 +8,16 @@ from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import scrypt
 from Crypto.Util import Counter
 from eth_keyfile import decode_keyfile_json, load_keyfile
-from eth_utils import (big_endian_to_int, encode_hex, int_to_big_endian,
-                       keccak, remove_0x_prefix)
+from eth_utils import (
+    big_endian_to_int,
+    encode_hex,
+    int_to_big_endian,
+    keccak,
+    remove_0x_prefix,
+)
 from iconsdk.utils import store_keystore_file_on_the_path
 from iconsdk.utils.validation import has_keys
-from yirgachefe import logger
+from loguru import logger
 
 from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder

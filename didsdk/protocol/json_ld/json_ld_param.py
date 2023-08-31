@@ -1,13 +1,13 @@
 import hashlib
 import json
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
 
-from yirgachefe import logger
+from loguru import logger
 
 from didsdk.core.property_name import PropertyName
 from didsdk.document.encoding import Base64URLEncoder
 from didsdk.protocol.base_claim import BaseClaim
-from didsdk.protocol.hash_attribute import HashedAttribute, HashAlgorithmType
+from didsdk.protocol.hash_attribute import HashAlgorithmType, HashedAttribute
 from didsdk.protocol.json_ld.base_json_ld import BaseJsonLd
 from didsdk.protocol.json_ld.claim import Claim
 from didsdk.protocol.json_ld.display_layout import DisplayLayout

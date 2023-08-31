@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from iconsdk.wallet.wallet import KeyWallet
-from yirgachefe import logger
+from loguru import logger
 
 from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.core.did_key_holder import DidKeyHolder

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from jwcrypto import jwe, jwk
-from yirgachefe import logger
+from loguru import logger
 
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.core.property_name import PropertyName

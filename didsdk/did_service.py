@@ -7,10 +7,10 @@ from iconsdk.exception import JSONRPCException
 from iconsdk.icon_service import IconService
 from iconsdk.signed_transaction import SignedTransaction, Transaction
 from iconsdk.wallet.wallet import KeyWallet, Wallet
-from yirgachefe import logger
+from loguru import logger
 
 from didsdk.document.document import Document
-from didsdk.exceptions import TransactionException, ResolveException, DocumentException
+from didsdk.exceptions import DocumentException, ResolveException, TransactionException
 from didsdk.jwt.jwt import Jwt
 from didsdk.score.did_score import DidScore
 
