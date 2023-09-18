@@ -2,8 +2,10 @@
 
 This SDK is used not only to create and manage `ICON DID`, but also to issue and verify `credentials` and `presentations`.
 
-### Log
-Add the below configuration for loguru.
+### Configure
+Add some configurations of `didsdk` to a `.env` file in your project.
 ~~~
-LOG_ENABLE_DID_LOGGER=[true|false]
+TX_RETRY_COUNT=int[default:5]
+TX_SLEEP_TIME=int[default:2]
+LOG_ENABLE_DID_LOGGER=bool[default:false]
 ~~~

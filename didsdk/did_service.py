@@ -9,6 +9,7 @@ from iconsdk.signed_transaction import SignedTransaction, Transaction
 from iconsdk.wallet.wallet import KeyWallet, Wallet
 from loguru import logger
 
+from didsdk import settings
 from didsdk.document.document import Document
 from didsdk.exceptions import DocumentException, ResolveException, TransactionException
 from didsdk.jwt.jwt import Jwt
@@ -59,7 +60,7 @@ class DidService:
         :return:
         """
         response = None
-        retry_times = 5
+        retry_times = settings.TX_RETRY_COUNT
         while response is None and retry_times > 0:
             try:
                 tx_result = self._iconservice.get_transaction_result(tx_hash)
@@ -74,7 +75,7 @@ class DidService:
                 retry_times -= 1
                 logger.debug(f"Remain to retry request for getting transaction result: {retry_times}")
 
-                await asyncio.sleep(2)
+                await asyncio.sleep(settings.TX_SLEEP_TIME)
                 continue
 
             return tx_result
