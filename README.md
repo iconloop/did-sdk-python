@@ -6,6 +6,6 @@ This SDK is used not only to create and manage `ICON DID`, but also to issue and
 Add some configurations of `didsdk` to a `.env` file in your project.
 ~~~
 TX_RETRY_COUNT=int[default:5]
-TX_SLEEP_TIME=int[default:2]
-LOG_ENABLE_DID_LOGGER=bool[default:false]
+TX_SLEEP_TIME=int[default:1]
+DIDSDK_LOG_ENABLE_LOGGER=bool[default:false]
 ~~~

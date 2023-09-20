@@ -39,11 +39,8 @@ dev = [
   "pytest-mock~=3.10.0",
   "anyio[trio]~=3.7.0",
 ]
-doc = [
-  "mkdocs-material~=9.1.18",
-]
 all = [
-  "icon-did-sdk[doc, dev]",
+  "icon-did-sdk[dev]",
 ]
 
 [project.urls]
