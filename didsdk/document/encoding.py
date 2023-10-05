@@ -25,7 +25,7 @@ class HexEncoder(Encoder):
 
 class Base64Encoder(Encoder):
     @staticmethod
-    def encode(data: bytes, encoding: str = 'UTF-8') -> str:
+    def encode(data: bytes, encoding: str = "UTF-8") -> str:
         return base64.b64encode(data).decode(encoding)
 
     @staticmethod
@@ -35,17 +35,17 @@ class Base64Encoder(Encoder):
 
 class Base64URLEncoder(Encoder):
     @staticmethod
-    def encode(data: bytes, encoding: str = 'UTF-8') -> str:
+    def encode(data: bytes, encoding: str = "UTF-8") -> str:
         return base64.urlsafe_b64encode(data).decode(encoding).rstrip("=")
 
     @staticmethod
-    def decode(data: str, encoding: str = 'UTF-8') -> bytes:
+    def decode(data: str, encoding: str = "UTF-8") -> bytes:
         return base64.urlsafe_b64decode(Base64URLEncoder.add_padding(data).encode(encoding))
 
     @staticmethod
     def add_padding(data: str) -> str:
         padding = 4 - (len(data) % 4)
-        data += ("=" * padding)
+        data += "=" * padding
         return data
 
 

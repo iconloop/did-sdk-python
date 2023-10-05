@@ -2,7 +2,7 @@ import json
 import time
 from typing import List
 
-from coincurve import PublicKey, PrivateKey
+from coincurve import PrivateKey, PublicKey
 
 from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.document.encoding import Base64URLEncoder
@@ -49,44 +49,46 @@ class Jwt:
     def signature(self) -> str:
         return self._encoded_token[2] if self._encoded_token and len(self._encoded_token) == 3 else None
 
-    def _encode(self, encoding: str = 'UTF-8') -> str:
+    def _encode(self, encoding: str = "UTF-8") -> str:
         header = Base64URLEncoder.encode((json.dumps(self._header.as_dict()).encode(encoding)))
         payload = Base64URLEncoder.encode(json.dumps(self._payload.as_dict()).encode(encoding))
-        return f'{header}.{payload}'
+        return f"{header}.{payload}"
 
-    def compact(self, encoding: str = 'UTF-8') -> str:
-        return self._encode(encoding) + '.'
+    def compact(self, encoding: str = "UTF-8") -> str:
+        return self._encode(encoding) + "."
 
     @staticmethod
-    def decode(jwt: str, encoding: str = 'UTF-8') -> 'Jwt':
+    def decode(jwt: str, encoding: str = "UTF-8") -> "Jwt":
         try:
-            encoded_tokens = jwt.split('.')
+            encoded_tokens = jwt.split(".")
             if len(encoded_tokens) not in [2, 3]:
-                raise ValueError('JWT strings must contain exactly 2 period characters.')
+                raise ValueError("JWT strings must contain exactly 2 period characters.")
         except ValueError as e:
             raise JwtException(e)
 
         decoded_header: bytes = Base64URLEncoder.decode(encoded_tokens[0])
         decoded_payload: bytes = Base64URLEncoder.decode(encoded_tokens[1])
-        return Jwt(header=Header(**json.loads(decoded_header.decode(encoding))),
-                   payload=Payload(json.loads(decoded_payload.decode(encoding))),
-                   encoded_token=encoded_tokens)
+        return Jwt(
+            header=Header(**json.loads(decoded_header.decode(encoding))),
+            payload=Payload(json.loads(decoded_payload.decode(encoding))),
+            encoded_token=encoded_tokens,
+        )
 
-    def sign(self, private_key: PrivateKey, encoding: str = 'UTF-8') -> str:
+    def sign(self, private_key: PrivateKey, encoding: str = "UTF-8") -> str:
         content = self._encode(encoding)
         algorithm = AlgorithmProvider.create(AlgorithmType[self._header.alg])
         signature: bytes = algorithm.sign(private_key, content.encode(encoding))
-        self._encoded_token = f'{content}.{Base64URLEncoder.encode(signature)}'
+        self._encoded_token = f"{content}.{Base64URLEncoder.encode(signature)}"
         return self._encoded_token
 
-    def verify(self, public_key: PublicKey = None, encoding: str = 'UTF-8') -> VerifyResult:
+    def verify(self, public_key: PublicKey = None, encoding: str = "UTF-8") -> VerifyResult:
         if not public_key:
             return self.verify_expired()
 
         if not self._encoded_token or len(self._encoded_token) != 3:
-            raise JwtException('A signature is required for verify.')
+            raise JwtException("A signature is required for verify.")
 
-        content = '.'.join(self._encoded_token[0:2])
+        content = ".".join(self._encoded_token[0:2])
         signature = Base64URLEncoder.decode(self._encoded_token[2])
         algorithm = AlgorithmProvider.create(AlgorithmType[self._header.alg])
         if algorithm.verify(public_key, content.encode(encoding), signature):
@@ -108,8 +110,7 @@ class Jwt:
             if (now + valid_second) - iat < 0:
                 return VerifyResult(success=False, fail_message="Invalid 'iat'.")
             elif now - iat > valid_second:
-                return VerifyResult(success=False,
-                                    fail_message=f"Invalid 'iat'. It's over ({valid_second} seconds).")
+                return VerifyResult(success=False, fail_message=f"Invalid 'iat'. It's over ({valid_second} seconds).")
 
         return VerifyResult(success=True)
 

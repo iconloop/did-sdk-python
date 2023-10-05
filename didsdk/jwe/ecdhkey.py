@@ -52,9 +52,7 @@ class EcdhCurveType(Enum):
     @classmethod
     def from_curve_name(cls, curve_name: str) -> CurveTypePlate:
         if not curve_name:
-            raise ValueError(
-                "The attribute of 'curve_name' can not be None or emptied."
-            )
+            raise ValueError("The attribute of 'curve_name' can not be None or emptied.")
 
         for member in cls.__members__.values():
             obj: CurveTypePlate = member.value
@@ -133,9 +131,7 @@ class ECDHKey:
         ec_curve: Curve = EcdhCurveType.from_curve_name(self.crv).curve_ec
         point = ellipticcurve.Point(ec_curve.curve, x, y)
 
-        return ecdsa.VerifyingKey.from_public_point(
-            point, curve=ec_curve, hashfunc=sha256
-        )
+        return ecdsa.VerifyingKey.from_public_point(point, curve=ec_curve, hashfunc=sha256)
 
     def get_ec_private_key(self) -> ecdsa.SigningKey:
         key_json: str = json.dumps(dataclasses.asdict(self))

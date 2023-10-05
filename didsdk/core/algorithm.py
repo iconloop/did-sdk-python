@@ -1,7 +1,7 @@
 import abc
 from typing import TYPE_CHECKING
 
-from coincurve import PublicKey, PrivateKey
+from coincurve import PrivateKey, PublicKey
 
 from didsdk.core.key_provider import KeyProvider
 from didsdk.exceptions import AlgorithmException
@@ -14,7 +14,7 @@ class Algorithm(abc.ABC):
     """This abstract class is used in the Signing or Verification process of a icon-DID."""
 
     @property
-    def type(self) -> 'AlgorithmType':
+    def type(self) -> "AlgorithmType":
         """Returns the type of Algorithm.
 
         :return: the type of algorithm.

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Optional, Union
 
 from jwcrypto import jwe, jwk
-from yirgachefe import logger
+from loguru import logger
 
 from didsdk.core.did_key_holder import DidKeyHolder
 from didsdk.core.property_name import PropertyName
@@ -190,9 +190,7 @@ class ProtocolMessage:
             self._credential = Credential.from_jwt(self._jwt)
             if self._param_string:
                 if self._credential.version == CredentialVersion.v1_1:
-                    param_string = Base64URLEncoder.decode(self._param_string).decode(
-                        encoding
-                    )
+                    param_string = Base64URLEncoder.decode(self._param_string).decode(encoding)
                     self._param = BaseParam(**json.loads(param_string))
                 elif self._credential.version == CredentialVersion.v2_0:
                     self._ld_param = JsonLdParam.from_encoded_param(self._param_string)
@@ -221,31 +219,18 @@ class ProtocolMessage:
             version: str = ""
             if ProtocolType.is_request_member(value=type_):
                 version = protocol_message._jwt.payload.version
-                if (
-                    type_ == ProtocolType.REQUEST_PRESENTATION.value
-                    and version == CredentialVersion.v2_0
-                ):
-                    protocol_message._claim_request = (
-                        ClaimRequest.for_presentation_from_jwt(protocol_message._jwt)
-                    )
+                if type_ == ProtocolType.REQUEST_PRESENTATION.value and version == CredentialVersion.v2_0:
+                    protocol_message._claim_request = ClaimRequest.for_presentation_from_jwt(protocol_message._jwt)
                 else:
-                    protocol_message._claim_request = ClaimRequest.from_jwt(
-                        protocol_message._jwt
-                    )
+                    protocol_message._claim_request = ClaimRequest.from_jwt(protocol_message._jwt)
             elif ProtocolType.is_credential_member(value=type_):
-                protocol_message._credential = Credential.from_jwt(
-                    protocol_message._jwt
-                )
+                protocol_message._credential = Credential.from_jwt(protocol_message._jwt)
                 version = protocol_message._credential.version
             elif ProtocolType.is_presentation_member(value=type_):
-                protocol_message._presentation = Presentation.from_jwt(
-                    protocol_message._jwt
-                )
+                protocol_message._presentation = Presentation.from_jwt(protocol_message._jwt)
                 version = protocol_message._presentation.version
             elif ProtocolType.is_response_member(value=type_):
-                protocol_message._claim_response = ClaimResponse.from_jwt(
-                    protocol_message._jwt
-                )
+                protocol_message._claim_response = ClaimResponse.from_jwt(protocol_message._jwt)
 
             if param:
                 protocol_message._param_string = param
@@ -280,9 +265,7 @@ class ProtocolMessage:
         if not message:
             raise JwtException('One of "protected" or "message" must be filled.')
 
-        return cls.from_(
-            type_=type_, message=message, param=param, is_protected=is_protected
-        )
+        return cls.from_(type_=type_, message=message, param=param, is_protected=is_protected)
 
     @classmethod
     def _for_decrypted_state(
@@ -370,8 +353,7 @@ class ProtocolMessage:
     ) -> "ProtocolMessage":
         if not protocol_type.is_request():
             raise ValueError(
-                "type must be a type of "
-                "[REQUEST_CREDENTIAL, REQUEST_PRESENTATION, REQUEST_REVOCATION, DID_INIT]"
+                "type must be a type of " "[REQUEST_CREDENTIAL, REQUEST_PRESENTATION, REQUEST_REVOCATION, DID_INIT]"
             )
 
         return cls._for_decrypted_state(
@@ -392,9 +374,7 @@ class ProtocolMessage:
         request_public_key: EphemeralPublicKey = None,
     ) -> "ProtocolMessage":
         if not protocol_type.is_response():
-            raise ValueError(
-                "type must be a type of [CREDENTIAL_RESULT, RESPONSE_REVOCATION, DID_AUTH]"
-            )
+            raise ValueError("type must be a type of [CREDENTIAL_RESULT, RESPONSE_REVOCATION, DID_AUTH]")
 
         return cls._for_decrypted_state(
             protocol_type=protocol_type,
@@ -405,9 +385,7 @@ class ProtocolMessage:
         )
 
     @classmethod
-    def for_revocation(
-        cls, protected_message: str, issued: int = None, expiration: int = None
-    ) -> "ProtocolMessage":
+    def for_revocation(cls, protected_message: str, issued: int = None, expiration: int = None) -> "ProtocolMessage":
         if not issued:
             issued = int(time.time())
         if not expiration:
@@ -420,35 +398,25 @@ class ProtocolMessage:
             expiration=expiration,
         )
 
-    def sign_encrypt(
-        self, did_key_holder: Optional[DidKeyHolder], ecdh_key: Optional[ECDHKey] = None
-    ) -> SignResult:
+    def sign_encrypt(self, did_key_holder: Optional[DidKeyHolder], ecdh_key: Optional[ECDHKey] = None) -> SignResult:
         if not did_key_holder and self._type != ProtocolType.REQUEST_PRESENTATION.value:
             return SignResult(fail_message="DidKeyHolder is required for sign.")
 
         if ProtocolType.is_request_member(self._type):
             self._plain_message = (
-                did_key_holder.sign(self._claim_request.jwt)
-                if did_key_holder
-                else self._claim_request.compact
+                did_key_holder.sign(self._claim_request.jwt) if did_key_holder else self._claim_request.compact
             )
         elif ProtocolType.is_credential_member(self._type):
-            self._plain_message = did_key_holder.sign(
-                self._credential.as_jwt(self._issued, self._expiration)
-            )
+            self._plain_message = did_key_holder.sign(self._credential.as_jwt(self._issued, self._expiration))
             if self._credential.version == CredentialVersion.v1_1:
                 self._param = self._credential.base_claim.attribute.base_param
                 param: dict = dataclasses.asdict(self._param)
-                self._param_string = Base64URLEncoder.encode(
-                    json.dumps(param).encode("utf-8")
-                )
+                self._param_string = Base64URLEncoder.encode(json.dumps(param).encode("utf-8"))
             elif self._credential.version == CredentialVersion.v2_0:
                 self._ld_param = self._credential.param
                 self._param_string = self._ld_param.as_base64_url_string()
         elif ProtocolType.is_presentation_member(self._type):
-            self._plain_message = did_key_holder.sign(
-                self._presentation.as_jwt(self._issued, self._expiration)
-            )
+            self._plain_message = did_key_holder.sign(self._presentation.as_jwt(self._issued, self._expiration))
         elif ProtocolType.is_response_member(self._type):
             self._plain_message = did_key_holder.sign(self._claim_response.jwt)
         else:
@@ -459,9 +427,7 @@ class ProtocolMessage:
         logger.debug(f">>>jwt payload:{self._jwt.payload.as_dict()}")
         if self._request_public_key:
             if not ecdh_key:
-                return SignResult(
-                    fail_message="Issuer's ECDH PrivateKey is required for createJwe."
-                )
+                return SignResult(fail_message="Issuer's ECDH PrivateKey is required for createJwe.")
 
             decoded_message = dict()
             decoded_message[PropertyName.KEY_PROTOCOL_MESSAGE] = self._plain_message
@@ -474,9 +440,7 @@ class ProtocolMessage:
                 enc=HeaderAlgorithmType.JWE_ALGO_A128GCM,
             )
 
-            recipient: jwk.JWK = jwk.JWK.from_json(
-                json.dumps(self._request_public_key.epk.as_dict_without_kid())
-            )
+            recipient: jwk.JWK = jwk.JWK.from_json(json.dumps(self._request_public_key.epk.as_dict_without_kid()))
             epk: jwk.JWK = jwk.JWK.from_json(json.dumps(ecdh_key.as_dict_without_kid()))
             logger.debug(f">>>before decrypt: {decoded_message}")
             encrypt_jwe: jwe.JWE = jwe.JWE(
@@ -487,9 +451,7 @@ class ProtocolMessage:
             )
             result = {
                 PropertyName.KEY_PROTOCOL_TYPE: self._type,
-                PropertyName.KEY_PROTOCOL_PROTECTED: encrypt_jwe.serialize(
-                    compact=True
-                ),
+                PropertyName.KEY_PROTOCOL_PROTECTED: encrypt_jwe.serialize(compact=True),
             }
         else:
             result = {

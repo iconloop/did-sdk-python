@@ -1,7 +1,7 @@
 import dataclasses
+import time
 from typing import List
 
-import time
 from coincurve import PublicKey
 
 from didsdk.core.algorithm_provider import AlgorithmType

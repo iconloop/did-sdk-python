@@ -7,10 +7,11 @@ from iconsdk.exception import JSONRPCException
 from iconsdk.icon_service import IconService
 from iconsdk.signed_transaction import SignedTransaction, Transaction
 from iconsdk.wallet.wallet import KeyWallet, Wallet
-from yirgachefe import logger
+from loguru import logger
 
+from didsdk import settings
 from didsdk.document.document import Document
-from didsdk.exceptions import TransactionException, ResolveException, DocumentException
+from didsdk.exceptions import DocumentException, ResolveException, TransactionException
 from didsdk.jwt.jwt import Jwt
 from didsdk.score.did_score import DidScore
 
@@ -44,7 +45,7 @@ class DidService:
         :return: the id of document
         """
         for log in event_log:
-            items = log['indexed']
+            items = log["indexed"]
             if items[0] == event_name:
                 return items[2]
         return None
@@ -59,22 +60,22 @@ class DidService:
         :return:
         """
         response = None
-        retry_times = 5
+        retry_times = settings.DIDSDK_TX_RETRY_COUNT
         while response is None and retry_times > 0:
             try:
                 tx_result = self._iconservice.get_transaction_result(tx_hash)
                 if not tx_result:
-                    raise JSONRPCException('transaction result is None.')
+                    raise JSONRPCException("transaction result is None.")
             except JSONRPCException as e:
-                logger.debug(f'{e}')
+                logger.debug(f"{e}")
 
                 if retry_times == 0:
                     raise TransactionException(e)
 
                 retry_times -= 1
-                logger.debug(f'Remain to retry request for getting transaction result: {retry_times}')
+                logger.debug(f"Remain to retry request for getting transaction result: {retry_times}")
 
-                await asyncio.sleep(2)
+                await asyncio.sleep(settings.DIDSDK_TX_SLEEP_TIME)
                 continue
 
             return tx_result
@@ -88,7 +89,7 @@ class DidService:
         :return: the TransactionResult object
         """
         if not Jwt.decode(signed_jwt).signature:
-            raise Exception('JWT string must contain signature to send a transaction.')
+            raise Exception("JWT string must contain signature to send a transaction.")
 
         transaction = self._did_score.jwt_method(from_address=wallet.get_address(), jwt=signed_jwt, method=method)
         tx_hash = self._send_transaction(transaction, wallet)
@@ -112,10 +113,10 @@ class DidService:
         :param signed_jwt: the string that signed the object returned.
         :return: the Document object.
         """
-        tx_result = await self._send_jwt(wallet, signed_jwt, method='update')
-        did = self._get_did(tx_result['eventLogs'], event_name='AddKey(Address,str,str)')
+        tx_result = await self._send_jwt(wallet, signed_jwt, method="update")
+        did = self._get_did(tx_result["eventLogs"], event_name="AddKey(Address,str,str)")
         if not did:
-            raise DocumentException(tx_result['failure']['message'])
+            raise DocumentException(tx_result["failure"]["message"])
 
         return self.read_document(did)
 
@@ -129,14 +130,14 @@ class DidService:
         try:
             json.loads(public_key)
         except Exception as e:
-            raise TypeError(f'Invalid type of public key.({e})')
+            raise TypeError(f"Invalid type of public key.({e})")
 
         transaction = self._did_score.create(from_address=wallet.get_address(), public_key=public_key)
         tx_hash = self._send_transaction(transaction, wallet)
         tx_result = await asyncio.wait_for(self._get_transaction_result(tx_hash), timeout=self._timeout)
-        did = self._get_did(tx_result['eventLogs'], 'Create(Address,str,str)')
+        did = self._get_did(tx_result["eventLogs"], "Create(Address,str,str)")
         if not did:
-            raise DocumentException(tx_result['failure']['message'])
+            raise DocumentException(tx_result["failure"]["message"])
 
         return self.read_document(did)
 
@@ -165,7 +166,7 @@ class DidService:
         :return: the Document object
         """
         if not did:
-            raise Exception('did cannot be None.')
+            raise Exception("did cannot be None.")
 
         json_data = self._did_score.get_did_document(did)
         try:
@@ -173,16 +174,16 @@ class DidService:
         except Exception:
             raise ResolveException(f"'{json_data}' parsing error.")
 
-    async def revoke_key(self, wallet: 'KeyWallet', signed_jwt: str) -> Document:
+    async def revoke_key(self, wallet: "KeyWallet", signed_jwt: str) -> Document:
         """Revoke a publicKey in the DID Document.
 
         :param wallet: the wallet for transaction.
         :param signed_jwt: the string that signed the object returned.
         :return: the Document object
         """
-        tx_result = await self._send_jwt(wallet, signed_jwt, method='update')
-        did = self._get_did(tx_result['eventLogs'], event_name='RevokeKey(Address,str,str)')
+        tx_result = await self._send_jwt(wallet, signed_jwt, method="update")
+        did = self._get_did(tx_result["eventLogs"], event_name="RevokeKey(Address,str,str)")
         if not did:
-            raise DocumentException(tx_result['failure']['message'])
+            raise DocumentException(tx_result["failure"]["message"])
 
         return self.read_document(did)

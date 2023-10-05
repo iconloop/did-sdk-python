@@ -183,7 +183,7 @@ class Payload:
         result = dict()
         for key, value in dict_contents.items():
             if value or value is False:
-                result[key] = value.as_dict() if hasattr(value, 'as_dict') else value
+                result[key] = value.as_dict() if hasattr(value, "as_dict") else value
         return result
 
     def get(self, key: str):

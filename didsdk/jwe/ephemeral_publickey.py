@@ -9,16 +9,13 @@ class EphemeralPublicKey:
     epk: ECDHKey
 
     def as_dict(self) -> dict:
-        return {
-            'kid': self.kid,
-            'epk': self.epk.as_dict_without_kid()
-        }
+        return {"kid": self.kid, "epk": self.epk.as_dict_without_kid()}
 
     @classmethod
     def from_json(cls, json_data: dict):
-        epk = json_data.get('epk')
+        epk = json_data.get("epk")
         if isinstance(epk, dict):
-            json_data['epk'] = ECDHKey(**epk)
+            json_data["epk"] = ECDHKey(**epk)
 
         return cls(**json_data)
 
