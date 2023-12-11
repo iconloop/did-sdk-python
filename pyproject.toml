@@ -25,7 +25,7 @@ dependencies = [
   "ecdsa[gmpy2]==0.18.0",
   "iconsdk~=2.4.5",
   "jwcrypto @ git+https://github.com/iconloop/jwcrypto.git",
-  "loguru==0.7.0",
+  "loguru~=0.7.2",
   "pydantic[dotenv]==1.10.7",
   "validators==0.21.2",
 ]
@@ -72,7 +72,6 @@ branch = true
 parallel = true
 omit = [
   "didsdk/__about__.py",
-  "*/alembic/*",
   "*/tests/*",
 ]
 
