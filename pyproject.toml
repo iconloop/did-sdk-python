@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling==1.18.0"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
@@ -50,6 +50,9 @@ Source = "https://github.com/iconloop/did-sdk-python"
 
 [tool.hatch.version]
 path = "didsdk/__about__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["didsdk"]
 
 [tool.hatch.envs.default]
 dependencies = [
