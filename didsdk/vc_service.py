@@ -74,14 +74,18 @@ class VCService:
         :param private_key: Key to sign credential
         :return: the Document object
         """
-        transaction = self._vc_score.register(from_address=wallet.get_address(), credential=credential, private_key=private_key)
+        transaction = self._vc_score.register(
+            from_address=wallet.get_address(), credential=credential, private_key=private_key
+        )
         tx_hash = self._send_transaction(transaction, wallet)
         tx_result = await asyncio.wait_for(self._get_transaction_result(tx_hash), timeout=self._timeout)
         if tx_result["status"] != 1:
             raise VCException(tx_result["failure"]["message"])
         return tx_result
 
-    async def register_list(self, wallet: KeyWallet, credential_list: list[Credential], private_key: PrivateKey) -> dict:
+    async def register_list(
+        self, wallet: KeyWallet, credential_list: list[Credential], private_key: PrivateKey
+    ) -> dict:
         """Register VC list
 
         :param wallet: the wallet for transaction
@@ -90,7 +94,8 @@ class VCService:
         :return: the Document object
         """
         transaction = self._vc_score.register_list(
-            from_address=wallet.get_address(), credential_list=credential_list, private_key=private_key)
+            from_address=wallet.get_address(), credential_list=credential_list, private_key=private_key
+        )
         tx_hash = self._send_transaction(transaction, wallet)
         tx_result = await asyncio.wait_for(self._get_transaction_result(tx_hash), timeout=self._timeout)
         if tx_result["status"] != 1:
@@ -106,7 +111,9 @@ class VCService:
         :param private_key: Key to sign credential
         """
 
-        transaction = self._vc_score.revoke(from_address=wallet.get_address(), credential=credential, issuer_did=issuer_did, private_key=private_key)
+        transaction = self._vc_score.revoke(
+            from_address=wallet.get_address(), credential=credential, issuer_did=issuer_did, private_key=private_key
+        )
         tx_hash = self._send_transaction(transaction, wallet)
         tx_result = await asyncio.wait_for(self._get_transaction_result(tx_hash), timeout=self._timeout)
         if tx_result["status"] != 1:
@@ -123,14 +130,17 @@ class VCService:
         """
 
         transaction = self._vc_score.revoke_did(
-            from_address=wallet.get_address(), credential=credential, issuer_did=issuer_did,private_key=private_key)
+            from_address=wallet.get_address(), credential=credential, issuer_did=issuer_did, private_key=private_key
+        )
         tx_hash = self._send_transaction(transaction, wallet)
         tx_result = await asyncio.wait_for(self._get_transaction_result(tx_hash), timeout=self._timeout)
         if tx_result["status"] != 1:
             raise VCException(tx_result["failure"]["message"])
         return tx_result
 
-    async def revoke_vc_and_did(self, wallet: KeyWallet, credential: str, issuer_did: str, private_key: PrivateKey) -> dict:
+    async def revoke_vc_and_did(
+        self, wallet: KeyWallet, credential: str, issuer_did: str, private_key: PrivateKey
+    ) -> dict:
         """revoke vc and did
 
         :param wallet: the wallet for transaction
@@ -140,7 +150,8 @@ class VCService:
         """
 
         transaction = self._vc_score.revoke_vc_and_did(
-            from_address=wallet.get_address(), credential=credential, issuer_did=issuer_did, private_key=private_key)
+            from_address=wallet.get_address(), credential=credential, issuer_did=issuer_did, private_key=private_key
+        )
         tx_hash = self._send_transaction(transaction, wallet)
         tx_result = await asyncio.wait_for(self._get_transaction_result(tx_hash), timeout=self._timeout)
         if tx_result["status"] != 1:

@@ -2,10 +2,14 @@ import time
 from datetime import datetime, timedelta
 
 from coincurve import PrivateKey
+
 from didsdk.jwt.jwt import Jwt, Payload
 from didsdk.protocol.protocol_message import Credential
 
-def _sign_credential(credential: Credential, private_key: PrivateKey, issued_timestamp: int=0, expiration_timestamp: int=0) -> str:
+
+def _sign_credential(
+    credential: Credential, private_key: PrivateKey, issued_timestamp: int = 0, expiration_timestamp: int = 0
+) -> str:
     if issued_timestamp and expiration_timestamp:
         credential_jwt = credential.as_jwt(issued_timestamp, expiration_timestamp)
         return credential_jwt.sign(private_key)
@@ -16,7 +20,9 @@ def _sign_credential(credential: Credential, private_key: PrivateKey, issued_tim
     return credential_jwt.sign(private_key)
 
 
-def register_jwt(credential: Credential, private_key: PrivateKey, issued_timestamp: int=0, expiration_timestamp: int=0) -> str:
+def register_jwt(
+    credential: Credential, private_key: PrivateKey, issued_timestamp: int = 0, expiration_timestamp: int = 0
+) -> str:
     signed_credential = _sign_credential(credential, private_key, issued_timestamp, expiration_timestamp)
     credential_jwt: Jwt = Jwt.decode(signed_credential)
     payload: Payload = credential_jwt.payload
