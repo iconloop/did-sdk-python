@@ -2,8 +2,10 @@ import time
 from datetime import datetime, timedelta
 
 from coincurve import PrivateKey
+
 from didsdk.jwt.jwt import Jwt, Payload
 from didsdk.protocol.protocol_message import Credential
+
 
 def _sign_credential(credential: Credential, private_key: PrivateKey, issued_timestamp: int=0, expiration_timestamp: int=0) -> str:
     if issued_timestamp and expiration_timestamp:
