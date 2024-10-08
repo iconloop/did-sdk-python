@@ -4,6 +4,7 @@ from coincurve import PrivateKey
 from iconsdk.builder.call_builder import Call, CallBuilder
 from iconsdk.builder.transaction_builder import CallTransaction, CallTransactionBuilder
 from iconsdk.icon_service import IconService
+
 from didsdk.protocol.protocol_message import Credential
 from didsdk.score import vc_score_parameter
 
@@ -32,26 +33,31 @@ class VCScore:
         return builder.build()
 
     def register(
-            self,
-            from_address: str,
-            credential: Credential,
-            private_key: PrivateKey,
-            issued_timestamp: int = 0,
-            expiration_timestamp: int = 0
+        self,
+        from_address: str,
+        credential: Credential,
+        private_key: PrivateKey,
+        issued_timestamp: int = 0,
+        expiration_timestamp: int = 0,
     ) -> CallTransaction:
-        credential_jwt: str = vc_score_parameter.register_jwt(credential, private_key, issued_timestamp, expiration_timestamp)
+        credential_jwt: str = vc_score_parameter.register_jwt(
+            credential, private_key, issued_timestamp, expiration_timestamp
+        )
         params = {"credentialJwt": credential_jwt}
         return self._build_transaction(from_address, method="register", params=params)
 
     def register_list(
-            self,
-            from_address: str,
-            credential_list: list[Credential],
-            private_key: PrivateKey,
-            issued_timestamp: int = 0,
-            expiration_timestamp: int = 0
+        self,
+        from_address: str,
+        credential_list: list[Credential],
+        private_key: PrivateKey,
+        issued_timestamp: int = 0,
+        expiration_timestamp: int = 0,
     ) -> CallTransaction:
-        signed_credential_list: list[str] = [vc_score_parameter.register_jwt(credential, private_key, issued_timestamp, expiration_timestamp) for credential in credential_list]
+        signed_credential_list: list[str] = [
+            vc_score_parameter.register_jwt(credential, private_key, issued_timestamp, expiration_timestamp)
+            for credential in credential_list
+        ]
         params = {"credentialJwtList": ",".join(signed_credential_list)}
         return self._build_transaction(from_address, method="registerList", params=params)
 
@@ -60,12 +66,16 @@ class VCScore:
         params = {"credentialJwt": credential_jwt}
         return self._build_transaction(from_address, method="revoke", params=params)
 
-    def revoke_did(self, from_address: str, credential: str, issuer_did: str, private_key: PrivateKey) -> CallTransaction:
+    def revoke_did(
+        self, from_address: str, credential: str, issuer_did: str, private_key: PrivateKey
+    ) -> CallTransaction:
         credential_jwt: str = vc_score_parameter.revoke_jwt(credential, issuer_did, private_key)
         params = {"credentialJwt": credential_jwt}
         return self._build_transaction(from_address, method="revokeDid", params=params)
 
-    def revoke_vc_and_did(self, from_address: str, credential: str, issuer_did: str, private_key: PrivateKey) -> CallTransaction:
+    def revoke_vc_and_did(
+        self, from_address: str, credential: str, issuer_did: str, private_key: PrivateKey
+    ) -> CallTransaction:
         credential_jwt: str = vc_score_parameter.revoke_jwt(credential, issuer_did, private_key)
         params = {"credentialJwt": credential_jwt}
         return self._build_transaction(from_address, method="revokeVcAndDid", params=params)
