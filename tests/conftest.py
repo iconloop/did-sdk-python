@@ -225,3 +225,15 @@ def test_wallet_keys() -> dict:
         "private": "4252c4abbdb595c08ff042f1af78b019c49792b881c9730cde832815570cf8d7",
         "public": "02bfc63dd13b7f9ed08f7804470b2a10d039583e2de21a92c8ff4bc0f0e29e4506",
     }
+
+
+@pytest.fixture
+def did_private_key_hex() -> str:
+    return "774ab7549c0200c12cdb295ab26949c52e74dac6c6bdd110f921b1852c221634"
+
+
+@pytest.fixture
+def vcr_config():
+    return {
+        "record_mode": "once",
+    }
