@@ -66,10 +66,10 @@ class VCService:
         return self._iconservice.send_transaction(signed_tx)
 
     async def register(
-            self,
-            wallet: KeyWallet,
-            credential: str,
-            private_key: PrivateKey,
+        self,
+        wallet: KeyWallet,
+        credential: str,
+        private_key: PrivateKey,
     ) -> dict:
         """Register VC
 
@@ -78,9 +78,7 @@ class VCService:
         :param private_key: Key to sign credential
         :return: the Document object
         """
-        transaction = self._vc_score.register(
-            wallet.get_address(), credential, private_key
-        )
+        transaction = self._vc_score.register(wallet.get_address(), credential, private_key)
         tx_hash = self._send_transaction(transaction, wallet)
         tx_result = await asyncio.wait_for(self._get_transaction_result(tx_hash), timeout=self._timeout)
         if tx_result["status"] != 1:
@@ -88,10 +86,10 @@ class VCService:
         return tx_result
 
     async def register_list(
-            self,
-            wallet: KeyWallet,
-            credential_list: list[str],
-            private_key: PrivateKey,
+        self,
+        wallet: KeyWallet,
+        credential_list: list[str],
+        private_key: PrivateKey,
     ) -> dict:
         """Register VC list
 

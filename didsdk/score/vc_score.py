@@ -47,7 +47,9 @@ class VCScore:
         signed_credentials: list[str],
         private_key: PrivateKey,
     ) -> CallTransaction:
-        credential_list = [vc_score_parameter.register_jwt(credential, private_key) for credential in signed_credentials]
+        credential_list = [
+            vc_score_parameter.register_jwt(credential, private_key) for credential in signed_credentials
+        ]
         params = {"credentialJwtList": ",".join(credential_list)}
         return self._build_transaction(from_address, method="registerList", params=params)
 
