@@ -8,7 +8,6 @@ from iconsdk.wallet.wallet import KeyWallet, Wallet
 from loguru import logger
 
 from didsdk import settings
-from didsdk.credential import Credential
 from didsdk.exceptions import TransactionException, VCException
 from didsdk.score.vc_score import VCScore
 
@@ -66,16 +65,21 @@ class VCService:
         signed_tx = SignedTransaction(transaction, wallet)
         return self._iconservice.send_transaction(signed_tx)
 
-    async def register(self, wallet: KeyWallet, credential: Credential, private_key: PrivateKey) -> dict:
+    async def register(
+            self,
+            wallet: KeyWallet,
+            credential: str,
+            private_key: PrivateKey,
+    ) -> dict:
         """Register VC
 
         :param wallet: the wallet for transaction
-        :param credential: the Credential object
+        :param credential: signed credential
         :param private_key: Key to sign credential
         :return: the Document object
         """
         transaction = self._vc_score.register(
-            from_address=wallet.get_address(), credential=credential, private_key=private_key
+            wallet.get_address(), credential, private_key
         )
         tx_hash = self._send_transaction(transaction, wallet)
         tx_result = await asyncio.wait_for(self._get_transaction_result(tx_hash), timeout=self._timeout)
@@ -84,18 +88,19 @@ class VCService:
         return tx_result
 
     async def register_list(
-        self, wallet: KeyWallet, credential_list: list[Credential], private_key: PrivateKey
+            self,
+            wallet: KeyWallet,
+            credential_list: list[str],
+            private_key: PrivateKey,
     ) -> dict:
         """Register VC list
 
         :param wallet: the wallet for transaction
-        :param credential_list: the Credential object list
-        :param private_key: Key to sign credentials
+        :param credential_list: signed credential list
+        :param private_key: Key to sign credential
         :return: the Document object
         """
-        transaction = self._vc_score.register_list(
-            from_address=wallet.get_address(), credential_list=credential_list, private_key=private_key
-        )
+        transaction = self._vc_score.register_list(wallet.get_address(), credential_list, private_key)
         tx_hash = self._send_transaction(transaction, wallet)
         tx_result = await asyncio.wait_for(self._get_transaction_result(tx_hash), timeout=self._timeout)
         if tx_result["status"] != 1:
