@@ -3,6 +3,7 @@ from typing import List
 
 import pytest
 from coincurve import PrivateKey
+from iconsdk.wallet.wallet import KeyWallet
 
 from didsdk.core.algorithm_provider import AlgorithmProvider, AlgorithmType
 from didsdk.credential import Credential, CredentialVersion
@@ -18,6 +19,7 @@ from didsdk.protocol.json_ld.display_layout import DisplayLayout
 from didsdk.protocol.json_ld.info_param import InfoParam
 from didsdk.protocol.json_ld.json_ld_param import JsonLdParam
 from didsdk.protocol.json_ld.revocation_service import RevocationService
+from didsdk.vc_service import VCService
 from tests.utils.icon_service_factory import IconServiceFactory
 
 
@@ -220,6 +222,13 @@ def did_service_testnet() -> DidService:
 
 
 @pytest.fixture
+def vc_service_testnet() -> VCService:
+    return VCService(
+        IconServiceFactory.create_testnet(), network_id=2, score_address="cxeb26d9ecbfcf5fea0c2dcaf2f843d5ae93cbe84d"
+    )
+
+
+@pytest.fixture
 def test_wallet_keys() -> dict:
     return {
         "private": "4252c4abbdb595c08ff042f1af78b019c49792b881c9730cde832815570cf8d7",
@@ -228,8 +237,18 @@ def test_wallet_keys() -> dict:
 
 
 @pytest.fixture
-def did_private_key_hex() -> str:
+def test_wallet(test_wallet_keys) -> KeyWallet:
+    return KeyWallet.load(bytes.fromhex(test_wallet_keys["private"]))
+
+
+@pytest.fixture
+def issuer_private_key_hex() -> str:
     return "774ab7549c0200c12cdb295ab26949c52e74dac6c6bdd110f921b1852c221634"
+
+
+@pytest.fixture
+def holder_private_key_hex() -> str:
+    return "bceaac9756da7a2fa3b46446f36ba7037e5a37da5f9302572dd4938e170b82e1"
 
 
 @pytest.fixture
@@ -237,3 +256,8 @@ def vcr_config():
     return {
         "record_mode": "once",
     }
+
+
+@pytest.fixture(scope="session", autouse=True)
+def anyio_backend():
+    return "asyncio"

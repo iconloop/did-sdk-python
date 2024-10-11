@@ -30,14 +30,13 @@ class TestDidService:
         logger.debug(f"did key holder: {did_key_holder}")
         return did_key_holder
 
-    @pytest.mark.asyncio
     @pytest.mark.vcr
-    async def test_create(self, did_service_testnet: DidService, test_wallet_keys, did_private_key_hex):
+    async def test_create(self, did_service_testnet: DidService, test_wallet_keys, issuer_private_key_hex):
         # GIVEN a wallet and a key provider
         wallet = KeyWallet.load(bytes.fromhex(test_wallet_keys["private"]))
         algorithm_type = AlgorithmType.ES256K
         algorithm = AlgorithmProvider.create(algorithm_type)
-        did_private_key = PrivateKey(bytes.fromhex(did_private_key_hex))
+        did_private_key = PrivateKey(bytes.fromhex(issuer_private_key_hex))
         key_provider = KeyProvider(self.FIRST_KEY_ID, algorithm_type, did_private_key.public_key, did_private_key)
 
         # GIVEN a parameter set to create DID Document
@@ -65,7 +64,6 @@ class TestDidService:
             os.remove(key_file_path)
         DidKeyStore.store(self.KEY_FILE_NAME, self.PASSWORD, key_holder)
 
-    @pytest.mark.asyncio
     @pytest.mark.vcr
     async def test_add_public_key(
         self, did_service_testnet: DidService, test_wallet_keys, key_holder_from_key_store_file: DidKeyHolder
@@ -116,7 +114,6 @@ class TestDidService:
         assert document.id == key_holder_from_key_store_file.did
         assert document.public_key == key_holder_from_key_store_file.private_key.public_key
 
-    @pytest.mark.asyncio
     @pytest.mark.vcr
     async def test_revoke_key(
         self, did_service_testnet: DidService, test_wallet_keys, key_holder_from_key_store_file: DidKeyHolder
