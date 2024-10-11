@@ -1,4 +1,5 @@
 import asyncio
+from typing import List
 
 from coincurve import PrivateKey
 from iconsdk.exception import JSONRPCException
@@ -88,7 +89,7 @@ class VCService:
     async def register_list(
         self,
         wallet: KeyWallet,
-        credential_list: list[str],
+        credential_list: List[str],
         private_key: PrivateKey,
     ) -> dict:
         """Register VC list

@@ -94,3 +94,21 @@ class TestVCService:
         # revoke credential
         tx_result = await vc_service_testnet.revoke(test_wallet, signed_credential, issuer_did, issuer_private_key)
         assert tx_result["status"] == 1
+
+    @pytest.mark.vcr
+    async def test_register_list(
+        self,
+        vc_service_testnet: VCService,
+        test_wallet: KeyWallet,
+        issuer_did: str,
+        holder_did: str,
+        issuer_private_key_hex: str,
+    ):
+        issuer_private_key: PrivateKey = PrivateKey(bytes.fromhex(issuer_private_key_hex))
+        credentials = self.credentials(holder_did, issuer_did)
+        credential_jwts = [credential.as_jwt(1, 2) for credential in credentials]
+        signed_credentials = [credential_jwt.sign(issuer_private_key) for credential_jwt in credential_jwts]
+
+        # register credential
+        tx_result = await vc_service_testnet.register_list(test_wallet, signed_credentials, issuer_private_key)
+        assert tx_result["status"] == 1
