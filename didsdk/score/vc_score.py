@@ -1,4 +1,5 @@
 import time
+from typing import List
 
 from coincurve import PrivateKey
 from iconsdk.builder.call_builder import Call, CallBuilder
@@ -44,7 +45,7 @@ class VCScore:
     def register_list(
         self,
         from_address: str,
-        signed_credentials: list[str],
+        signed_credentials: List[str],
         private_key: PrivateKey,
     ) -> CallTransaction:
         credential_list = [
