@@ -10,6 +10,10 @@ class DocumentException(Exception):
     pass
 
 
+class VCException(Exception):
+    pass
+
+
 class JwtException(RuntimeError):
     pass
 
