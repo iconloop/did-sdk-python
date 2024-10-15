@@ -42,7 +42,6 @@ class PublicKeyProperty:
             "id": self.id,
             "type": self.type,
             pubkey_property: self.encode_type.value.encode(self.public_key.format(compressed=False)),
-            "encodeType": self.encode_type.name,
         }
 
         if self.created:
