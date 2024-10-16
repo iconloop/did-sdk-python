@@ -1,15 +1,14 @@
 import dataclasses
-import json
 from dataclasses import dataclass
 from enum import Enum
 from hashlib import sha256
 from typing import Union
 
 import ecdsa
+from authlib.jose import JsonWebKey
 from ecdsa import ellipticcurve
 from ecdsa.curves import Curve, NIST256p, NIST384p, NIST521p, SECP256k1
 from eth_keyfile import load_keyfile
-from jwcrypto.jwk import JWK
 
 from didsdk.core.algorithm_provider import AlgorithmType
 from didsdk.document.encoding import EncodeType
@@ -118,7 +117,7 @@ class ECDHKey:
         key: ecdsa.SigningKey = ecdsa.SigningKey.generate(
             curve=EcdhCurveType.from_curve_name(curve_name).curve_ec, hashfunc=sha256
         )
-        jwk_json: dict = JWK.from_pem(key.to_pem()).export(as_dict=True)
+        jwk_json = JsonWebKey.import_key(key.to_pem()).as_dict(is_private=True)
         jwk_json["crv"] = EcdhCurveType.from_curve_name(jwk_json.get("crv")).curve_name
         if kid:
             jwk_json["kid"] = kid
@@ -134,9 +133,9 @@ class ECDHKey:
         return ecdsa.VerifyingKey.from_public_point(point, curve=ec_curve, hashfunc=sha256)
 
     def get_ec_private_key(self) -> ecdsa.SigningKey:
-        key_json: str = json.dumps(dataclasses.asdict(self))
-        pem = JWK.from_json(key_json).export_to_pem(private_key=True, password=None)
-        return ecdsa.SigningKey.from_pem(pem, hashfunc=sha256)
+        d = EncodeType.BASE64URL.value.decode(self.d)
+        ec_curve: Curve = EcdhCurveType.from_curve_name(self.crv).curve_ec
+        return ecdsa.SigningKey.from_string(d, hashfunc=sha256, curve=ec_curve)
 
     @staticmethod
     def load_key(file_path: str) -> "ECDHKey":
