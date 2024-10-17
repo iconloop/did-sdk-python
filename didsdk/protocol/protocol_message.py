@@ -4,9 +4,12 @@ import time
 from dataclasses import dataclass
 from typing import Optional, Union
 
-from authlib.jose import ECKey, JsonWebEncryption, JsonWebKey, JsonWebSignature
-from authlib.jose.rfc7518.jws_algs import ECAlgorithm
 from cryptography.hazmat.primitives.asymmetric.ec import SECP256K1
+from joserfc import jwe
+from joserfc.jwk import JWKRegistry
+from joserfc.jws import JWSRegistry
+from joserfc.rfc7518.ec_key import CURVES_DSS, DSS_CURVES
+from joserfc.rfc7518.jws_algs import ECAlgModel
 from loguru import logger
 
 from didsdk.core.did_key_holder import DidKeyHolder
@@ -34,8 +37,9 @@ class SignResult:
 
 
 def register_p_256k():
-    JsonWebSignature.register_algorithm(ECAlgorithm("ES256K", "P-256K", 256))
-    ECKey.DSS_CURVES["P-256K"] = SECP256K1
+    JWSRegistry.register(ECAlgModel("ES256K", "P-256K", 256))
+    DSS_CURVES["P-256K"] = SECP256K1
+    CURVES_DSS["P-256K"] = "secp256k1"
 
 
 register_p_256k()
@@ -171,12 +175,12 @@ class ProtocolMessage:
             raise JweException("ECDH key cannot be None.")
 
         try:
-            key = JsonWebKey.import_key(dataclasses.asdict(my_key))
-            decrypted = JsonWebEncryption().deserialize(self.jwe, key)
+            key = JWKRegistry.import_key(dataclasses.asdict(my_key))
+            decrypted = jwe.decrypt_compact(self.jwe, key)
         except Exception as e:
             raise JweException(f"JWE decryption is failed. {e}")
 
-        payload: dict = json.loads(decrypted["payload"])
+        payload: dict = json.loads(decrypted.plaintext.decode())
         logger.debug(f">>>decoded jwt: {payload}")
         self._plain_message = payload[PropertyName.KEY_PROTOCOL_MESSAGE]
         self._param_string = payload.get(PropertyName.KEY_PROTOCOL_PARAM)
@@ -438,20 +442,20 @@ class ProtocolMessage:
             if self._param_string:
                 decoded_message[PropertyName.KEY_PROTOCOL_PARAM] = self._param_string
 
-            epk = JsonWebKey.import_key(ecdh_key.as_dict_without_kid())
+            epk = JWKRegistry.import_key(ecdh_key.as_dict_without_kid())
             jwe_header = {
                 "kid": self._request_public_key.kid,
                 "alg": HeaderAlgorithmType.JWE_ALGO_ECDH_ES,
                 "enc": HeaderAlgorithmType.JWE_ALGO_A128GCM,
-                "epk": epk,
+                "epk": epk.as_dict(),
             }
 
-            recipient = JsonWebKey.import_key(self._request_public_key.epk.as_dict_without_kid())
+            recipient = JWKRegistry.import_key(self._request_public_key.epk.as_dict_without_kid())
             logger.debug(f">>>before decrypt: {decoded_message}")
-            encrypted = JsonWebEncryption().serialize_compact(jwe_header, json.dumps(decoded_message), recipient)
+            encrypted = jwe.encrypt_compact(jwe_header, json.dumps(decoded_message), recipient)
             result = {
                 PropertyName.KEY_PROTOCOL_TYPE: self._type,
-                PropertyName.KEY_PROTOCOL_PROTECTED: encrypted.decode(),
+                PropertyName.KEY_PROTOCOL_PROTECTED: encrypted,
             }
         else:
             result = {
