@@ -67,7 +67,7 @@ class TestProtocolMessage:
 
     @pytest.fixture
     def holder_ecdh_key(self) -> ECDHKey:
-        return ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
+        return ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name, "holder_key")
 
     @pytest.fixture
     def request_credential_public_key(self, holder_ecdh_key) -> EphemeralPublicKey:

@@ -25,9 +25,9 @@ from didsdk.protocol.protocol_type import ProtocolType
 class TestVC_1_1:
     def test_did_full_sdk(self):
         # GIVEN some data for test
-        holder_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
-        issuer_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
-        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
+        holder_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name, "k1")
+        issuer_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name, "k2")
+        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name, "k3")
 
         holder_wallet: KeyWallet = KeyWallet.create()
         issuer_wallet: KeyWallet = KeyWallet.create()

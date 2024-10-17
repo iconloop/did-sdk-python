@@ -24,7 +24,7 @@ classifiers = [
 dependencies = [
   "ecdsa[gmpy2]==0.18.0",
   "iconsdk~=2.4.5",
-  "authlib~=1.3.2",
+  "joserfc~=1.0.0",
   "loguru~=0.7.2",
   "pydantic[dotenv]==1.10.7",
   "validators==0.21.2",
