@@ -25,6 +25,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
+      - name: Install setuptools for 3.12
+        if: matrix.python-version == '3.12'
+        run: |
+          pip install --upgrade setuptools
       - name: Install dependency
         run: |
           python -m pip install --upgrade pip
