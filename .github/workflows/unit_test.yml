@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: [ "3.8", "3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
@@ -21,10 +21,6 @@ jobs:
           libgmp3-dev \
           libmpfr-dev \
           libmpc-dev
-      - name: Install setuptools for 3.12
-        if: matrix.python-version == '3.12'
-        run: |
-          pip install --upgrade setuptools
       - name: Install dependencies
         run: |
           python -V
