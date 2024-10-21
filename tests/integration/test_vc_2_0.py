@@ -40,9 +40,9 @@ class TestVC_2_0:
         :return:
         """
         # GIVEN keys and data of participants
-        holder_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
-        issuer_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
-        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name)
+        holder_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name, "k1")
+        issuer_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name, "k2")
+        verifier_ecdh_key: ECDHKey = ECDHKey.generate_key(EcdhCurveType.P256K.value.curve_name, "k3")
 
         algorithm: Algorithm = AlgorithmProvider.create(AlgorithmType.ES256K)
         holder_private_key: PrivateKey = algorithm.bytes_to_private_key(
