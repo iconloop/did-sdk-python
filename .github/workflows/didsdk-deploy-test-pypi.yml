@@ -37,7 +37,7 @@ jobs:
     needs: unittest
     if: github.event.inputs.test_deploy == 'true'
     runs-on: ubuntu-latest
-    environment: release
+    environment: testpypi
     permissions:
       id-token: write
     steps:
@@ -61,4 +61,5 @@ jobs:
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          verbose: true
           repository-url: https://test.pypi.org/legacy/

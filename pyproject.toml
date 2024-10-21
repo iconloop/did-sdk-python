@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "icon-did-sdk"
+name = "did-sdk-python"
 description = ''
 readme = "README.md"
 requires-python = ">=3.8,<3.12"
@@ -40,7 +40,7 @@ dev = [
   "anyio[trio]~=3.7.0",
 ]
 all = [
-  "icon-did-sdk[dev]",
+  "did-sdk-python[dev]",
 ]
 
 [project.urls]
