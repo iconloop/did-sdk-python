@@ -34,9 +34,10 @@ dynamic = ["version"]
 [project.optional-dependencies]
 dev = [
   "pytest~=7.2.2",
-  "pytest-asyncio==0.21.1",
   "pytest-cov~=4.0.0",
   "pytest-mock~=3.10.0",
+  "pytest_recording~=0.12.2",
+  "vcrpy>=4.4.0,<5.0",
   "anyio[trio]~=3.7.0",
 ]
 all = [

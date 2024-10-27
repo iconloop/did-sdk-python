@@ -1,0 +1,147 @@
+interactions:
+- request:
+    body: '{"jsonrpc": "2.0", "method": "icx_sendTransaction", "id": 1728523466, "params":
+      {"version": "0x3", "from": "hxcaa2f822305bbc25a680c582733a9eca44b4bb6a", "to":
+      "cxdd0cb8465b15e2971272c1ecf05691198552f770", "stepLimit": "0x4c4b40", "timestamp":
+      "0x624153b3b0876", "nid": "0x2", "dataType": "call", "data": {"method": "update",
+      "params": {"jwt": "eyJhbGciOiAiRVMyNTZLIiwgImtpZCI6ICJkaWQ6aWNvbjowMjo4NTA1MjdmY2RmZTU1ZDgyNzk4ZjM2Y2FmNzRmZGExY2ZmYWYyMDg1NjVhMWM0MzIjcHl0aG9uLXNkay1rZXkifQ.eyJtZXRob2QiOiAiYWRkS2V5IiwgInBhcmFtIjogeyJpZCI6ICJkaWQ6aWNvbjowMjo4NTA1MjdmY2RmZTU1ZDgyNzk4ZjM2Y2FmNzRmZGExY2ZmYWYyMDg1NjVhMWM0MzIiLCAicHVibGljS2V5IjogeyJpZCI6ICIybmQta2V5IiwgInR5cGUiOiBbIlNlY3AyNTZrMVZlcmlmaWNhdGlvbktleSJdLCAicHVibGljS2V5QmFzZTY0IjogIkJCVlFqeittYXpRZ1NuWk1DQXFZZWtKV3BOcDAyaUlXcUd0RHRkSy9JenA3b1pNY3hkZVNXMHh0N1NFeEVHMUV4L2VhUjI5Z25LVjhsM01mNEdNU2cxST0iLCAiZW5jb2RlVHlwZSI6ICJCQVNFNjQifX19.w6uqyvle0L4b5lwbY_R6rcOpBjgOE9QQ26I_yXCCah5a1oaLo_yvL_hAadKX6PR60IHbt5qjQX6iRTZ363KBaQE"}},
+      "signature": "eTsqfuabWVDZeeXrP1FzIWhlfRbnXpndS9GSd96HmUAWby8jj5PwNkiXoCB1Ljg1I0jtd8k32M4W+3ev6HOZFQA="}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1089'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.28.2
+    method: POST
+    uri: https://lisbon.net.solidwallet.io/api/v3
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwzMQQoCMQxA0b3HyFqkSZo2ndskaQdGRGVGQRDvbpcfHv8L1+Nx358BC9AlwRn2
+        cbxvr5np081kiGMjx8TYlMgLq2leLcIaaxaJgt2HmFa3mLD2YEpKHGPetg4LVlIhzqX8Tn8AAAD/
+        /wMAc8FjbnAAAAA=
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Thu, 10 Oct 2024 01:24:28 GMT
+      Server:
+      - ProSexy
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Origin
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"jsonrpc": "2.0", "method": "icx_getTransactionResult", "id": 1728523472,
+      "params": {"txHash": "0xdaa5e5b192b10319822b638a84facca938455c61dbe5a87bac2b17dc320823ce"}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '166'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.28.2
+    method: POST
+    uri: https://lisbon.net.solidwallet.io/api/v3
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA9RTTW8TMRC98zN8Aqkge+zxx97gBIIDEuJU9TAej5tt02yU3VSpovx3vEmEgFZC
+        IDh0pJU/5vntG3veXt2Mw2qzZtUpeKPVhdrIuF1OqturvBz49j2Ni5bTO7YxYDSRhI2wdqkWQ9Vh
+        8LYm1CHZ7MFVB97kglUiOedQE6BFNCCN+kQo/fViOlICUTIptwxv77ZLmvp7+TLJ+uso5QTwJafU
+        8nIvq+nTcD2q7nKvRh428raUJrVtKN6VojlH5zEbFEjBQIBZZdXokzEpIkINYS6vXxXZzfSXqjF8
+        lIeXZ6KLcdrM36sGWuyYCGoEsBpzZkDyUTNGCNZSEm61ZZezpwYufel6Hladhi6iRgiVSxXE0uAp
+        VuuZanC1kOFaqYKO6LEtnAV11c7TRLMcWJXXt/Kgrg5tc9lqfbcchrvjPRj9txF/mMNPw38N99T/
+        n0HEf8r267OZ3/I/+TZx7ttxomk7nrrhuJT1503PcvKJJC3NBPqceWygafhTo0y779YvRCjtSIJs
+        tG0ogOxtpOgqMVOy0SGyNyULUgyZuAFDYdtaHSzLke3DbLyz/kPzYRNoAkQE6wIcXnwDAAD//wMA
+        yeYgn4kEAAA=
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Thu, 10 Oct 2024 01:24:33 GMT
+      Server:
+      - ProSexy
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Origin
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"jsonrpc": "2.0", "method": "icx_call", "id": 1728523473, "params": {"to":
+      "cxdd0cb8465b15e2971272c1ecf05691198552f770", "dataType": "call", "data": {"method":
+      "read", "params": {"did": "did:icon:02:850527fcdfe55d82798f36caf74fda1cffaf208565a1c432"}}}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '253'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.28.2
+    method: POST
+    uri: https://lisbon.net.solidwallet.io/api/v3
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6xSTW+bQBS892fsNU4My8dipBxC7FgYuQolhdYlh/V+YIKzrGFxMZb/ezGKkrRR
+        bj3O7GjezHt7BE91KSpJgAvglQZGoGJ1s1U9PKZgz6o6L0UK3BToV1oKRinI6QBpTt2clMLVoOtY
+        mgURJ5Qzy6IORBOHGzbBHJmcYp1wjjnUHMu2emAacPAhFcOKnc1MExnQgUZPyma9zUnADj396/g6
+        TB7UphSXNS0ui/Nbr1QHyc6iFESMSGjZhR6zKuc5waqPPFg8vnf0cM1sc7DzFtPne8UeVjTQrXkd
+        hxmJf0iEV2I3vttPNtlvLUt0j8F92C6caTDubB/v/TgOkrI97JIHvia4uAi6714jAxRVhra+5eH1
+        J71Oo7cmUND/U8GLw6fu4hl3YRaJ1fL2ZveTFYtEfpUazP1kN1dTRYOx30lUrpakpSxKtFahaNbO
+        5vqsHTP8DU4yEcTO1lhyc76MMt3/pAI6nXPgRm2YUC/xXi70/mIfDzVU/1vyuoHBs5H031H9H8wp
+        cHUEHQsaPXv68gcAAP//AwAK4/xepgIAAA==
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Thu, 10 Oct 2024 01:24:34 GMT
+      Server:
+      - ProSexy
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Origin
+    status:
+      code: 200
+      message: OK
+version: 1
