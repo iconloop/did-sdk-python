@@ -4,8 +4,11 @@ import time
 from dataclasses import dataclass
 from typing import Optional, Union
 
+from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
 from joserfc import jwe
 from joserfc.jwk import JWKRegistry
+from joserfc.rfc7518.ec_key import CURVES_DSS, ECBinding, ECDictKey, ECKey
+from joserfc.util import int_to_base64
 from loguru import logger
 
 from didsdk.core.did_key_holder import DidKeyHolder
@@ -30,6 +33,33 @@ class SignResult:
     success: bool = False
     result: Optional[dict] = None
     fail_message: str = None
+
+
+class P256KECBinding(ECBinding):
+    """WARNING: This class is patch for P-256K curve name binding secp256k1
+
+    If P-256K curve name removed, this class no more needed.
+    """
+
+    @staticmethod
+    def export_private_key(key: EllipticCurvePrivateKey) -> ECDictKey:
+        def get_crv_name(curve_name: str) -> str:
+            if curve_name == "secp256k1":
+                return "P-256K"
+            else:
+                return CURVES_DSS[curve_name]
+
+        numbers = key.private_numbers()
+
+        return {
+            "crv": get_crv_name(key.curve.name),
+            "x": int_to_base64(numbers.public_numbers.x),
+            "y": int_to_base64(numbers.public_numbers.y),
+            "d": int_to_base64(numbers.private_value),
+        }
+
+
+ECKey.binding = P256KECBinding
 
 
 class ProtocolMessage:
@@ -429,12 +459,10 @@ class ProtocolMessage:
             if self._param_string:
                 decoded_message[PropertyName.KEY_PROTOCOL_PARAM] = self._param_string
 
-            epk = JWKRegistry.import_key(ecdh_key.as_dict_without_kid())
             jwe_header = {
                 "kid": self._request_public_key.kid,
                 "alg": HeaderAlgorithmType.JWE_ALGO_ECDH_ES,
                 "enc": HeaderAlgorithmType.JWE_ALGO_A128GCM,
-                "epk": epk.as_dict(),
             }
 
             recipient = JWKRegistry.import_key(self._request_public_key.epk.as_dict_without_kid())
