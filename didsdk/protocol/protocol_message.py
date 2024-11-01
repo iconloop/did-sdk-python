@@ -393,7 +393,7 @@ class ProtocolMessage:
             expiration=expiration,
         )
 
-    def sign_encrypt(self, did_key_holder: Optional[DidKeyHolder], ecdh_key: Optional[ECDHKey] = None) -> SignResult:
+    def sign_encrypt(self, did_key_holder: Optional[DidKeyHolder]) -> SignResult:
         if not did_key_holder and self._type != ProtocolType.REQUEST_PRESENTATION.value:
             return SignResult(fail_message="DidKeyHolder is required for sign.")
 
@@ -421,20 +421,15 @@ class ProtocolMessage:
         logger.debug(f">>>jwt header:{self._jwt.header.as_dict()}")
         logger.debug(f">>>jwt payload:{self._jwt.payload.as_dict()}")
         if self._request_public_key:
-            if not ecdh_key:
-                return SignResult(fail_message="Issuer's ECDH PrivateKey is required for createJwe.")
-
             decoded_message = dict()
             decoded_message[PropertyName.KEY_PROTOCOL_MESSAGE] = self._plain_message
             if self._param_string:
                 decoded_message[PropertyName.KEY_PROTOCOL_PARAM] = self._param_string
 
-            epk = JWKRegistry.import_key(ecdh_key.as_dict_without_kid())
             jwe_header = {
                 "kid": self._request_public_key.kid,
                 "alg": HeaderAlgorithmType.JWE_ALGO_ECDH_ES,
                 "enc": HeaderAlgorithmType.JWE_ALGO_A128GCM,
-                "epk": epk.as_dict(),
             }
 
             recipient = JWKRegistry.import_key(self._request_public_key.epk.as_dict_without_kid())
