@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "did-sdk-python"
 description = 'This SDK is used not only to create and manage ICON DID, but also to issue and verify credentials and presentations.'
 readme = "README.md"
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.10,<3.12"
 license = "MIT"
 keywords = []
 authors = [
@@ -15,18 +15,16 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: Implementation :: CPython",
 ]
 dependencies = [
   "ecdsa[gmpy2]==0.18.0",
-  "iconsdk~=2.4.5",
+  "iconsdk~=2.5.2",
   "joserfc~=1.0.0",
   "loguru~=0.7.2",
-  "pydantic[dotenv]==1.10.7",
+  "pydantic[dotenv]==1.10.21",
   "validators==0.21.2",
 ]
 dynamic = ["version"]
@@ -36,8 +34,8 @@ dev = [
   "pytest~=7.2.2",
   "pytest-cov~=4.0.0",
   "pytest-mock~=3.10.0",
-  "pytest_recording~=0.12.2",
-  "vcrpy>=4.4.0,<5.0",
+  "pytest_recording~=0.13.2",
+  "vcrpy==7.0.0",
   "anyio[trio]~=3.7.0",
 ]
 all = [
