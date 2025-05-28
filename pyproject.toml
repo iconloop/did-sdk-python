@@ -24,7 +24,9 @@ dependencies = [
   "iconsdk~=2.5.2",
   "joserfc~=1.0.0",
   "loguru~=0.7.2",
-  "pydantic[dotenv]==1.10.21",
+  "pydantic==2.11.4",
+  "pydantic-settings>=2.9.1",
+  "setuptools>=80.9.0",
   "validators==0.21.2",
 ]
 dynamic = ["version"]

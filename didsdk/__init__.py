@@ -12,7 +12,7 @@ else:
     logger.disable(__name__)
 
 logger.debug(f"{settings.DIDSDK_LOG_ENABLE_LOGGER=}")
-logger.debug(f"{settings.__repr_name__()}: {settings.dict()}")
+logger.debug(f"{settings.__repr_name__()}: {settings.model_dump()}")
 
 
 def register_p_256k():
