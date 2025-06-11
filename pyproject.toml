@@ -21,7 +21,7 @@ classifiers = [
 ]
 dependencies = [
   "ecdsa[gmpy2]==0.18.0",
-  "iconsdk~=2.5.2",
+  "iconsdk>=2.5.2",
   "joserfc~=1.0.0",
   "loguru~=0.7.2",
   "pydantic==2.11.4",
