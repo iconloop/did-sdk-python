@@ -1,4 +1,5 @@
 import json
+import sys
 import uuid
 from dataclasses import dataclass
 
@@ -160,9 +161,9 @@ class DidKeyStore:
         :return: An instance of DidKeyHolder class.
         """
         try:
-            with open(file_path, "rb") as file:
+            with open(file_path, "rt") as file:
                 keyfile_json = load_keyfile(file)
-                private_key: bytes = decode_keyfile_json(keyfile_json, bytes(password, "utf-8"))
+                private_key: bytes = decode_keyfile_json(keyfile_json, password.encode())
                 return DidKeyHolder(
                     did=keyfile_json["did"],
                     key_id=keyfile_json["keyId"],
@@ -174,7 +175,7 @@ class DidKeyStore:
         except ValueError as e:
             raise KeyStoreException(f"Wrong password: {e}")
         except Exception as e:
-            raise KeyStoreException(f"Keystore error: {e}")
+            raise KeyStoreException(f"Keystore error: {e}").with_traceback(e.__traceback__)
 
     @staticmethod
     def store(file_path: str, password: str, key_holder: DidKeyHolder):

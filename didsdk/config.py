@@ -1,6 +1,7 @@
 from typing import Union
 
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 
 
 class DidSettings(BaseSettings):
@@ -10,8 +11,7 @@ class DidSettings(BaseSettings):
     DIDSDK_TX_SLEEP_TIME: Union[int, float] = 1
     DIDSDK_LOG_ENABLE_LOGGER: bool = False
 
-    class Config:
-        case_sensitive = True
+    model_config = ConfigDict(case_sensitive=True)
 
 
 settings = DidSettings()
