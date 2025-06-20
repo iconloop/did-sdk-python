@@ -44,7 +44,7 @@ class DidKeyHolder:
 
     @classmethod
     def from_dict(cls, key_holder: Dict[str, Any], password: str) -> "DidKeyHolder":
-        private_key: bytes = decode_keyfile_json(key_holder, password)
+        private_key: bytes = decode_keyfile_json(key_holder, password.encode("utf-8"))
         return DidKeyHolder(
             did=key_holder.get("did"),
             key_id=key_holder.get("keyId"),
