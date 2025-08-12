@@ -51,34 +51,22 @@ class DidService:
         return None
 
     async def _get_transaction_result(self, tx_hash: str) -> dict:
-        """Get the transaction result that matches the hash of transaction.
-
-        This method calls `iconsdk.icon_service.IconService.get_transaction_result` every 1 second
-        until the transaction is confirmed.
-
-        :param tx_hash:
-        :return:
-        """
-        response = None
         retry_times = settings.DIDSDK_TX_RETRY_COUNT
-        while response is None and retry_times > 0:
+        while retry_times > 0:
             try:
                 tx_result = self._iconservice.get_transaction_result(tx_hash)
-                if not tx_result:
-                    raise JSONRPCException("transaction result is None.")
+                if tx_result:
+                    return tx_result
+                raise JSONRPCException("transaction result is None.")
             except JSONRPCException as e:
                 logger.debug(f"{e}")
 
+                retry_times -= 1
                 if retry_times == 0:
                     raise TransactionException(e)
 
-                retry_times -= 1
                 logger.debug(f"Remain to retry request for getting transaction result: {retry_times}")
-
                 await asyncio.sleep(settings.DIDSDK_TX_SLEEP_TIME)
-                continue
-
-            return tx_result
 
     async def _send_jwt(self, wallet: KeyWallet, signed_jwt: str, method: str) -> dict:
         """Sends a transaction with a json web token string.
